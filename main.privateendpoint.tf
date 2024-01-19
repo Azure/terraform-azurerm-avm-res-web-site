@@ -2,7 +2,7 @@
 resource "azurerm_private_endpoint" "this" {
   for_each                      = var.private_endpoints
   name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
-  location                      = coalesce(each.value.location, var.location, local.resource_group_location)
+  location                      = coalesce(each.value.location, var.location)
   resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
@@ -10,7 +10,7 @@ resource "azurerm_private_endpoint" "this" {
 
   private_service_connection {
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azurerm_TODO.this.id
+    private_connection_resource_id = var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id
     is_manual_connection           = false
     subresource_names              = ["TODO subresource name, see https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource"]
   }

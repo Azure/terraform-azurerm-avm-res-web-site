@@ -23,13 +23,105 @@ variable "location" {
 variable "name" {
   type        = string
   description = "The name of the this resource."
-  validation {
-    condition     = can(regex("TODO determine REGEX", var.name))
-    error_message = "The name must be TODO."
-    # TODO remove the example below once complete:
-    #condition     = can(regex("^[a-z0-9]{5,50}$", var.name))
-    #error_message = "The name must be between 5 and 50 characters long and can only contain lowercase letters and numbers."
+  # validation {
+  #   # condition     = can(regex("TODO determine REGEX", var.name))
+  #   # error_message = "The name must be TODO."
+  #   # TODO remove the example below once complete:
+  #   #condition     = can(regex("^[a-z0-9]{5,50}$", var.name))
+  #   #error_message = "The name must be between 5 and 50 characters long and can only contain lowercase letters and numbers."
+  # }
+}
+
+variable "service_plan_resource_id" {
+  type        = string
+  description = "The resource ID of the app service plan to deploy the Function App in."
+  default = null
+  
+}
+
+variable "os_type" {
+  type        = string
+  description = "The operating system type of the app service plan to deploy the Function App in."
+  nullable = false
+}
+
+
+
+variable "storage_account_name" {
+  type        = string
+  description = "The name of the storage account to deploy the Function App in."
+  default = null
+}
+
+variable "storage_account_access_key" {
+  type        = string
+  description = "The access key of the storage account to deploy the Function App in."
+  default = null
+}
+
+variable "existing_storage_account" {
+  type = object({
+    name = string
+    resource_group_name = string
+  })
+  description = "values for existing storage account"
+  default = null
+}
+
+variable "existing_app_service_plan" {
+  type = object({
+    name = string
+    resource_group_name = string
+  })
+  description = "values for existing app service plan"
+  default = null
+}
+
+variable "new_storage_account" {
+  type = object({
+    create = optional(bool, false)
+
+    name = optional(string)
+    resource_group_name = optional(string)
+    location = optional(string)
+    account_tier = optional(string, "Standard")
+    account_replication_type = optional(string, "LRS")
+  })
+  description = "values for new storage account"
+  default = {
+    
   }
+}
+
+variable "new_app_service_plan" {
+  type = map(object({
+    create = optional(bool, false)
+
+    name = optional(string)
+    resource_group_name = optional(string)
+    location = optional(string)
+    os_type = optional(string, "Linux")
+    sku_name = optional(string, "Y1")
+
+    app_service_environment_id = optional(string)
+    maximum_elastic_worker_count = optional(number)
+    worker_count = optional(number)
+    per_site_scaling_enabled = optional(bool, false)
+    zone_balancing_enabled = optional(bool, false)
+
+    inherit_tags = optional(bool, false)
+    tags = optional(map(any))
+
+    inherit_lock = optional(bool, false)
+    lock = optional(object({
+      name = optional(string)
+      kind = optional(string, "None")
+    }))
+  }))
+  default = {
+
+  }
+  
 }
 
 # required AVM interfaces
