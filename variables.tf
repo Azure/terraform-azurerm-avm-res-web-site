@@ -35,14 +35,14 @@ variable "name" {
 variable "service_plan_resource_id" {
   type        = string
   description = "The resource ID of the app service plan to deploy the Function App in."
-  default = null
-  
+  default     = null
+
 }
 
 variable "os_type" {
   type        = string
   description = "The operating system type of the app service plan to deploy the Function App in."
-  nullable = false
+  nullable    = false
 }
 
 
@@ -50,46 +50,46 @@ variable "os_type" {
 variable "storage_account_name" {
   type        = string
   description = "The name of the storage account to deploy the Function App in."
-  default = null
+  default     = null
 }
 
 variable "storage_account_access_key" {
   type        = string
   description = "The access key of the storage account to deploy the Function App in."
-  default = null
+  default     = null
 }
 
 variable "existing_storage_account" {
   type = object({
-    name = string
+    name                = string
     resource_group_name = string
   })
   description = "values for existing storage account"
-  default = null
+  default     = null
 }
 
 variable "existing_app_service_plan" {
   type = object({
-    name = string
+    name                = string
     resource_group_name = string
   })
   description = "values for existing app service plan"
-  default = null
+  default     = null
 }
 
 variable "new_storage_account" {
   type = object({
     create = optional(bool, false)
 
-    name = optional(string)
-    resource_group_name = optional(string)
-    location = optional(string)
-    account_tier = optional(string, "Standard")
+    name                     = optional(string)
+    resource_group_name      = optional(string)
+    location                 = optional(string)
+    account_tier             = optional(string, "Standard")
     account_replication_type = optional(string, "LRS")
   })
   description = "values for new storage account"
   default = {
-    
+
   }
 }
 
@@ -97,20 +97,20 @@ variable "new_app_service_plan" {
   type = map(object({
     create = optional(bool, false)
 
-    name = optional(string)
+    name                = optional(string)
     resource_group_name = optional(string)
-    location = optional(string)
-    os_type = optional(string, "Linux")
-    sku_name = optional(string, "Y1")
+    location            = optional(string)
+    os_type             = optional(string, "Linux")
+    sku_name            = optional(string, "Y1")
 
-    app_service_environment_id = optional(string)
+    app_service_environment_id   = optional(string)
     maximum_elastic_worker_count = optional(number)
-    worker_count = optional(number)
-    per_site_scaling_enabled = optional(bool, false)
-    zone_balancing_enabled = optional(bool, false)
+    worker_count                 = optional(number)
+    per_site_scaling_enabled     = optional(bool, false)
+    zone_balancing_enabled       = optional(bool, false)
 
     inherit_tags = optional(bool, false)
-    tags = optional(map(any))
+    tags         = optional(map(any))
 
     inherit_lock = optional(bool, false)
     lock = optional(object({
@@ -121,7 +121,7 @@ variable "new_app_service_plan" {
   default = {
 
   }
-  
+
 }
 
 # required AVM interfaces

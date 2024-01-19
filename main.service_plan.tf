@@ -1,6 +1,6 @@
 # data "azurerm_service_plan" "existing" {
 #   count = !var.new_app_service_plan.create ? 1 : 0
-  
+
 #   name = var.existing_app_service_plan.name
 #   resource_group_name = var.existing_app_service_plan.resource_group_name
 # }

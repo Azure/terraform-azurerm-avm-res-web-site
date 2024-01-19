@@ -41,14 +41,15 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
-- [azurerm_TODO_the_resource_for_this_module.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/TODO_the_resource_for_this_module) (resource)
+- [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
+- [azurerm_role_assignment.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
-- [azurerm_resource_group.parent](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -58,6 +59,12 @@ The following input variables are required:
 ### <a name="input_name"></a> [name](#input\_name)
 
 Description: The name of the this resource.
+
+Type: `string`
+
+### <a name="input_os_type"></a> [os\_type](#input\_os\_type)
+
+Description: The operating system type of the app service plan to deploy the Function App in.
 
 Type: `string`
 
@@ -132,6 +139,36 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_existing_app_service_plan"></a> [existing\_app\_service\_plan](#input\_existing\_app\_service\_plan)
+
+Description: values for existing app service plan
+
+Type:
+
+```hcl
+object({
+    name                = string
+    resource_group_name = string
+  })
+```
+
+Default: `null`
+
+### <a name="input_existing_storage_account"></a> [existing\_storage\_account](#input\_existing\_storage\_account)
+
+Description: values for existing storage account
+
+Type:
+
+```hcl
+object({
+    name                = string
+    resource_group_name = string
+  })
+```
+
+Default: `null`
+
 ### <a name="input_location"></a> [location](#input\_location)
 
 Description: Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location.
@@ -165,6 +202,61 @@ Type:
 object({
     system_assigned            = optional(bool, false)
     user_assigned_resource_ids = optional(set(string), [])
+  })
+```
+
+Default: `{}`
+
+### <a name="input_new_app_service_plan"></a> [new\_app\_service\_plan](#input\_new\_app\_service\_plan)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    create = optional(bool, false)
+
+    name                = optional(string)
+    resource_group_name = optional(string)
+    location            = optional(string)
+    os_type             = optional(string, "Linux")
+    sku_name            = optional(string, "Y1")
+
+    app_service_environment_id   = optional(string)
+    maximum_elastic_worker_count = optional(number)
+    worker_count                 = optional(number)
+    per_site_scaling_enabled     = optional(bool, false)
+    zone_balancing_enabled       = optional(bool, false)
+
+    inherit_tags = optional(bool, false)
+    tags         = optional(map(any))
+
+    inherit_lock = optional(bool, false)
+    lock = optional(object({
+      name = optional(string)
+      kind = optional(string, "None")
+    }))
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_new_storage_account"></a> [new\_storage\_account](#input\_new\_storage\_account)
+
+Description: values for new storage account
+
+Type:
+
+```hcl
+object({
+    create = optional(bool, false)
+
+    name                     = optional(string)
+    resource_group_name      = optional(string)
+    location                 = optional(string)
+    account_tier             = optional(string, "Standard")
+    account_replication_type = optional(string, "LRS")
   })
 ```
 
@@ -254,6 +346,30 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+
+Description: The resource ID of the app service plan to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
+
+Description: The access key of the storage account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
+
+Description: The name of the storage account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

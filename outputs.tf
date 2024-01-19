@@ -5,7 +5,7 @@
 output "resource" {
   value       = azurerm_windows_function_app.this
   description = "This is the full output for the resource."
-  sensitive = true
+  sensitive   = true
 }
 
 output "private_endpoints" {

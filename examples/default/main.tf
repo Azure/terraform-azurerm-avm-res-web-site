@@ -67,18 +67,18 @@ module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = 0.1.0
-  
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+
+  enable_telemetry = var.enable_telemetry # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
-  location = azurerm_resource_group.example.location
+  location            = azurerm_resource_group.example.location
 
-  os_type =  azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name = azurerm_storage_account.example.name
+  storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
 
 }

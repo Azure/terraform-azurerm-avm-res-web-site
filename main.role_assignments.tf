@@ -1,5 +1,5 @@
 resource "azurerm_role_assignment" "this" {
-  for_each                               = var.role_assignments
+  for_each = var.role_assignments
 
   scope                                  = var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id
   role_definition_id                     = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_definition_id_or_name : null
