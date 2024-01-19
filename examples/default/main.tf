@@ -38,9 +38,25 @@ module "naming" {
 }
 
 # This is required for resource modules
-resource "azurerm_resource_group" "this" {
+resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
   location = module.regions.regions[random_integer.region_index.result].name
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_service_plan" "example" { # This will equate to Consumption (Serverless) in portal
+  name                = module.naming.app_service_plan.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  os_type             = "Windows"
+  sku_name            = "Y1"
 }
 
 # This is the module call
@@ -49,9 +65,20 @@ resource "azurerm_resource_group" "this" {
 # with a data source.
 module "test" {
   source = "../../"
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  # ...
+  # source             = "Azure/avm-res-web-site/azurerm"
+  # version = 0.1.0
+  
   enable_telemetry    = var.enable_telemetry # see variables.tf
-  name                = ""                   # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+
+  name                = "${module.naming.function_app.name_unique}-default"
+  resource_group_name = azurerm_resource_group.example.name
+  location = azurerm_resource_group.example.location
+
+  os_type =  azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+
+  service_plan_resource_id = azurerm_service_plan.example.id
+
+  storage_account_name = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+
 }
