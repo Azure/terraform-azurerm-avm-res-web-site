@@ -35,16 +35,261 @@ variable "name" {
 variable "service_plan_resource_id" {
   type        = string
   description = "The resource ID of the app service plan to deploy the Function App in."
-  default     = null
-
 }
 
 variable "os_type" {
   type        = string
   description = "The operating system type of the app service plan to deploy the Function App in."
-  nullable    = false
 }
 
+variable "site_config" {
+  type = map(object({
+    always_on = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
+    api_definition_url = ""
+    api_management_api_id = ""
+    app_command_line = ""
+    app_scale_limit = ""
+    application_insights_connection_string = ""
+    application_insights_key = ""
+    application_stack = optional(map(object({
+
+    })))
+    app_service_logs = optional(map(object({
+
+    })))
+    cors = optional(map(object({
+
+    })))#(Optional) A cors block as defined above.
+    default_documents = "" #(Optional) Specifies a list of Default Documents for the Windows Function App.
+    elastic_instance_minimum = "" #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
+    ftps_state = "" #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
+    health_check_path = "" #(Optional) The path to be checked for this Windows Function App health.
+    health_check_eviction_time_in_min = "" #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
+    http2_enabled = "" #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction = optional(map(object({
+
+    }))) #(Optional) One or more ip_restriction blocks as defined above.
+    load_balancing_mode = "" #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    managed_pipeline_mode = "" #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
+    minimum_tls_version = "" #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    pre_warmed_instance_count = "" #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    remote_debugging_enabled = "" #(Optional) Should Remote Debugging be enabled. Defaults to false.
+    remote_debugging_version = "" #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
+    runtime_scale_monitoring_enabled = ""
+    scm_ip_restriction = optional(map(object({
+
+    }))) #(Optional) One or more scm_ip_restriction blocks as defined above.
+    scm_minimum_tls_version = optional(string, "1.2") #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    scm_use_main_ip_restriction = optional(bool, false) #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
+    use_32_bit_worker = optional(bool, true) #(Optional) Should the 32-bit worker process be used. Defaults to false.
+    vnet_route_all_enabled = optional(bool, false) #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
+    websockets_enabled = optional(bool, false) #(Optional) Should Websockets be enabled. Defaults to false.
+    worker_count = optional(number) #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
+  }))
+  default = {
+
+  }
+}
+
+variable "storage_accounts" {
+  type = map(object({
+    access_key = optional(string)
+    account_name = optional(string)
+    name = optional(string)
+    share_name = optional(string)
+    type = optional(string, "AzureFiles")
+    mount_path = optional(string)
+  }))
+  default = {
+
+  }  
+}
+
+variable "sticky_settings" {
+  type = map(object({
+    app_setting_names = optional(list(string))
+    connection_string_names = optional(list(string))
+  }))
+  default = {
+
+  }
+}
+
+variable "identities" {
+  type = map(object({
+    type = optional(string, "SystemAssigned")
+    identity_ids = optional(list(string))
+  }))
+  default = {
+
+  }
+}
+
+variable "backup" {
+  type = map(object({
+    name = optional(string)
+    schedule = optional(map(object({
+      frequency_interval = optional(number)
+      frequency_unit = optional(string)
+      keep_at_least_one_backup = optional(bool)
+      retention_period_in_days = optional(number)
+      start_time = optional(string)
+    })))
+    storage_account_url = optional(string)
+    enabled = optional(bool, true)
+  }))
+}
+
+variable "connection_strings" {
+  type = map(object({
+    name = optional(string)
+    type = optional(string)
+    value = optional(string)
+  }))
+}
+
+variable "app_settings" {
+  type = map(string)
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of app settings to assign to the static site. 
+  
+  ```terraform
+  app_settings = {
+    WEBSITE_NODE_DEFAULT_VERSION = "10.14.1"
+    WEBSITE_TIME_ZONE            = "Pacific Standard Time"
+    WEB_CONCURRENCY              = "1"
+    WEBSITE_RUN_FROM_PACKAGE     = "1"
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE = "true"
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE_LOCKED = "false"
+    WEBSITE_NODE_DEFAULT_VERSION_LOCKED = "false"
+    WEBSITE_TIME_ZONE_LOCKED = "false"
+    WEB_CONCURRENCY_LOCKED = "false"
+    WEBSITE_RUN_FROM_PACKAGE_LOCKED = "false"
+  }
+  ```
+  DESCRIPTION
+}
+
+variable "auth_settings" {
+  type = map(object({
+    enabled = optional(bool, false)
+    active_directory = optional(map(object({
+      client_id = optional(string)
+      allowed_audiences = optional(list(string))
+      client_secret = optional(string)
+      client_secret_setting_name = optional(string)
+    })))
+    additional_login_parameters = optional(list(string))
+    allowed_external_redirect_urls = optional(list(string))
+    default_provider = optional(string)
+    facebook = optional(map(object({
+      app_id = optional(string)
+      app_secret = optional(string)
+      app_secret_setting_name = optional(string)
+      oauth_scopes = optional(list(string))
+    })))
+    github = optional(map(object({
+      client_id = optional(string)
+      client_secret = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes = optional(list(string))
+    })))
+    google = optional(map(object({
+      client_id = optional(string)
+      client_secret = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes = optional(list(string))
+    })))
+    issuer = optional(string)
+    microsoft = optional(map(object({
+      client_id = optional(string)
+      client_secret = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes = optional(list(string))
+    })))
+    runtime_version = optional(string)
+    token_refresh_extension_hours = optional(number, 72)
+    token_store_enabled = optional(bool, false)
+    twitter = optional(map(object({
+      consumer_key = optional(string)
+      consumer_secret = optional(string)
+      consumer_secret_setting_name = optional(string)
+    })))
+    unauthenticated_client_action = optional(string)
+  }))
+}
+
+variable "auth_settings_v2" {
+  type = map(object({
+    auth_enabled = optional(bool, false)
+    runtime_version = optional(string, "~1")
+    config_file_path = optional(string)
+    require_authentication = optional(bool, false)
+    unauthenticated_action = optional(string, "RedirectToLoginPage")
+    default_provider = optional(string)
+    excluded_paths = optional(list(string))
+    require_https = optional(bool, true)
+    http_route_api_prefix = optional(string, "/.auth")
+    forward_proxy_convention = optional(string, "NoProxy")
+    forward_proxy_custom_host_header_name = optional(string)
+    forward_proxy_custom_scheme_header_name = optional(string)
+    apple_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    active_directory_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    azure_static_web_app_v2 = optional(map(object({
+      client_id = optional(string)
+    })))
+    custom_oidc_v2 = optional(map(object({
+      name = optional(string)
+      client_id = optional(string)
+      openid_configuration_endpoint = optional(string)
+      scopes = optional(list(string))
+      client_credential_method = optional(string)
+      client_secret_setting_name = optional(string)
+      
+    })))
+    facebook_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    github_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    google_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    microsoft_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    twitter_v2 = optional(map(object({
+      client_id = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes = optional(list(string))
+    })))
+    login = map(object({
+
+    }))
+  }))
+
+
+}
 
 
 variable "storage_account_name" {
@@ -59,70 +304,102 @@ variable "storage_account_access_key" {
   default     = null
 }
 
-variable "existing_storage_account" {
-  type = object({
-    name                = string
-    resource_group_name = string
-  })
-  description = "values for existing storage account"
+variable "storage_uses_managed_identity" {
+  type        = bool
+  description = "Should the storage account use a managed identity?"
+  default     = false
+}
+
+variable "storage_key_vault_secret_id" {
+  type        = string
+  description = "The ID of the secret in the key vault to use for the storage account access key."
   default     = null
 }
 
-variable "existing_app_service_plan" {
-  type = object({
-    name                = string
-    resource_group_name = string
-  })
-  description = "values for existing app service plan"
+variable "virtual_network_subnet_id" {
+  type        = string
+  description = "The ID of the subnet to deploy the Function App in."
   default     = null
+  
 }
 
-variable "new_storage_account" {
-  type = object({
-    create = optional(bool, false)
-
-    name                     = optional(string)
-    resource_group_name      = optional(string)
-    location                 = optional(string)
-    account_tier             = optional(string, "Standard")
-    account_replication_type = optional(string, "LRS")
-  })
-  description = "values for new storage account"
-  default = {
-
-  }
+variable "webdeploy_publish_basic_authentication_enabled" {
+  type        = bool
+  description = "Should basic authentication be enabled for web deploy?"
+  default     = true
+  
 }
 
-variable "new_app_service_plan" {
-  type = map(object({
-    create = optional(bool, false)
-
-    name                = optional(string)
-    resource_group_name = optional(string)
-    location            = optional(string)
-    os_type             = optional(string, "Linux")
-    sku_name            = optional(string, "Y1")
-
-    app_service_environment_id   = optional(string)
-    maximum_elastic_worker_count = optional(number)
-    worker_count                 = optional(number)
-    per_site_scaling_enabled     = optional(bool, false)
-    zone_balancing_enabled       = optional(bool, false)
-
-    inherit_tags = optional(bool, false)
-    tags         = optional(map(any))
-
-    inherit_lock = optional(bool, false)
-    lock = optional(object({
-      name = optional(string)
-      kind = optional(string, "None")
-    }))
-  }))
-  default = {
-
-  }
-
+variable "zip_deploy_file" {
+  type = string
+  description = "value for zip deploy file"
+  default = null
 }
+
+# variable "existing_storage_account" {
+#   type = object({
+#     name                = string
+#     resource_group_name = string
+#   })
+#   description = "values for existing storage account"
+#   default     = null
+# }
+
+# variable "existing_app_service_plan" {
+#   type = object({
+#     name                = string
+#     resource_group_name = string
+#   })
+#   description = "values for existing app service plan"
+#   default     = null
+# }
+
+# variable "new_storage_account" {
+#   type = object({
+#     create = optional(bool, false)
+
+#     name                     = optional(string)
+#     resource_group_name      = optional(string)
+#     location                 = optional(string)
+#     account_tier             = optional(string, "Standard")
+#     account_replication_type = optional(string, "LRS")
+#   })
+#   description = "values for new storage account"
+#   default = {
+
+#   }
+# }
+
+# variable "new_app_service_plan" {
+#   type = map(object({
+#     create = optional(bool, false)
+
+#     name                = optional(string)
+#     resource_group_name = optional(string)
+#     location            = optional(string)
+#     os_type             = optional(string, "Linux")
+#     sku_name            = optional(string, "Y1")
+
+#     app_service_environment_id   = optional(string)
+#     maximum_elastic_worker_count = optional(number)
+#     worker_count                 = optional(number)
+#     per_site_scaling_enabled     = optional(bool, false)
+#     zone_balancing_enabled       = optional(bool, false)
+
+#     inherit_tags = optional(bool, false)
+#     tags         = optional(map(any))
+
+#     inherit_lock = optional(bool, false)
+#     lock = optional(object({
+#       name = optional(string)
+#       kind = optional(string, "None")
+#     }))
+#   }))
+#   default = {
+
+#   }
+
+# }
 
 # required AVM interfaces
 # remove only if not supported by the resource
