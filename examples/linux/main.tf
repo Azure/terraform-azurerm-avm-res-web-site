@@ -55,7 +55,7 @@ resource "azurerm_service_plan" "example" { # This will equate to Consumption (S
   name                = module.naming.app_service_plan.name_unique
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  os_type             = "Windows"
+  os_type             = "Linux"
   sku_name            = "Y1"
 }
 
@@ -70,7 +70,7 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
