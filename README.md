@@ -25,17 +25,17 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71.0, < 4.0.0)
 
-- <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0)
+- <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.71.0)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.71.0, < 4.0.0)
 
-- <a name="provider_random"></a> [random](#provider\_random) (>= 3.5.0)
+- <a name="provider_random"></a> [random](#provider\_random) (>= 3.5.0, < 4.0.0)
 
 ## Resources
 
@@ -74,9 +74,259 @@ Description: The resource group where the resources will be deployed.
 
 Type: `string`
 
+### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+
+Description: The resource ID of the app service plan to deploy the Function App in.
+
+Type: `string`
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings)
+
+Description:   A map of app settings to assign to the static site.
+
+  ```terraform
+  app_settings = {
+    WEBSITE_NODE_DEFAULT_VERSION = "10.14.1"
+    WEBSITE_TIME_ZONE            = "Pacific Standard Time"
+    WEB_CONCURRENCY              = "1"
+    WEBSITE_RUN_FROM_PACKAGE     = "1"
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE = "true"
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE_LOCKED = "false"
+    WEBSITE_NODE_DEFAULT_VERSION_LOCKED = "false"
+    WEBSITE_TIME_ZONE_LOCKED = "false"
+    WEB_CONCURRENCY_LOCKED = "false"
+    WEBSITE_RUN_FROM_PACKAGE_LOCKED = "false"
+  }
+```
+
+Type: `map(string)`
+
+Default: `{}`
+
+### <a name="input_auth_settings"></a> [auth\_settings](#input\_auth\_settings)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    enabled = optional(bool, false)
+    active_directory = optional(map(object({
+      client_id                  = optional(string)
+      allowed_audiences          = optional(list(string))
+      client_secret              = optional(string)
+      client_secret_setting_name = optional(string)
+    })))
+    additional_login_parameters    = optional(list(string))
+    allowed_external_redirect_urls = optional(list(string))
+    default_provider               = optional(string)
+    facebook = optional(map(object({
+      app_id                  = optional(string)
+      app_secret              = optional(string)
+      app_secret_setting_name = optional(string)
+      oauth_scopes            = optional(list(string))
+    })))
+    github = optional(map(object({
+      client_id                  = optional(string)
+      client_secret              = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes               = optional(list(string))
+    })))
+    google = optional(map(object({
+      client_id                  = optional(string)
+      client_secret              = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes               = optional(list(string))
+    })))
+    issuer = optional(string)
+    microsoft = optional(map(object({
+      client_id                  = optional(string)
+      client_secret              = optional(string)
+      client_secret_setting_name = optional(string)
+      oauth_scopes               = optional(list(string))
+    })))
+    runtime_version               = optional(string)
+    token_refresh_extension_hours = optional(number, 72)
+    token_store_enabled           = optional(bool, false)
+    twitter = optional(map(object({
+      consumer_key                 = optional(string)
+      consumer_secret              = optional(string)
+      consumer_secret_setting_name = optional(string)
+    })))
+    unauthenticated_client_action = optional(string)
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_auth_settings_v2"></a> [auth\_settings\_v2](#input\_auth\_settings\_v2)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    auth_enabled                            = optional(bool, false)
+    runtime_version                         = optional(string, "~1")
+    config_file_path                        = optional(string)
+    require_authentication                  = optional(bool, false)
+    unauthenticated_action                  = optional(string, "RedirectToLoginPage")
+    default_provider                        = optional(string)
+    excluded_paths                          = optional(list(string))
+    require_https                           = optional(bool, true)
+    http_route_api_prefix                   = optional(string, "/.auth")
+    forward_proxy_convention                = optional(string, "NoProxy")
+    forward_proxy_custom_host_header_name   = optional(string)
+    forward_proxy_custom_scheme_header_name = optional(string)
+    apple_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    active_directory_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    azure_static_web_app_v2 = optional(map(object({
+      client_id = optional(string)
+    })))
+    custom_oidc_v2 = optional(map(object({
+      name                          = optional(string)
+      client_id                     = optional(string)
+      openid_configuration_endpoint = optional(string)
+      scopes                        = optional(list(string))
+      client_credential_method      = optional(string)
+      client_secret_setting_name    = optional(string)
+
+    })))
+    facebook_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    github_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    google_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    microsoft_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    twitter_v2 = optional(map(object({
+      client_id                  = optional(string)
+      client_secret_setting_name = optional(string)
+      login_scopes               = optional(list(string))
+    })))
+    login = map(object({
+      logout_endpoint                   = optional(string)
+      token_store_enabled               = optional(bool, false)
+      token_refresh_extension_time      = optional(number, 72)
+      token_store_path                  = optional(string)
+      token_store_sas_setting_name      = optional(string)
+      preserve_url_fragments_for_logins = optional(bool, false)
+      allowed_external_redirect_urls    = optional(list(string))
+      cookie_expiration_convention      = optional(string, "FixedTime")
+      cookie_expiration_time            = optional(string, "00:00:00")
+      validate_nonce                    = optional(bool, true)
+      nonce_expiration_time             = optional(string, "00:05:00")
+    }))
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_backup"></a> [backup](#input\_backup)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    name = optional(string)
+    schedule = optional(map(object({
+      frequency_interval       = optional(number)
+      frequency_unit           = optional(string)
+      keep_at_least_one_backup = optional(bool)
+      retention_period_in_days = optional(number)
+      start_time               = optional(string)
+    })))
+    storage_account_url = optional(string)
+    enabled             = optional(bool, true)
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_builtin_logging_enabled"></a> [builtin\_logging\_enabled](#input\_builtin\_logging\_enabled)
+
+Description: Should builtin logging be enabled for the Function App?
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_client_certificate_enabled"></a> [client\_certificate\_enabled](#input\_client\_certificate\_enabled)
+
+Description: Should client certificate be enabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_client_certificate_exclusion_paths"></a> [client\_certificate\_exclusion\_paths](#input\_client\_certificate\_exclusion\_paths)
+
+Description: The client certificate exclusion paths for the Function App.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_client_certificate_mode"></a> [client\_certificate\_mode](#input\_client\_certificate\_mode)
+
+Description: The client certificate mode for the Function App.
+
+Type: `string`
+
+Default: `"Optional"`
+
+### <a name="input_connection_strings"></a> [connection\_strings](#input\_connection\_strings)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    name  = optional(string)
+    type  = optional(string)
+    value = optional(string)
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_content_share_force_disabled"></a> [content\_share\_force\_disabled](#input\_content\_share\_force\_disabled)
+
+Description: Should content share be force disabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
@@ -94,6 +344,14 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_daily_memory_time_quota"></a> [daily\_memory\_time\_quota](#input\_daily\_memory\_time\_quota)
+
+Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects function apps under the consumption plan. Defaults to 0.
+
+Type: `number`
+
+Default: `0`
 
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
@@ -139,33 +397,58 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_existing_app_service_plan"></a> [existing\_app\_service\_plan](#input\_existing\_app\_service\_plan)
+### <a name="input_enabled"></a> [enabled](#input\_enabled)
 
-Description: values for existing app service plan
+Description: Is the Function App enabled? Defaults to true.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
+
+Description: Should basic authentication be enabled for FTP publish?
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
+
+Description: The version of the Azure Functions runtime to use. Defaults to ~3.
+
+Type: `string`
+
+Default: `"~4"`
+
+### <a name="input_https_only"></a> [https\_only](#input\_https\_only)
+
+Description: Should the Function App only be accessible over HTTPS?
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_identities"></a> [identities](#input\_identities)
+
+Description: n/a
 
 Type:
 
 ```hcl
-object({
-    name                = string
-    resource_group_name = string
-  })
+map(object({
+    type         = optional(string, "SystemAssigned")
+    identity_ids = optional(list(string))
+  }))
 ```
 
-Default: `null`
+Default: `{}`
 
-### <a name="input_existing_storage_account"></a> [existing\_storage\_account](#input\_existing\_storage\_account)
+### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
 
-Description: values for existing storage account
+Description: The identity ID to use for Key Vault references.
 
-Type:
-
-```hcl
-object({
-    name                = string
-    resource_group_name = string
-  })
-```
+Type: `string`
 
 Default: `null`
 
@@ -202,61 +485,6 @@ Type:
 object({
     system_assigned            = optional(bool, false)
     user_assigned_resource_ids = optional(set(string), [])
-  })
-```
-
-Default: `{}`
-
-### <a name="input_new_app_service_plan"></a> [new\_app\_service\_plan](#input\_new\_app\_service\_plan)
-
-Description: n/a
-
-Type:
-
-```hcl
-map(object({
-    create = optional(bool, false)
-
-    name                = optional(string)
-    resource_group_name = optional(string)
-    location            = optional(string)
-    os_type             = optional(string, "Linux")
-    sku_name            = optional(string, "Y1")
-
-    app_service_environment_id   = optional(string)
-    maximum_elastic_worker_count = optional(number)
-    worker_count                 = optional(number)
-    per_site_scaling_enabled     = optional(bool, false)
-    zone_balancing_enabled       = optional(bool, false)
-
-    inherit_tags = optional(bool, false)
-    tags         = optional(map(any))
-
-    inherit_lock = optional(bool, false)
-    lock = optional(object({
-      name = optional(string)
-      kind = optional(string, "None")
-    }))
-  }))
-```
-
-Default: `{}`
-
-### <a name="input_new_storage_account"></a> [new\_storage\_account](#input\_new\_storage\_account)
-
-Description: values for new storage account
-
-Type:
-
-```hcl
-object({
-    create = optional(bool, false)
-
-    name                     = optional(string)
-    resource_group_name      = optional(string)
-    location                 = optional(string)
-    account_tier             = optional(string, "Standard")
-    account_replication_type = optional(string, "LRS")
   })
 ```
 
@@ -313,10 +541,20 @@ map(object({
       name               = string
       private_ip_address = string
     })), {})
+    inherit_lock = optional(bool, true)
+    inherit_tags = optional(bool, true)
   }))
 ```
 
 Default: `{}`
+
+### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
+
+Description: Should the Function App be accessible from the public network?
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
@@ -347,13 +585,103 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
-Description: The resource ID of the app service plan to deploy the Function App in.
+Description: n/a
 
-Type: `string`
+Type:
 
-Default: `null`
+```hcl
+object({
+    always_on                              = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
+    api_definition_url                     = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
+    api_management_api_id                  = optional(string)      # (Optional) The API Management API identifier.
+    app_command_line                       = optional(string)      # (Optional) The command line to launch the application.
+    app_scale_limit                        = optional(number)      # (Optional) The maximum number of workers that the function app can scale out to.
+    application_insights_connection_string = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
+    application_insights_key               = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
+    application_stack = optional(map(object({
+      dotnet_version              = optional(string, "v4.0")
+      use_dotnet_isolated_runtime = optional(bool, false)
+      java_version                = optional(string)
+      node_version                = optional(string)
+      powershell_core_version     = optional(string)
+      use_custom_runtime          = optional(bool, false)
+    })), {})
+    app_service_logs = optional(map(object({
+      disk_quota_mb         = optional(number, 35)
+      retention_period_days = optional(number)
+    })), {})
+    cors = optional(map(object({
+      allowed_origins     = optional(list(string))
+      support_credentials = optional(bool, false)
+    })), {})                                                         #(Optional) A cors block as defined above.
+    default_documents                 = optional(list(string))       #(Optional) Specifies a list of Default Documents for the Windows Function App.
+    elastic_instance_minimum          = optional(number)             #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
+    ftps_state                        = optional(string, "Disabled") #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
+    health_check_path                 = optional(string)             #(Optional) The path to be checked for this Windows Function App health.
+    health_check_eviction_time_in_min = optional(number)             #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
+    http2_enabled                     = optional(bool, false)        #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction = optional(map(object({
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(number)
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      }), {})
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })), {})                                                             #(Optional) One or more ip_restriction blocks as defined above.
+    load_balancing_mode              = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    managed_pipeline_mode            = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
+    minimum_tls_version              = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    pre_warmed_instance_count        = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    remote_debugging_enabled         = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
+    remote_debugging_version         = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
+    runtime_scale_monitoring_enabled = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_ip_restriction = optional(map(object({
+      action = optional(string, "Allow")
+      headers = optional(map(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(number)
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      })), {})
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })), {})                                              #(Optional) One or more scm_ip_restriction blocks as defined above.
+    scm_minimum_tls_version     = optional(string, "1.2") #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    scm_use_main_ip_restriction = optional(bool, false)   #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
+    use_32_bit_worker           = optional(bool, true)    #(Optional) Should the 32-bit worker process be used. Defaults to false.
+    vnet_route_all_enabled      = optional(bool, false)   #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
+    websockets_enabled          = optional(bool, false)   #(Optional) Should Websockets be enabled. Defaults to false.
+    worker_count                = optional(number)        #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
+  })
+```
+
+Default: `{}`
+
+### <a name="input_sticky_settings"></a> [sticky\_settings](#input\_sticky\_settings)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    app_setting_names       = optional(list(string))
+    connection_string_names = optional(list(string))
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
@@ -371,6 +699,41 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_storage_accounts"></a> [storage\_accounts](#input\_storage\_accounts)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    access_key   = optional(string)
+    account_name = optional(string)
+    name         = optional(string)
+    share_name   = optional(string)
+    type         = optional(string, "AzureFiles")
+    mount_path   = optional(string)
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
+
+Description: The ID of the secret in the key vault to use for the storage account access key.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
+
+Description: Should the storage account use a managed identity?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
 Description: The map of tags to be applied to the resource
@@ -378,6 +741,30 @@ Description: The map of tags to be applied to the resource
 Type: `map(any)`
 
 Default: `{}`
+
+### <a name="input_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#input\_virtual\_network\_subnet\_id)
+
+Description: The ID of the subnet to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
+
+Description: Should basic authentication be enabled for web deploy?
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_zip_deploy_file"></a> [zip\_deploy\_file](#input\_zip\_deploy\_file)
+
+Description: value for zip deploy file
+
+Type: `string`
+
+Default: `null`
 
 ## Outputs
 
