@@ -42,50 +42,159 @@ variable "os_type" {
   description = "The operating system type of the app service plan to deploy the Function App in."
 }
 
+variable "builtin_logging_enabled" {
+  type        = bool
+  description = "Should builtin logging be enabled for the Function App?"
+  default     = true
+}
+
+variable "client_certificate_enabled" {
+  type        = bool
+  description = "Should client certificate be enabled for the Function App?"
+  default     = false
+  
+}
+
+variable "client_certificate_mode" {
+  type        = string
+  description = "The client certificate mode for the Function App."
+  default     = "Optional"
+  
+}
+
+variable "client_certificate_exclusion_paths" {
+  type = string
+  description = "The client certificate exclusion paths for the Function App."
+  default = null
+}
+
+variable "content_share_force_disabled" {
+  type        = bool
+  description = "Should content share be force disabled for the Function App?"
+  default     = false
+  
+}
+
+variable "daily_memory_time_quota" {
+  type = number
+  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects function apps under the consumption plan. Defaults to 0."
+  default = 0
+}
+
+variable "enabled" {
+  type = bool
+  description = "Is the Function App enabled? Defaults to true."
+  default = true
+}
+
+variable "ftp_publish_basic_authentication_enabled" {
+  type        = bool
+  description = "Should basic authentication be enabled for FTP publish?"
+  default     = true
+  
+}
+
+variable "functions_extension_version" {
+  type        = string
+  description = "The version of the Azure Functions runtime to use. Defaults to ~3."
+  default     = "~4"
+  
+}
+
+variable "https_only" {
+  type        = bool
+  description = "Should the Function App only be accessible over HTTPS?"
+  default     = false
+  
+}
+
+variable "public_network_access_enabled" {
+  type        = bool
+  description = "Should the Function App be accessible from the public network?"
+  default     = true
+  
+}
+
+variable "key_vault_reference_identity_id" {
+  type        = string
+  description = "The identity ID to use for Key Vault references."
+  default     = null
+  
+}
+
 variable "site_config" {
-  type = map(object({
+  type = object({
     always_on = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
-    api_definition_url = ""
-    api_management_api_id = ""
-    app_command_line = ""
-    app_scale_limit = ""
-    application_insights_connection_string = ""
-    application_insights_key = ""
+    api_definition_url = optional(string) # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
+    api_management_api_id = optional(string) # (Optional) The API Management API identifier.
+    app_command_line = optional(string) # (Optional) The command line to launch the application.
+    app_scale_limit = optional(number) # (Optional) The maximum number of workers that the function app can scale out to.
+    application_insights_connection_string = optional(string) # (Optional) The connection string of the Application Insights resource to send telemetry to.
+    application_insights_key = optional(string) # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
     application_stack = optional(map(object({
-
-    })))
+      dotnet_version = optional(string, "v4.0")
+      use_dotnet_isolated_runtime = optional(bool, false)
+      java_version = optional(string)
+      node_version = optional(string)
+      powershell_core_version = optional(string)
+      use_custom_runtime = optional(bool, false) 
+    })), {})
     app_service_logs = optional(map(object({
-
-    })))
+      disk_quota_mb = optional(number, 35)
+      retention_period_days = optional(number)
+    })), {})
     cors = optional(map(object({
-
-    })))#(Optional) A cors block as defined above.
-    default_documents = "" #(Optional) Specifies a list of Default Documents for the Windows Function App.
-    elastic_instance_minimum = "" #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
-    ftps_state = "" #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
-    health_check_path = "" #(Optional) The path to be checked for this Windows Function App health.
-    health_check_eviction_time_in_min = "" #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
-    http2_enabled = "" #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+      allowed_origins = optional(list(string))
+      support_credentials = optional(bool, false)
+    })), {}) #(Optional) A cors block as defined above.
+    default_documents = optional(list(string)) #(Optional) Specifies a list of Default Documents for the Windows Function App.
+    elastic_instance_minimum = optional(number) #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
+    ftps_state = optional(string, "Disabled") #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
+    health_check_path = optional(string) #(Optional) The path to be checked for this Windows Function App health.
+    health_check_eviction_time_in_min = optional(number) #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
+    http2_enabled = optional(bool, false) #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
     ip_restriction = optional(map(object({
-
-    }))) #(Optional) One or more ip_restriction blocks as defined above.
-    load_balancing_mode = "" #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
-    managed_pipeline_mode = "" #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
-    minimum_tls_version = "" #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
-    pre_warmed_instance_count = "" #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
-    remote_debugging_enabled = "" #(Optional) Should Remote Debugging be enabled. Defaults to false.
-    remote_debugging_version = "" #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
-    runtime_scale_monitoring_enabled = ""
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid = optional(list(string))
+        x_fd_health_probe = optional(number)
+        x_forwarded_for = optional(list(string))
+        x_forwarded_host = optional(list(string))
+      }), {})
+      ip_address = optional(string)
+      name = optional(string)
+      priority = optional(number, 65000)
+      service_tag = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })), {}) #(Optional) One or more ip_restriction blocks as defined above.
+    load_balancing_mode = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    managed_pipeline_mode = optional(string, "Integrated") #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
+    minimum_tls_version = optional(string, "1.2") #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    pre_warmed_instance_count = optional(number) #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    remote_debugging_enabled = optional(bool, false) #(Optional) Should Remote Debugging be enabled. Defaults to false.
+    remote_debugging_version = optional(string) #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
+    runtime_scale_monitoring_enabled = optional(bool) #(Optional) Should runtime scale monitoring be enabled.
     scm_ip_restriction = optional(map(object({
-
-    }))) #(Optional) One or more scm_ip_restriction blocks as defined above.
+      action = optional(string, "Allow")
+      headers = optional(map(object({
+        x_azure_fdid = optional(list(string))
+        x_fd_health_probe = optional(number)
+        x_forwarded_for = optional(list(string))
+        x_forwarded_host = optional(list(string))
+      })), {})
+      ip_address = optional(string)
+      name = optional(string)
+      priority = optional(number, 65000)
+      service_tag = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })), {}) #(Optional) One or more scm_ip_restriction blocks as defined above.
     scm_minimum_tls_version = optional(string, "1.2") #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     scm_use_main_ip_restriction = optional(bool, false) #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
     use_32_bit_worker = optional(bool, true) #(Optional) Should the 32-bit worker process be used. Defaults to false.
     vnet_route_all_enabled = optional(bool, false) #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
     websockets_enabled = optional(bool, false) #(Optional) Should Websockets be enabled. Defaults to false.
     worker_count = optional(number) #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
-  }))
+  })
   default = {
 
   }
@@ -102,7 +211,7 @@ variable "storage_accounts" {
   }))
   default = {
 
-  }  
+  } 
 }
 
 variable "sticky_settings" {
@@ -138,6 +247,9 @@ variable "backup" {
     storage_account_url = optional(string)
     enabled = optional(bool, true)
   }))
+  default = {
+
+  }
 }
 
 variable "connection_strings" {
@@ -146,6 +258,9 @@ variable "connection_strings" {
     type = optional(string)
     value = optional(string)
   }))
+  default = {
+
+  }
 }
 
 variable "app_settings" {
@@ -220,6 +335,9 @@ variable "auth_settings" {
     })))
     unauthenticated_client_action = optional(string)
   }))
+  default = {
+
+  }
 }
 
 variable "auth_settings_v2" {
@@ -284,11 +402,22 @@ variable "auth_settings_v2" {
       login_scopes = optional(list(string))
     })))
     login = map(object({
-
+      logout_endpoint = optional(string)
+      token_store_enabled = optional(bool, false)
+      token_refresh_extension_time = optional(number, 72)
+      token_store_path = optional(string)
+      token_store_sas_setting_name = optional(string)
+      preserve_url_fragments_for_logins = optional(bool, false)
+      allowed_external_redirect_urls = optional(list(string))
+      cookie_expiration_convention = optional(string, "FixedTime")
+      cookie_expiration_time = optional(string, "00:00:00")
+      validate_nonce = optional(bool, true)
+      nonce_expiration_time = optional(string, "00:05:00")
     }))
   }))
+  default = {
 
-
+  }
 }
 
 

@@ -81,4 +81,30 @@ module "test" {
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
 
+  # site_config = {
+  #   always_on = true
+  #   application_stack = {
+  #     as = {
+  #       dotnet_version = "v4.0"
+  #       use_dotnet_isolated_runtime = true
+  #     }
+  #   }
+  #   app_service_logs = {
+  #     asl = {
+  #       disk_quota_mb = 25
+  #       retention_period_days = 7
+  #     }
+  #   }
+  #   cors = {
+  #     c = {
+  #       allowed_origins = ["*"]
+  #       # support_credentials = false
+  #     }
+  #   }
+  # }
+
+  # sticky_settings = {
+    
+  # }
+
 }
