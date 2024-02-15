@@ -202,12 +202,12 @@ module "test" {
 
   # }
 
-  # role_assignments = {
-  #   role_assignment_1 = {
-  #     role_definition_id_or_name = data.azurerm_role_definition.example.id
-  #     principal_id               = data.azurerm_client_config.this.object_id
-  #   }
-  # }
+  role_assignments = {
+    role_assignment_1 = {
+      role_definition_id_or_name = data.azurerm_role_definition.example.id
+      principal_id               = data.azurerm_client_config.this.object_id
+    }
+  }
 
   tags = {
     environment = "dev-tf"
