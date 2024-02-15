@@ -600,6 +600,11 @@ variable "sticky_settings" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of sticky settings to assign to the static site.
+  - `app_setting_names` - (Optional) A list of app setting names to make sticky.
+  - `connection_string_names` - (Optional) A list of connection string names to make sticky.
+  DESCRIPTION
 }
 
 variable "storage_account_access_key" {
