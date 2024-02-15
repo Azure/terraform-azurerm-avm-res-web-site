@@ -374,8 +374,8 @@ variable "https_only" {
 
 variable "identities" {
   type = map(object({
-    identity_type         = optional(string, "SystemAssigned")
-    identity_ids = optional(list(string))
+    identity_type = optional(string, "SystemAssigned")
+    identity_ids  = optional(list(string))
   }))
   default = {
 

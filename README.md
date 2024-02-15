@@ -42,6 +42,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
+- [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
@@ -109,7 +110,26 @@ Default: `{}`
 
 ### <a name="input_auth_settings"></a> [auth\_settings](#input\_auth\_settings)
 
-Description: n/a
+Description:   A map of authentication settings to assign to the static site.
+  - `enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
+  - `active_directory` - (Optional) A map of active directory settings.
+  - `additional_login_parameters` - (Optional) A list of additional login parameters.
+  - `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
+  - `default_provider` - (Optional) The default provider for the static site.
+  - `facebook` - (Optional) A map of Facebook settings.
+  - `github` - (Optional) A map of GitHub settings.
+  - `google` - (Optional) A map of Google settings.
+  - `issuer` - (Optional) The issuer for the static site.
+  - `microsoft` - (Optional) A map of Microsoft settings.
+  - `runtime_version` - (Optional) The runtime version for the static site.
+  - `token_refresh_extension_hours` - (Optional) The token refresh extension hours for the static site. Defaults to `72`.
+  - `token_store_enabled` - (Optional) Is the token store enabled for the static site? Defaults to `false`.
+  - `twitter` - (Optional) A map of Twitter settings.
+  - `unauthenticated_client_action` - (Optional) The unauthenticated client action for the static site.
+
+  ```terraform
+
+```
 
 Type:
 
@@ -166,7 +186,8 @@ Default: `{}`
 
 ### <a name="input_auth_settings_v2"></a> [auth\_settings\_v2](#input\_auth\_settings\_v2)
 
-Description: n/a
+Description:   A map of authentication settings (V2) to assign to the static site.
+  - `auth_enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
 
 Type:
 
@@ -251,7 +272,7 @@ Default: `{}`
 
 ### <a name="input_backup"></a> [backup](#input\_backup)
 
-Description: n/a
+Description:   A map of backup settings to assign to the static site.
 
 Type:
 
@@ -306,7 +327,10 @@ Default: `"Optional"`
 
 ### <a name="input_connection_strings"></a> [connection\_strings](#input\_connection\_strings)
 
-Description: n/a
+Description:   A map of connection strings to assign to the static site.
+  - `name` - (Optional) The name of the connection string.
+  - `type` - (Optional) The type of the connection string.
+  - `value` - (Optional) The value of the connection string.
 
 Type:
 
@@ -431,14 +455,15 @@ Default: `false`
 
 ### <a name="input_identities"></a> [identities](#input\_identities)
 
-Description: n/a
+Description:   A map of identities to assign to the resource.   
+  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
 Type:
 
 ```hcl
 map(object({
-    type         = optional(string, "SystemAssigned")
-    identity_ids = optional(list(string))
+    identity_type = optional(string, "SystemAssigned")
+    identity_ids  = optional(list(string))
   }))
 ```
 
@@ -550,7 +575,7 @@ Default: `{}`
 
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
-Description: Should the Function App be accessible from the public network?
+Description: Should the Function App be accessible from the public network? Defaults to `true`.
 
 Type: `bool`
 
@@ -587,7 +612,8 @@ Default: `{}`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
-Description: n/a
+Description:   An object that configures the Function App's `site_config` block.
+  -`always_on` - (Optional) Is the Function App always on? Defaults to `false`.
 
 Type:
 
@@ -701,7 +727,17 @@ Default: `null`
 
 ### <a name="input_storage_accounts"></a> [storage\_accounts](#input\_storage\_accounts)
 
-Description: n/a
+Description:   A map of objects that represent storage accounts to mount to the Function App.  
+  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `access_key` - (Optional) The access key of the storage account.
+  - `account_name` - (Optional) The name of the storage account.
+  - `name` - (Optional) The name of the storage account to mount.
+  - `share_name` - (Optional) The name of the share to mount.
+  - `type` - (Optional) The type of storage account. Defaults to `AzureFiles`.
+  - `mount_path` - (Optional) The path to mount the storage account to.
+  ```terraform
+
+```
 
 Type:
 
@@ -760,7 +796,7 @@ Default: `true`
 
 ### <a name="input_zip_deploy_file"></a> [zip\_deploy\_file](#input\_zip\_deploy\_file)
 
-Description: value for zip deploy file
+Description: The path to the zip file to deploy to the Function App.
 
 Type: `string`
 
@@ -770,13 +806,25 @@ Default: `null`
 
 The following outputs are exported:
 
-### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
+### <a name="output_name"></a> [name](#output\_name)
 
-Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azurerm\_private\_endpoint resource.
+Description: The name of the resource.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
+
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
+
+Description: This is the full output for the resource.
+
+### <a name="output_resource_private_endpoints"></a> [resource\_private\_endpoints](#output\_resource\_private\_endpoints)
+
+Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azurerm\_private\_endpoint resource.
+
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+
+Description: The default hostname of the resource.
 
 ## Modules
 

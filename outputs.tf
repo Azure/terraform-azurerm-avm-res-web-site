@@ -1,12 +1,6 @@
 output "name" {
   description = "The name of the resource."
   value       = azurerm_windows_function_app.this[0].name
-  
-}
-
-output "resource_private_endpoints" {
-  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azurerm_private_endpoint resource."
-  value       = azurerm_private_endpoint.this
 }
 
 # Module owners should include the full resource via a 'resource' output
@@ -21,6 +15,11 @@ output "resource_id" {
   description = "This is the full output for the resource."
   sensitive   = true
   value       = azurerm_windows_function_app.this[0].id
+}
+
+output "resource_private_endpoints" {
+  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azurerm_private_endpoint resource."
+  value       = azurerm_private_endpoint.this
 }
 
 output "resource_uri" {

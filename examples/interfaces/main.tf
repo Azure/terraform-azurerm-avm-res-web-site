@@ -134,12 +134,12 @@
 #     }
 #     */
 
-    
+
 #     user = {
 #       identity_type = "UserAssigned"
 #       identity_ids = [ azurerm_user_assigned_identity.user.id ]
 #     }
-    
+
 
 #     /*
 #     system_and_user = {
