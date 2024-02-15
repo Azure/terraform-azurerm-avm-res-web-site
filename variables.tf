@@ -94,6 +94,28 @@ variable "auth_settings" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of authentication settings to assign to the static site. 
+  - `enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
+  - `active_directory` - (Optional) A map of active directory settings.
+  - `additional_login_parameters` - (Optional) A list of additional login parameters.
+  - `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
+  - `default_provider` - (Optional) The default provider for the static site.
+  - `facebook` - (Optional) A map of Facebook settings.
+  - `github` - (Optional) A map of GitHub settings.
+  - `google` - (Optional) A map of Google settings. 
+  - `issuer` - (Optional) The issuer for the static site.
+  - `microsoft` - (Optional) A map of Microsoft settings.
+  - `runtime_version` - (Optional) The runtime version for the static site.
+  - `token_refresh_extension_hours` - (Optional) The token refresh extension hours for the static site. Defaults to `72`.
+  - `token_store_enabled` - (Optional) Is the token store enabled for the static site? Defaults to `false`.
+  - `twitter` - (Optional) A map of Twitter settings. 
+  - `unauthenticated_client_action` - (Optional) The unauthenticated client action for the static site.
+  
+  ```terraform
+
+  ```
+  DESCRIPTION
 }
 
 variable "auth_settings_v2" {
@@ -174,6 +196,11 @@ variable "auth_settings_v2" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of authentication settings (V2) to assign to the static site.
+  - `auth_enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
+
+  DESCRIPTION
 }
 
 variable "backup" {
@@ -192,6 +219,10 @@ variable "backup" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of backup settings to assign to the static site.
+
+  DESCRIPTION
 }
 
 variable "builtin_logging_enabled" {
@@ -227,6 +258,13 @@ variable "connection_strings" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of connection strings to assign to the static site.
+  - `name` - (Optional) The name of the connection string.
+  - `type` - (Optional) The type of the connection string.
+  - `value` - (Optional) The value of the connection string.
+
+  DESCRIPTION
 }
 
 variable "content_share_force_disabled" {
@@ -336,12 +374,17 @@ variable "https_only" {
 
 variable "identities" {
   type = map(object({
-    type         = optional(string, "SystemAssigned")
+    identity_type         = optional(string, "SystemAssigned")
     identity_ids = optional(list(string))
   }))
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of identities to assign to the resource. 
+  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+
+  DESCRIPTION
 }
 
 variable "key_vault_reference_identity_id" {
@@ -438,7 +481,7 @@ DESCRIPTION
 variable "public_network_access_enabled" {
   type        = bool
   default     = true
-  description = "Should the Function App be accessible from the public network?"
+  description = "Should the Function App be accessible from the public network? Defaults to `true`."
 }
 
 variable "role_assignments" {
@@ -542,6 +585,11 @@ variable "site_config" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  An object that configures the Function App's `site_config` block.
+  -`always_on` - (Optional) Is the Function App always on? Defaults to `false`.
+
+  DESCRIPTION
 }
 
 variable "sticky_settings" {
@@ -578,6 +626,19 @@ variable "storage_accounts" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  A map of objects that represent storage accounts to mount to the Function App.
+  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `access_key` - (Optional) The access key of the storage account.
+  - `account_name` - (Optional) The name of the storage account.
+  - `name` - (Optional) The name of the storage account to mount.
+  - `share_name` - (Optional) The name of the share to mount.
+  - `type` - (Optional) The type of storage account. Defaults to `AzureFiles`.
+  - `mount_path` - (Optional) The path to mount the storage account to.
+  ```terraform
+
+  ```
+  DESCRIPTION
 }
 
 variable "storage_key_vault_secret_id" {
@@ -614,5 +675,5 @@ variable "webdeploy_publish_basic_authentication_enabled" {
 variable "zip_deploy_file" {
   type        = string
   default     = null
-  description = "value for zip deploy file"
+  description = "The path to the zip file to deploy to the Function App."
 }

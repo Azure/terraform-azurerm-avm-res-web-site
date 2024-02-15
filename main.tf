@@ -372,7 +372,7 @@ resource "azurerm_windows_function_app" "this" {
     for_each = var.identities
 
     content {
-      type         = identity.value.type
+      type         = identity.value.identity_type
       identity_ids = identity.value.identity_ids
     }
 
@@ -800,13 +800,4 @@ resource "azurerm_linux_function_app" "this" {
       mount_path   = storage_account.value.mount_path
     }
   }
-}
-
-# required AVM resources interfaces
-resource "azurerm_management_lock" "this" {
-  count = var.lock.kind != "None" ? 1 : 0
-
-  lock_level = var.lock.kind
-  name       = coalesce(var.lock.name, "lock-${var.name}")
-  scope      = var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id
 }

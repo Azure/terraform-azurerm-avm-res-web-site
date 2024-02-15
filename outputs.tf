@@ -1,4 +1,10 @@
-output "private_endpoints" {
+output "name" {
+  description = "The name of the resource."
+  value       = azurerm_windows_function_app.this[0].name
+  
+}
+
+output "resource_private_endpoints" {
   description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azurerm_private_endpoint resource."
   value       = azurerm_private_endpoint.this
 }
@@ -8,5 +14,16 @@ output "private_endpoints" {
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = azurerm_windows_function_app.this
+  value       = azurerm_windows_function_app.this[0]
+}
+
+output "resource_id" {
+  description = "This is the full output for the resource."
+  sensitive   = true
+  value       = azurerm_windows_function_app.this[0].id
+}
+
+output "resource_uri" {
+  description = "The default hostname of the resource."
+  value       = azurerm_windows_function_app.this[0].default_hostname
 }
