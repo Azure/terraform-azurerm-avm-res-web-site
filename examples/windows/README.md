@@ -32,14 +32,14 @@ module "regions" {
 
 # This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
-  max = length(module.regions.regions) - 1
+  max = length(local.azure_regions) - 1
   min = 0
 }
 ## End of section to provide a random Azure region for the resource group
 
-locals {
-  test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
-}
+# locals {
+#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
+# }
 
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
@@ -49,7 +49,7 @@ module "naming" {
 
 # This is required for resource modules
 resource "azurerm_resource_group" "example" {
-  location = local.test_regions[random_integer.region_index.result]
+  location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
