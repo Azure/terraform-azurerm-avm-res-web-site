@@ -19,7 +19,6 @@ variable "service_plan_resource_id" {
   description = "The resource ID of the app service plan to deploy the Function App in."
 }
 
-
 # Optional Inputs
 variable "app_settings" {
   type = map(string)
