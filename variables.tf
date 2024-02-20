@@ -1,3 +1,4 @@
+# Required Inputs
 variable "name" {
   type        = string
   description = "The name of the this resource."
@@ -8,7 +9,6 @@ variable "os_type" {
   description = "The operating system type of the app service plan to deploy the Function App in."
 }
 
-# This is required for most resource modules
 variable "resource_group_name" {
   type        = string
   description = "The resource group where the resources will be deployed."
@@ -19,6 +19,8 @@ variable "service_plan_resource_id" {
   description = "The resource ID of the app service plan to deploy the Function App in."
 }
 
+
+# Optional Inputs
 variable "app_settings" {
   type = map(string)
   default = {
