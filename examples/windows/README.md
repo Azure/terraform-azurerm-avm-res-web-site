@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the module with a Windows Function App in its simplest form.
 
 ```hcl
 terraform {
@@ -70,6 +70,15 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "Y1"
 }
 
+# resource "azurerm_windows_function_app_slot" "example" {
+#   name = "example-slot"
+#   function_app_id = module.test.resource.id
+#   storage_account_name       = azurerm_storage_account.example.name
+#   storage_account_access_key = azurerm_storage_account.example.primary_access_key 
+
+#   site_config {}
+# }
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -81,7 +90,7 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
@@ -143,11 +152,7 @@ Default: `true`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: This is the full output for the resource.
+No outputs.
 
 ## Modules
 
