@@ -31,6 +31,7 @@ The following resources are used by this module:
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
+- [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
@@ -116,7 +117,7 @@ Description:   A map of authentication settings to assign to the Function App.
 
   ```terraform
   auth_settings = {
-    as_example = {
+    example = {
       enabled = true
       active_directory = {
         client_id                  = "00000000-0000-0000-0000-000000000000"
@@ -185,10 +186,31 @@ Default: `{}`
 
 Description:   A map of authentication settings (V2) to assign to the Function App.
   - `auth_enabled` - (Optional) Is authentication enabled for the Function App? Defaults to `false`.
+  - `runtime_version` - (Optional) The runtime version for the Function App. Defaults to `~1`.
+  - `config_file_path` - (Optional) The path to the config file for the Function App.
+  - `require_authentication` - (Optional) Does the Function App require authentication? Defaults to `false`.
+  - `unauthenticated_action` - (Optional) The unauthenticated action for the Function App. Defaults to `RedirectToLoginPage`.
+  - `default_provider` - (Optional) The default provider for the Function App.
+  - `excluded_paths` - (Optional) A list of excluded paths for the Function App.
+  - `require_https` - (Optional) Does the Function App require HTTPS? Defaults to `true`.
+  - `http_route_api_prefix` - (Optional) The HTTP route API prefix for the Function App. Defaults to `/.auth`.
+  - `forward_proxy_convention` - (Optional) The forward proxy convention for the Function App. Defaults to `NoProxy`.
+  - `forward_proxy_custom_host_header_name` - (Optional) The forward proxy custom host header name for the Function App.
+  - `forward_proxy_custom_scheme_header_name` - (Optional) The forward proxy custom scheme header name for the Function App.
+  - `apple_v2` - (Optional) A map of Apple settings.
+  - `active_directory_v2` - (Optional) A map of Active Directory settings.
+  - `azure_static_web_app_v2` - (Optional) A map of Azure Static Web App settings.
+  - `custom_oidc_v2` - (Optional) A map of custom OIDC settings.
+  - `facebook_v2` - (Optional) A map of Facebook settings.
+  - `github_v2` - (Optional) A map of GitHub settings.
+  - `google_v2` - (Optional) A map of Google settings.
+  - `microsoft_v2` - (Optional) A map of Microsoft settings.
+  - `twitter_v2` - (Optional) A map of Twitter settings.
+  - `login` - (Optional) A map of login settings.
 
   ```terraform
   auth_settings_v2 = {
-    asv2_example = {
+    example = {
       auth_enabled = true
       active_directory_v2 = {
         client_id                  = "00000000-0000-0000-0000-000000000000"
