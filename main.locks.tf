@@ -1,10 +1,17 @@
-# required AVM resources interfaces
 resource "azurerm_management_lock" "this" {
   count = var.lock.kind != "None" ? 1 : 0
 
   lock_level = var.lock.kind
   name       = coalesce(var.lock.name, "lock-${var.name}")
   scope      = var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id
+
+  depends_on = [
+    azurerm_linux_function_app.this,
+    azurerm_windows_function_app.this,
+    azurerm_private_endpoint.this,
+    azurerm_role_assignment.this,
+    azurerm_monitor_diagnostic_setting.this
+  ]
 }
 
 resource "azurerm_management_lock" "pe" {
@@ -18,6 +25,7 @@ resource "azurerm_management_lock" "pe" {
     azurerm_linux_function_app.this,
     azurerm_windows_function_app.this,
     azurerm_private_endpoint.this,
-    azurerm_role_assignment.this
+    azurerm_role_assignment.this,
+    azurerm_monitor_diagnostic_setting.this
   ]
 }

@@ -1,31 +1,32 @@
+# Required Inputs
 variable "name" {
   type        = string
-  description = "The name of the this resource."
+  description = "The name which should be used for the Function App."
 }
 
 variable "os_type" {
   type        = string
-  description = "The operating system type of the app service plan to deploy the Function App in."
+  description = "The operating system that should be the same type of the App Service Plan to deploy the Function App in."
 }
 
-# This is required for most resource modules
 variable "resource_group_name" {
   type        = string
-  description = "The resource group where the resources will be deployed."
+  description = "The name of the Resource Group where the Function App will be deployed."
 }
 
 variable "service_plan_resource_id" {
   type        = string
-  description = "The resource ID of the app service plan to deploy the Function App in."
+  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
+# Optional Inputs
 variable "app_settings" {
   type = map(string)
   default = {
 
   }
   description = <<DESCRIPTION
-  A map of app settings to assign to the static site. 
+  A map of key-value pairs for App Settings and custom values to assign to the Function App. 
   
   ```terraform
   app_settings = {
@@ -95,25 +96,35 @@ variable "auth_settings" {
 
   }
   description = <<DESCRIPTION
-  A map of authentication settings to assign to the static site. 
-  - `enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
+  A map of authentication settings to assign to the Function App. 
+  - `enabled` - (Optional) Is authentication enabled for the Function App? Defaults to `false`.
   - `active_directory` - (Optional) A map of active directory settings.
   - `additional_login_parameters` - (Optional) A list of additional login parameters.
   - `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
-  - `default_provider` - (Optional) The default provider for the static site.
+  - `default_provider` - (Optional) The default provider for the Function App.
   - `facebook` - (Optional) A map of Facebook settings.
   - `github` - (Optional) A map of GitHub settings.
   - `google` - (Optional) A map of Google settings. 
-  - `issuer` - (Optional) The issuer for the static site.
+  - `issuer` - (Optional) The issuer for the Function App.
   - `microsoft` - (Optional) A map of Microsoft settings.
-  - `runtime_version` - (Optional) The runtime version for the static site.
-  - `token_refresh_extension_hours` - (Optional) The token refresh extension hours for the static site. Defaults to `72`.
-  - `token_store_enabled` - (Optional) Is the token store enabled for the static site? Defaults to `false`.
+  - `runtime_version` - (Optional) The runtime version for the Function App.
+  - `token_refresh_extension_hours` - (Optional) The token refresh extension hours for the Function App. Defaults to `72`.
+  - `token_store_enabled` - (Optional) Is the token store enabled for the Function App? Defaults to `false`.
   - `twitter` - (Optional) A map of Twitter settings. 
-  - `unauthenticated_client_action` - (Optional) The unauthenticated client action for the static site.
+  - `unauthenticated_client_action` - (Optional) The unauthenticated client action for the Function App.
   
   ```terraform
-
+  auth_settings = {
+    example = {
+      enabled = true
+      active_directory = {
+        client_id                  = "00000000-0000-0000-0000-000000000000"
+        allowed_audiences          = ["00000000-0000-0000-0000-000000000000"]
+        client_secret              = "00000000-0000-0000-0000-000000000000"
+        client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
   ```
   DESCRIPTION
 }
@@ -138,9 +149,18 @@ variable "auth_settings_v2" {
       login_scopes               = optional(list(string))
     })))
     active_directory_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
+      client_id                            = optional(string)
+      client_secret_setting_name           = optional(string)
+      client_secret_certificate_thumbprint = optional(string)
+      tenant_auth_endpoint                 = optional(string)
+      allowed_applications                 = optional(list(string))
+      allowed_identities                   = optional(list(string))
+      allowed_groups                       = optional(list(string))
+      allowed_audiences                    = optional(list(string))
+      jwt_allowed_client_applications      = optional(list(string))
+      jwt_allowed_groups                   = optional(list(string))
+      login_parameters                     = optional(map(any))
+      www_authentication_disabled          = optional(bool, false)
     })))
     azure_static_web_app_v2 = optional(map(object({
       client_id = optional(string)
@@ -152,12 +172,18 @@ variable "auth_settings_v2" {
       scopes                        = optional(list(string))
       client_credential_method      = optional(string)
       client_secret_setting_name    = optional(string)
+      authorization_endpoint        = optional(string)
+      token_endpoint                = optional(string)
+      issuer_endpoint               = optional(string)
+      certification_uri             = optional(string)
+      name_claim_type               = optional(string)
 
     })))
     facebook_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
+      app_id                  = optional(string)
+      app_secret_setting_name = optional(string)
+      graph_api_version       = optional(string)
+      login_scopes            = optional(list(string))
     })))
     github_v2 = optional(map(object({
       client_id                  = optional(string)
@@ -167,17 +193,18 @@ variable "auth_settings_v2" {
     google_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
+      allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
     })))
     microsoft_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
+      allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
     })))
     twitter_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
+      consumer_key                 = optional(string)
+      consumer_secret_setting_name = optional(string)
     })))
     login = map(object({
       logout_endpoint                   = optional(string)
@@ -197,9 +224,42 @@ variable "auth_settings_v2" {
 
   }
   description = <<DESCRIPTION
-  A map of authentication settings (V2) to assign to the static site.
-  - `auth_enabled` - (Optional) Is authentication enabled for the static site? Defaults to `false`.
+  A map of authentication settings (V2) to assign to the Function App.
+  - `auth_enabled` - (Optional) Is authentication enabled for the Function App? Defaults to `false`.
+  - `runtime_version` - (Optional) The runtime version for the Function App. Defaults to `~1`.
+  - `config_file_path` - (Optional) The path to the config file for the Function App.
+  - `require_authentication` - (Optional) Does the Function App require authentication? Defaults to `false`.
+  - `unauthenticated_action` - (Optional) The unauthenticated action for the Function App. Defaults to `RedirectToLoginPage`.
+  - `default_provider` - (Optional) The default provider for the Function App.
+  - `excluded_paths` - (Optional) A list of excluded paths for the Function App.
+  - `require_https` - (Optional) Does the Function App require HTTPS? Defaults to `true`.
+  - `http_route_api_prefix` - (Optional) The HTTP route API prefix for the Function App. Defaults to `/.auth`.
+  - `forward_proxy_convention` - (Optional) The forward proxy convention for the Function App. Defaults to `NoProxy`.
+  - `forward_proxy_custom_host_header_name` - (Optional) The forward proxy custom host header name for the Function App.
+  - `forward_proxy_custom_scheme_header_name` - (Optional) The forward proxy custom scheme header name for the Function App.
+  - `apple_v2` - (Optional) A map of Apple settings.
+  - `active_directory_v2` - (Optional) A map of Active Directory settings.
+  - `azure_static_web_app_v2` - (Optional) A map of Azure Static Web App settings.
+  - `custom_oidc_v2` - (Optional) A map of custom OIDC settings.
+  - `facebook_v2` - (Optional) A map of Facebook settings.
+  - `github_v2` - (Optional) A map of GitHub settings.
+  - `google_v2` - (Optional) A map of Google settings.
+  - `microsoft_v2` - (Optional) A map of Microsoft settings.
+  - `twitter_v2` - (Optional) A map of Twitter settings.
+  - `login` - (Optional) A map of login settings.
 
+  ```terraform
+  auth_settings_v2 = {
+    example = {
+      auth_enabled = true
+      active_directory_v2 = {
+        client_id                  = "00000000-0000-0000-0000-000000000000"
+        client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
+        login_scopes               = ["00000000-0000-0000-0000-000000000000"]
+      }
+    }
+  }
+  ```
   DESCRIPTION
 }
 
@@ -220,8 +280,33 @@ variable "backup" {
 
   }
   description = <<DESCRIPTION
-  A map of backup settings to assign to the static site.
+  A map of backup settings to assign to the Function App.
+  - `name` - (Optional) The name of the backup. One will be generated if not set.
+  - `schedule` - (Optional) A map of backup schedule settings.
+    - `frequency_interval` - (Optional) The frequency interval of the backup.
+    - `frequency_unit` - (Optional) The frequency unit of the backup.
+    - `keep_at_least_one_backup` - (Optional) Should at least one backup be kept?.
+    - `retention_period_in_days` - (Optional) The retention period in days of the backup.
+    - `start_time` - (Optional) The start time of the backup.
+  - `storage_account_url` - (Optional) The URL of the Storage Account to store the backup in.
+  - `enabled` - (Optional) Is the backup enabled? Defaults to `true`.
 
+  ```terraform
+  backup = {
+    example = {
+      name               = "example"
+      schedule = {
+        frequency_interval       = 1
+        frequency_unit           = "Day"
+        keep_at_least_one_backup = true
+        retention_period_in_days = 7
+        start_time               = "2020-01-01T00:00:00Z"
+      }
+      storage_account_url = "https://example.blob.core.windows.net/example"
+      enabled             = true
+    }
+  }
+  ```
   DESCRIPTION
 }
 
@@ -259,11 +344,19 @@ variable "connection_strings" {
 
   }
   description = <<DESCRIPTION
-  A map of connection strings to assign to the static site.
+  A map of connection strings to assign to the Function App.
   - `name` - (Optional) The name of the connection string.
   - `type` - (Optional) The type of the connection string.
   - `value` - (Optional) The value of the connection string.
-
+  ```terraform
+  connection_strings = {
+    example = {
+      name  = "example"
+      type  = "example"
+      value = "example"
+    }
+  }
+  ```
   DESCRIPTION
 }
 
@@ -284,13 +377,27 @@ variable "customer_managed_key" {
     user_assigned_identity_resource_id = optional(string, null)
   })
   default     = {}
-  description = "Customer managed keys that should be associated with the resource."
+  description = <<DESCRIPTION
+  The Customer Managed Keys that should be associated with the Function App.
+  - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
+  - `key_name` - (Optional) The name of the key in the Key Vault.
+  - `key_version` - (Optional) The version of the key in the Key Vault.
+  - `user_assigned_identity_resource_id` - (Optional) The resource ID of the User Assigned Identity to use for the Customer Managed Key.
+  ```terraform
+  customer_managed_key = {
+    key_vault_resource_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.KeyVault/vaults/example"
+    key_name                           = "example"
+    key_version                        = "00000000-0000-0000-0000-000000000000"
+    user_assigned_identity_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
+  }
+  ```
+  DESCRIPTION
 }
 
 variable "daily_memory_time_quota" {
   type        = number
   default     = 0
-  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects function apps under the consumption plan. Defaults to 0."
+  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to 0."
 }
 
 variable "diagnostic_settings" {
@@ -308,19 +415,19 @@ variable "diagnostic_settings" {
   }))
   default     = {}
   description = <<DESCRIPTION
-A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
-- `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
-- `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
-- `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
-- `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
-- `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
-- `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
-- `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
-- `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
-- `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
-- `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
-DESCRIPTION
+  - `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
+  - `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
+  - `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
+  - `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
+  - `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
+  - `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
+  - `storage_account_resource_id` - (Optional) The resource ID of the Storage Account to send logs and metrics to.
+  - `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
+  - `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
+  - `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
+  DESCRIPTION
   nullable    = false
 
   validation {
@@ -342,10 +449,10 @@ variable "enable_telemetry" {
   type        = bool
   default     = true
   description = <<DESCRIPTION
-This variable controls whether or not telemetry is enabled for the module.
-For more information see <https://aka.ms/avm/telemetryinfo>.
-If it is set to false, then no telemetry will be collected.
-DESCRIPTION
+  This variable controls whether or not telemetry is enabled for the module.
+  For more information see <https://aka.ms/avm/telemetryinfo>.
+  If it is set to false, then no telemetry will be collected.
+  DESCRIPTION
 }
 
 variable "enabled" {
@@ -475,6 +582,8 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - The name of the IP configuration.
   - `private_ip_address` - The private IP address of the IP configuration.
+- `inherit_lock` - (Optional) Should the private endpoint inherit the lock from the parent resource? Defaults to `true`.
+- `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 DESCRIPTION
 }
 
@@ -515,7 +624,7 @@ variable "site_config" {
     api_definition_url                     = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
     api_management_api_id                  = optional(string)      # (Optional) The API Management API identifier.
     app_command_line                       = optional(string)      # (Optional) The command line to launch the application.
-    app_scale_limit                        = optional(number)      # (Optional) The maximum number of workers that the function app can scale out to.
+    app_scale_limit                        = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
     application_insights_connection_string = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
     application_insights_key               = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
     application_stack = optional(map(object({
@@ -588,6 +697,10 @@ variable "site_config" {
   description = <<DESCRIPTION
   An object that configures the Function App's `site_config` block.
   -`always_on` - (Optional) Is the Function App always on? Defaults to `false`.
+  -`api_definition_url` - (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
+  -`api_management_api_id` - (Optional) The API Management API identifier.
+  -`app_command_line` - (Optional) The command line to launch the application.
+  -`app_scale_limit` - (Optional) The maximum number of workers that the Function App can scale out to.
 
   DESCRIPTION
 }
@@ -601,22 +714,30 @@ variable "sticky_settings" {
 
   }
   description = <<DESCRIPTION
-  A map of sticky settings to assign to the static site.
+  A map of sticky settings to assign to the Function App.
   - `app_setting_names` - (Optional) A list of app setting names to make sticky.
   - `connection_string_names` - (Optional) A list of connection string names to make sticky.
+
+  ```terraform
+  sticky_settings = {
+    sticky1 = {
+      app_setting_names       = ["example1", "example2"]
+      connection_string_names = ["example1", "example2"]
+    }
+  }
   DESCRIPTION
 }
 
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = "The access key of the storage account to deploy the Function App in."
+  description = "The access key of the Storage Account to deploy the Function App in."
 }
 
 variable "storage_account_name" {
   type        = string
   default     = null
-  description = "The name of the storage account to deploy the Function App in."
+  description = "The name of the Storage Account to deploy the Function App in."
 }
 
 variable "storage_accounts" {
@@ -632,16 +753,26 @@ variable "storage_accounts" {
 
   }
   description = <<DESCRIPTION
-  A map of objects that represent storage accounts to mount to the Function App.
+  A map of objects that represent Storage Accounts to mount to the Function App.
   The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `access_key` - (Optional) The access key of the storage account.
-  - `account_name` - (Optional) The name of the storage account.
-  - `name` - (Optional) The name of the storage account to mount.
+  - `access_key` - (Optional) The access key of the Storage Account.
+  - `account_name` - (Optional) The name of the Storage Account.
+  - `name` - (Optional) The name of the Storage Account to mount.
   - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of storage account. Defaults to `AzureFiles`.
-  - `mount_path` - (Optional) The path to mount the storage account to.
-  ```terraform
+  - `type` - (Optional) The type of Storage Account. Defaults to `AzureFiles`.
+  - `mount_path` - (Optional) The path to mount the Storage Account to.
 
+  ```terraform
+  storage_accounts = {
+    storacc1 = {
+      access_key   = "00000000-0000-0000-0000-000000000000"
+      account_name = "example"
+      name         = "example"
+      share_name   = "example"
+      type         = "AzureFiles"
+      mount_path   = "/mnt/example"
+    }
+  }
   ```
   DESCRIPTION
 }
@@ -649,13 +780,13 @@ variable "storage_accounts" {
 variable "storage_key_vault_secret_id" {
   type        = string
   default     = null
-  description = "The ID of the secret in the key vault to use for the storage account access key."
+  description = "The ID of the secret in the key vault to use for the Storage Account access key."
 }
 
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the storage account use a managed identity?"
+  description = "Should the Storage Account use a Managed Identity?"
 }
 
 # tflint-ignore: terraform_unused_declarations
