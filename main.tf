@@ -342,7 +342,7 @@ resource "azurerm_windows_function_app" "this" {
     for_each = var.backup
 
     content {
-      name                = backup.value.name
+      name                = coalesce(backup.value.name, "${var.name}-backup")
       storage_account_url = backup.value.storage_account_url
       enabled             = backup.value.enabled
 
