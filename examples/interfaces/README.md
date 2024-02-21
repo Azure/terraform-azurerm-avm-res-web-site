@@ -98,17 +98,17 @@ resource "azurerm_subnet" "example" {
   virtual_network_name = azurerm_virtual_network.example.name
 }
 
-# resource "azurerm_private_dns_zone" "example" {
-#   name                = local.azurerm_private_dns_zone_resource_name
-#   resource_group_name = azurerm_resource_group.example.name
-# }
+resource "azurerm_private_dns_zone" "example" {
+  name                = local.azurerm_private_dns_zone_resource_name
+  resource_group_name = azurerm_resource_group.example.name
+}
 
-# resource "azurerm_private_dns_zone_virtual_network_link" "example" {
-#   name                  = "${azurerm_virtual_network.example.name}-link"
-#   private_dns_zone_name = azurerm_private_dns_zone.example.name
-#   resource_group_name   = azurerm_resource_group.example.name
-#   virtual_network_id    = azurerm_virtual_network.example.id
-# }
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = azurerm_resource_group.example.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+}
 
 resource "azurerm_user_assigned_identity" "user" {
   location            = azurerm_resource_group.example.location
@@ -133,6 +133,8 @@ module "test" {
 
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
+
+  public_network_access_enabled = false
 
   identities = {
     # Identities can only be used with the Standard SKU
@@ -173,44 +175,44 @@ module "test" {
     */
   }
 
-  # private_endpoints = {
-  #   # Use of private endpoints requires Standard SKU
-  #   primary = {
-  #     name                          = "primary-interfaces"
-  #     private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
-  #     subnet_resource_id            = azurerm_subnet.example.id
+  private_endpoints = {
+    # Use of private endpoints requires Standard SKU
+    primary = {
+      name                          = "primary-interfaces"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
+      subnet_resource_id            = azurerm_subnet.example.id
 
-  #     inherit_lock = true
-  #     inherit_tags = true
+      inherit_lock = true
+      inherit_tags = true
 
-  #     lock = {
-  #       /*
-  #       # kind = "None"
-  #       */
+      lock = {
+        /*
+        kind = "None"
+        */
 
-  #       /*
-  #       kind = "ReadOnly"
-  #       */
+        /*
+        kind = "ReadOnly"
+        */
 
-  #       /*
-  #       kind = "CanNotDelete"
-  #       */
-  #     }
+        /*
+        kind = "CanNotDelete"
+        */
+      }
 
-  #     role_assignments = {
-  #       role_assignment_1 = {
-  #         role_definition_id_or_name = data.azurerm_role_definition.example.id
-  #         principal_id               = data.azurerm_client_config.this.object_id
-  #       }
-  #     }
+      role_assignments = {
+        role_assignment_1 = {
+          role_definition_id_or_name = data.azurerm_role_definition.example.id
+          principal_id               = data.azurerm_client_config.this.object_id
+        }
+      }
 
-  #     tags = {
-  #       webapp = "${module.naming.static_web_app.name_unique}-interfaces"
-  #     }
+      tags = {
+        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+      }
 
-  #   }
+    }
 
-  # }
+  }
 
   role_assignments = {
     role_assignment_1 = {
@@ -309,6 +311,26 @@ locals {
   ]
 }
 
+resource "azurerm_network_security_group" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.network_security_group.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_network_security_rule" "example" {
+  access                      = "Allow"
+  direction                   = "Inbound"
+  name                        = "AllowAllRDPInbound"
+  network_security_group_name = azurerm_network_security_group.example.name
+  priority                    = 100
+  protocol                    = "Tcp"
+  resource_group_name         = azurerm_resource_group.example.name
+  destination_address_prefix  = "*"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  source_port_range           = "*"
+}
+
 #create the virtual machine
 module "avm_res_compute_virtualmachine" {
   # source = "../../"
@@ -384,6 +406,10 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
+- [azurerm_network_security_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
+- [azurerm_network_security_rule.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) (resource)
+- [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
+- [azurerm_private_dns_zone_virtual_network_link.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
@@ -410,9 +436,9 @@ The following input variables are optional (have default values):
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
-Description: This variable controls whether or not telemetry is enabled for the module.  
-For more information see <https://aka.ms/avm/telemetryinfo>.  
-If it is set to false, then no telemetry will be collected.
+Description:   This variable controls whether or not telemetry is enabled for the module.  
+  For more information see <https://aka.ms/avm/telemetryinfo>.  
+  If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
