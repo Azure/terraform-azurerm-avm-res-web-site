@@ -61,6 +61,14 @@ resource "azurerm_storage_account" "example" {
   resource_group_name      = azurerm_resource_group.example.name
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "law-test-001"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
   # This will equate to Consumption (Serverless) in portal
@@ -102,10 +110,6 @@ resource "azurerm_user_assigned_identity" "user" {
   resource_group_name = azurerm_resource_group.example.name
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
@@ -206,6 +210,13 @@ module "test" {
     role_assignment_1 = {
       role_definition_id_or_name = data.azurerm_role_definition.example.id
       principal_id               = data.azurerm_client_config.this.object_id
+    }
+  }
+
+  diagnostic_settings = {
+    diagnostic_settings_1 = {
+      name                  = "dia_settings_1"
+      workspace_resource_id = azurerm_log_analytics_workspace.example.id
     }
   }
 
