@@ -64,6 +64,14 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "Y1"
 }
 
+# resource "azurerm_app_service_certificate" "example" {
+#   name                = "example-cert"
+#   resource_group_name = azurerm_resource_group.example.name
+#   location            = azurerm_resource_group.example.location
+#   pfx_blob            = filebase64("")
+#   password            = ""
+# }
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -74,9 +82,9 @@ module "test" {
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = 0.1.0
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-custom-domain"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
@@ -89,12 +97,26 @@ module "test" {
 
 #   custom_domains = {
 #     custom_domain_1 = {
-#       hostname            = "<insert hostname here>"
+#         create_certificate = false
+#       hostname            = "${module.test.name}.donvmccoy.com"
 #       app_service_name    = module.test.name
 #       resource_group_name = azurerm_resource_group.example.name
 #       ssl_state           = "SniEnabled"
-#       thumbprint          = "<insert thumbprint here>"
+#       thumbprint          = azurerm_app_service_certificate.example.thumbprint
 #     }
 #   }
 
 }
+
+# module "keyvault" {
+#   source  = "Azure/avm-res-keyvault-vault/azurerm"
+#   version = "0.5.1"
+
+#   name                = module.naming.key_vault.name_unique
+#   enable_telemetry    = false
+#   location            = azurerm_resource_group.this.location
+#   resource_group_name = azurerm_resource_group.this.name
+#   tenant_id           = data.azurerm_client_config.this.tenant_id
+
+  
+# }

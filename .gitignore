@@ -46,4 +46,6 @@ avm.tflint.merged.hcl
 avm.tflint_example.merged.hcl
 
 # Ignore custom Python scripts
-alphabetize_variables.py 
+alphabetize_variables.py
+
+wildcard_donvmccoy_com.pfx

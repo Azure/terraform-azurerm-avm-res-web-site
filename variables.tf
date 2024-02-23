@@ -368,6 +368,10 @@ variable "content_share_force_disabled" {
 
 variable "custom_domains" {
   type = map(object({
+    create_certificate = optional(bool, false)
+    certificate_name = optional(string)
+    certificate_location = optional(string)
+    pfx_blob = optional(string)
     hostname            = optional(string)
     app_service_name    = optional(string)
     resource_group_name = optional(string)
