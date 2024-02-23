@@ -366,6 +366,22 @@ variable "content_share_force_disabled" {
   description = "Should content share be force disabled for the Function App?"
 }
 
+variable "custom_domains" {
+  type = map(object({
+    hostname            = optional(string)
+    app_service_name    = optional(string)
+    resource_group_name = optional(string)
+    ssl_state           = optional(string)
+    thumbprint          = optional(string)
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+  DESCRIPTION
+}
+
 # required AVM interfaces
 # remove only if not supported by the resource
 # tflint-ignore: terraform_unused_declarations

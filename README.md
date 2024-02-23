@@ -28,6 +28,7 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
@@ -434,6 +435,24 @@ Description: Should content share be force disabled for the Function App?
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
+
+Description:
+
+Type:
+
+```hcl
+map(object({
+    hostname            = optional(string)
+    app_service_name    = optional(string)
+    resource_group_name = optional(string)
+    ssl_state           = optional(string)
+    thumbprint          = optional(string)
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
