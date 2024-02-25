@@ -136,7 +136,7 @@ module "test" {
 
   public_network_access_enabled = false
 
-  identities = {
+  managed_identities = {
     # Identities can only be used with the Standard SKU
 
     /*

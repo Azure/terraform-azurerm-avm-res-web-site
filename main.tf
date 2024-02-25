@@ -369,13 +369,11 @@ resource "azurerm_windows_function_app" "this" {
     }
   }
   dynamic "identity" {
-    for_each = var.identities
-
+    for_each = local.managed_identities.system_assigned_user_assigned
     content {
-      type         = identity.value.identity_type
-      identity_ids = identity.value.identity_ids
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
     }
-
   }
   dynamic "sticky_settings" {
     for_each = var.sticky_settings
@@ -396,6 +394,15 @@ resource "azurerm_windows_function_app" "this" {
       share_name   = storage_account.value.share_name
       type         = storage_account.value.type
       mount_path   = storage_account.value.mount_path
+    }
+  }
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : [var.timeouts]
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
     }
   }
 }
@@ -430,32 +437,34 @@ resource "azurerm_linux_function_app" "this" {
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
-    always_on                              = var.site_config.always_on
-    api_definition_url                     = var.site_config.api_definition_url
-    api_management_api_id                  = var.site_config.api_management_api_id
-    app_command_line                       = var.site_config.app_command_line
-    app_scale_limit                        = var.site_config.app_scale_limit
-    application_insights_connection_string = var.site_config.application_insights_connection_string
-    application_insights_key               = var.site_config.application_insights_key
-    default_documents                      = var.site_config.default_documents
-    elastic_instance_minimum               = var.site_config.elastic_instance_minimum
-    ftps_state                             = var.site_config.ftps_state
-    health_check_eviction_time_in_min      = var.site_config.health_check_eviction_time_in_min
-    health_check_path                      = var.site_config.health_check_path
-    http2_enabled                          = var.site_config.http2_enabled
-    load_balancing_mode                    = var.site_config.load_balancing_mode
-    managed_pipeline_mode                  = var.site_config.managed_pipeline_mode
-    minimum_tls_version                    = var.site_config.minimum_tls_version
-    pre_warmed_instance_count              = var.site_config.pre_warmed_instance_count
-    remote_debugging_enabled               = var.site_config.remote_debugging_enabled
-    remote_debugging_version               = var.site_config.remote_debugging_version
-    runtime_scale_monitoring_enabled       = var.site_config.runtime_scale_monitoring_enabled
-    scm_minimum_tls_version                = var.site_config.scm_minimum_tls_version
-    scm_use_main_ip_restriction            = var.site_config.scm_use_main_ip_restriction
-    use_32_bit_worker                      = var.site_config.use_32_bit_worker
-    vnet_route_all_enabled                 = var.site_config.vnet_route_all_enabled
-    websockets_enabled                     = var.site_config.websockets_enabled
-    worker_count                           = var.site_config.worker_count
+    always_on                                     = var.site_config.always_on
+    api_definition_url                            = var.site_config.api_definition_url
+    api_management_api_id                         = var.site_config.api_management_api_id
+    app_command_line                              = var.site_config.app_command_line
+    app_scale_limit                               = var.site_config.app_scale_limit
+    application_insights_connection_string        = var.site_config.application_insights_connection_string
+    application_insights_key                      = var.site_config.application_insights_key
+    container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
+    container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
+    default_documents                             = var.site_config.default_documents
+    elastic_instance_minimum                      = var.site_config.elastic_instance_minimum
+    ftps_state                                    = var.site_config.ftps_state
+    health_check_eviction_time_in_min             = var.site_config.health_check_eviction_time_in_min
+    health_check_path                             = var.site_config.health_check_path
+    http2_enabled                                 = var.site_config.http2_enabled
+    load_balancing_mode                           = var.site_config.load_balancing_mode
+    managed_pipeline_mode                         = var.site_config.managed_pipeline_mode
+    minimum_tls_version                           = var.site_config.minimum_tls_version
+    pre_warmed_instance_count                     = var.site_config.pre_warmed_instance_count
+    remote_debugging_enabled                      = var.site_config.remote_debugging_enabled
+    remote_debugging_version                      = var.site_config.remote_debugging_version
+    runtime_scale_monitoring_enabled              = var.site_config.runtime_scale_monitoring_enabled
+    scm_minimum_tls_version                       = var.site_config.scm_minimum_tls_version
+    scm_use_main_ip_restriction                   = var.site_config.scm_use_main_ip_restriction
+    use_32_bit_worker                             = var.site_config.use_32_bit_worker
+    vnet_route_all_enabled                        = var.site_config.vnet_route_all_enabled
+    websockets_enabled                            = var.site_config.websockets_enabled
+    worker_count                                  = var.site_config.worker_count
 
     dynamic "app_service_logs" {
       for_each = var.site_config.app_service_logs
@@ -473,8 +482,20 @@ resource "azurerm_linux_function_app" "this" {
         java_version                = application_stack.value.java_version != null ? application_stack.value.java_version : null
         node_version                = application_stack.value.node_version != null ? application_stack.value.node_version : null
         powershell_core_version     = application_stack.value.powershell_core_version != null ? application_stack.value.powershell_core_version : null
+        python_version              = application_stack.value.python_version
         use_custom_runtime          = application_stack.value.use_custom_runtime == true ? application_stack.value.use_custom_runtime : null
         use_dotnet_isolated_runtime = application_stack.value.use_dotnet_isolated_runtime != null ? application_stack.value.use_dotnet_isolated_runtime : null
+
+        dynamic "docker" {
+          for_each = application_stack.value.docker == null ? [] : application_stack.value.docker
+          content {
+            image_name        = docker.value.image_name
+            image_tag         = docker.value.image_tag
+            registry_url      = docker.value.registry_url
+            registry_password = docker.value.registry_password
+            registry_username = docker.value.registry_username
+          }
+        }
       }
     }
     dynamic "cors" {
@@ -771,13 +792,11 @@ resource "azurerm_linux_function_app" "this" {
     }
   }
   dynamic "identity" {
-    for_each = var.identities
-
+    for_each = local.managed_identities.system_assigned_user_assigned
     content {
       type         = identity.value.type
-      identity_ids = identity.value.identity_ids
+      identity_ids = identity.value.user_assigned_resource_ids
     }
-
   }
   dynamic "sticky_settings" {
     for_each = var.sticky_settings
@@ -798,6 +817,15 @@ resource "azurerm_linux_function_app" "this" {
       share_name   = storage_account.value.share_name
       type         = storage_account.value.type
       mount_path   = storage_account.value.mount_path
+    }
+  }
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : [var.timeouts]
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
     }
   }
 }
