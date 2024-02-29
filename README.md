@@ -76,7 +76,7 @@ The following input variables are optional (have default values):
 
 ### <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings)
 
-Description:   A map of key-value pairs for App Settings and custom values to assign to the Function App.
+Description:   A map of key-value pairs for [App Settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings) and custom values to assign to the Function App.
 
   ```terraform
   app_settings = {
@@ -100,21 +100,56 @@ Default: `{}`
 ### <a name="input_auth_settings"></a> [auth\_settings](#input\_auth\_settings)
 
 Description:   A map of authentication settings to assign to the Function App.
-  - `enabled` - (Optional) Is authentication enabled for the Function App? Defaults to `false`.
-  - `active_directory` - (Optional) A map of active directory settings.
-  - `additional_login_parameters` - (Optional) A list of additional login parameters.
-  - `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
-  - `default_provider` - (Optional) The default provider for the Function App.
-  - `facebook` - (Optional) A map of Facebook settings.
-  - `github` - (Optional) A map of GitHub settings.
-  - `google` - (Optional) A map of Google settings.
-  - `issuer` - (Optional) The issuer for the Function App.
-  - `microsoft` - (Optional) A map of Microsoft settings.
-  - `runtime_version` - (Optional) The runtime version for the Function App.
-  - `token_refresh_extension_hours` - (Optional) The token refresh extension hours for the Function App. Defaults to `72`.
-  - `token_store_enabled` - (Optional) Is the token store enabled for the Function App? Defaults to `false`.
-  - `twitter` - (Optional) A map of Twitter settings.
-  - `unauthenticated_client_action` - (Optional) The unauthenticated client action for the Function App.
+ - `additional_login_parameters` - (Optional) Specifies a map of login Parameters to send to the OpenID Connect authorization endpoint when a user logs in.
+ - `allowed_external_redirect_urls` - (Optional) Specifies a list of External URLs that can be redirected to as part of logging in or logging out of the Linux Web App.
+ - `default_provider` - (Optional) The default authentication provider to use when multiple providers are configured. Possible values include: `AzureActiveDirectory`, `Facebook`, `Google`, `MicrosoftAccount`, `Twitter`, `Github`
+ - `enabled` - (Required) Should the Authentication / Authorization feature be enabled for the Linux Web App?
+ - `issuer` - (Optional) The OpenID Connect Issuer URI that represents the entity which issues access tokens for this Linux Web App.
+ - `runtime_version` - (Optional) The RuntimeVersion of the Authentication / Authorization feature in use for the Linux Web App.
+ - `token_refresh_extension_hours` - (Optional) The number of hours after session token expiration that a session token can be used to call the token refresh API. Defaults to `72` hours.
+ - `token_store_enabled` - (Optional) Should the Linux Web App durably store platform-specific security tokens that are obtained during login flows? Defaults to `false`.
+ - `unauthenticated_client_action` - (Optional) The action to take when an unauthenticated client attempts to access the app. Possible values include: `RedirectToLoginPage`, `AllowAnonymous`.
+
+ ---
+ `active_directory` block supports the following:
+ - `allowed_audiences` - (Optional) Specifies a list of Allowed audience values to consider when validating JWTs issued by Azure Active Directory.
+ - `client_id` - (Required) The ID of the Client to use to authenticate with Azure Active Directory.
+ - `client_secret` - (Optional) The Client Secret for the Client ID. Cannot be used with `client_secret_setting_name`.
+ - `client_secret_setting_name` - (Optional) The App Setting name that contains the client secret of the Client. Cannot be used with `client_secret`.
+
+ ---
+ `facebook` block supports the following:
+ - `app_id` - (Required) The App ID of the Facebook app used for login.
+ - `app_secret` - (Optional) The App Secret of the Facebook app used for Facebook login. Cannot be specified with `app_secret_setting_name`.
+ - `app_secret_setting_name` - (Optional) The app setting name that contains the `app_secret` value used for Facebook login. Cannot be specified with `app_secret`.
+ - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes to be requested as part of Facebook login authentication.
+
+ ---
+ `github` block supports the following:
+ - `client_id` - (Required) The ID of the GitHub app used for login.
+ - `client_secret` - (Optional) The Client Secret of the GitHub app used for GitHub login. Cannot be specified with `client_secret_setting_name`.
+ - `client_secret_setting_name` - (Optional) The app setting name that contains the `client_secret` value used for GitHub login. Cannot be specified with `client_secret`.
+ - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of GitHub login authentication.
+
+ ---
+ `google` block supports the following:
+ - `client_id` - (Required) The OpenID Connect Client ID for the Google web application.
+ - `client_secret` - (Optional) The client secret associated with the Google web application. Cannot be specified with `client_secret_setting_name`.
+ - `client_secret_setting_name` - (Optional) The app setting name that contains the `client_secret` value used for Google login. Cannot be specified with `client_secret`.
+ - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of Google Sign-In authentication. If not specified, `openid`, `profile`, and `email` are used as default scopes.
+
+ ---
+ `microsoft` block supports the following:
+ - `client_id` - (Required) The OAuth 2.0 client ID that was created for the app used for authentication.
+ - `client_secret` - (Optional) The OAuth 2.0 client secret that was created for the app used for authentication. Cannot be specified with `client_secret_setting_name`.
+ - `client_secret_setting_name` - (Optional) The app setting name containing the OAuth 2.0 client secret that was created for the app used for authentication. Cannot be specified with `client_secret`.
+ - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of Microsoft Account authentication. If not specified, `wl.basic` is used as the default scope.
+
+ ---
+ `twitter` block supports the following:
+ - `consumer_key` - (Required) The OAuth 1.0a consumer key of the Twitter application used for sign-in.
+ - `consumer_secret` - (Optional) The OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret_setting_name`.
+ - `consumer_secret_setting_name` - (Optional) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret`.
 
   ```terraform
   auth_settings = {
@@ -134,16 +169,21 @@ Type:
 
 ```hcl
 map(object({
-    enabled = optional(bool, false)
+    additional_login_parameters    = optional(list(string))
+    allowed_external_redirect_urls = optional(list(string))
+    default_provider               = optional(string)
+    enabled                        = optional(bool, false)
+    issuer                         = optional(string)
+    runtime_version                = optional(string)
+    token_refresh_extension_hours  = optional(number, 72)
+    token_store_enabled            = optional(bool, false)
+    unauthenticated_client_action  = optional(string)
     active_directory = optional(map(object({
       client_id                  = optional(string)
       allowed_audiences          = optional(list(string))
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
     })))
-    additional_login_parameters    = optional(list(string))
-    allowed_external_redirect_urls = optional(list(string))
-    default_provider               = optional(string)
     facebook = optional(map(object({
       app_id                  = optional(string)
       app_secret              = optional(string)
@@ -162,22 +202,17 @@ map(object({
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
     })))
-    issuer = optional(string)
     microsoft = optional(map(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
     })))
-    runtime_version               = optional(string)
-    token_refresh_extension_hours = optional(number, 72)
-    token_store_enabled           = optional(bool, false)
     twitter = optional(map(object({
       consumer_key                 = optional(string)
       consumer_secret              = optional(string)
       consumer_secret_setting_name = optional(string)
     })))
-    unauthenticated_client_action = optional(string)
   }))
 ```
 
@@ -185,41 +220,110 @@ Default: `{}`
 
 ### <a name="input_auth_settings_v2"></a> [auth\_settings\_v2](#input\_auth\_settings\_v2)
 
-Description:   A map of authentication settings (V2) to assign to the Function App.
-  - `auth_enabled` - (Optional) Is authentication enabled for the Function App? Defaults to `false`.
-  - `runtime_version` - (Optional) The runtime version for the Function App. Defaults to `~1`.
-  - `config_file_path` - (Optional) The path to the config file for the Function App.
-  - `require_authentication` - (Optional) Does the Function App require authentication? Defaults to `false`.
-  - `unauthenticated_action` - (Optional) The unauthenticated action for the Function App. Defaults to `RedirectToLoginPage`.
-  - `default_provider` - (Optional) The default provider for the Function App.
-  - `excluded_paths` - (Optional) A list of excluded paths for the Function App.
-  - `require_https` - (Optional) Does the Function App require HTTPS? Defaults to `true`.
-  - `http_route_api_prefix` - (Optional) The HTTP route API prefix for the Function App. Defaults to `/.auth`.
-  - `forward_proxy_convention` - (Optional) The forward proxy convention for the Function App. Defaults to `NoProxy`.
-  - `forward_proxy_custom_host_header_name` - (Optional) The forward proxy custom host header name for the Function App.
-  - `forward_proxy_custom_scheme_header_name` - (Optional) The forward proxy custom scheme header name for the Function App.
-  - `apple_v2` - (Optional) A map of Apple settings.
-  - `active_directory_v2` - (Optional) A map of Active Directory settings.
-  - `azure_static_web_app_v2` - (Optional) A map of Azure Static Web App settings.
-  - `custom_oidc_v2` - (Optional) A map of custom OIDC settings.
-  - `facebook_v2` - (Optional) A map of Facebook settings.
-  - `github_v2` - (Optional) A map of GitHub settings.
-  - `google_v2` - (Optional) A map of Google settings.
-  - `microsoft_v2` - (Optional) A map of Microsoft settings.
-  - `twitter_v2` - (Optional) A map of Twitter settings.
-  - `login` - (Optional) A map of login settings.
+Description: A map of authentication settings (V2) to assign to the Function App.
 
-  ```terraform
-  auth_settings_v2 = {
-    example = {
-      auth_enabled = true
-      active_directory_v2 = {
-        client_id                  = "00000000-0000-0000-0000-000000000000"
-        client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
-        login_scopes               = ["00000000-0000-0000-0000-000000000000"]
-      }
+- `auth_enabled` - (Optional) Should the AuthV2 Settings be enabled. Defaults to `false`.
+- `config_file_path` - (Optional) The path to the App Auth settings.
+- `default_provider` - (Optional) The Default Authentication Provider to use when the `unauthenticated_action` is set to `RedirectToLoginPage`. Possible values include: `apple`, `azureactivedirectory`, `facebook`, `github`, `google`, `twitter` and the `name` of your `custom_oidc_v2` provider.
+- `excluded_paths` - (Optional) The paths which should be excluded from the `unauthenticated_action` when it is set to `RedirectToLoginPage`.
+- `forward_proxy_convention` - (Optional) The convention used to determine the url of the request made. Possible values include `NoProxy`, `Standard`, `Custom`. Defaults to `NoProxy`.
+- `forward_proxy_custom_host_header_name` - (Optional) The name of the custom header containing the host of the request.
+- `forward_proxy_custom_scheme_header_name` - (Optional) The name of the custom header containing the scheme of the request.
+- `http_route_api_prefix` - (Optional) The prefix that should precede all the authentication and authorisation paths. Defaults to `/.auth`.
+- `require_authentication` - (Optional) Should the authentication flow be used for all requests.
+- `require_https` - (Optional) Should HTTPS be required on connections? Defaults to `true`.
+- `runtime_version` - (Optional) The Runtime Version of the Authentication and Authorisation feature of this App. Defaults to `~1`.
+- `unauthenticated_action` - (Optional) The action to take for requests made without authentication. Possible values include `RedirectToLoginPage`, `AllowAnonymous`, `Return401`, and `Return403`. Defaults to `RedirectToLoginPage`.
+
+---
+`active_directory_v2` block supports the following:
+- `allowed_applications` - (Optional) The list of allowed Applications for the Default Authorisation Policy.
+- `allowed_audiences` - (Optional) Specifies a list of Allowed audience values to consider when validating JWTs issued by Azure Active Directory.
+- `allowed_groups` - (Optional) The list of allowed Group Names for the Default Authorisation Policy.
+- `allowed_identities` - (Optional) The list of allowed Identities for the Default Authorisation Policy.
+- `client_id` - (Required) The ID of the Client to use to authenticate with Azure Active Directory.
+- `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the certificate used for signing purposes.
+- `client_secret_setting_name` - (Optional) The App Setting name that contains the client secret of the Client.
+- `jwt_allowed_client_applications` - (Optional) A list of Allowed Client Applications in the JWT Claim.
+- `jwt_allowed_groups` - (Optional) A list of Allowed Groups in the JWT Claim.
+- `login_parameters` - (Optional) A map of key-value pairs to send to the Authorisation Endpoint when a user logs in.
+- `tenant_auth_endpoint` - (Required) The Azure Tenant Endpoint for the Authenticating Tenant. e.g. `https://login.microsoftonline.com/v2.0/{tenant-guid}/`
+- `www_authentication_disabled` - (Optional) Should the www-authenticate provider should be omitted from the request? Defaults to `false`.
+
+---
+`apple_v2` block supports the following:
+- `client_id` - (Required) The OpenID Connect Client ID for the Apple web application.
+- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for Apple Login.
+
+---
+`azure_static_web_app_v2` block supports the following:
+- `client_id` - (Required) The ID of the Client to use to authenticate with Azure Static Web App Authentication.
+
+---
+`custom_oidc_v2` block supports the following:
+- `client_id` - (Required) The ID of the Client to use to authenticate with the Custom OIDC.
+- `name` - (Required) The name of the Custom OIDC Authentication Provider.
+- `name_claim_type` - (Optional) The name of the claim that contains the users name.
+- `openid_configuration_endpoint` - (Required) The app setting name that contains the `client_secret` value used for the Custom OIDC Login.
+- `scopes` - (Optional) The list of the scopes that should be requested while authenticating.
+
+---
+`facebook_v2` block supports the following:
+- `app_id` - (Required) The App ID of the Facebook app used for login.
+- `app_secret_setting_name` - (Required) The app setting name that contains the `app_secret` value used for Facebook Login.
+- `graph_api_version` - (Optional) The version of the Facebook API to be used while logging in.
+- `login_scopes` - (Optional) The list of scopes that should be requested as part of Facebook Login authentication.
+
+---
+`github_v2` block supports the following:
+- `client_id` - (Required) The ID of the GitHub app used for login..
+- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for GitHub Login.
+- `login_scopes` - (Optional) The list of OAuth 2.0 scopes that should be requested as part of GitHub Login authentication.
+
+---
+`google_v2` block supports the following:
+- `allowed_audiences` - (Optional) Specifies a list of Allowed Audiences that should be requested as part of Google Sign-In authentication.
+- `client_id` - (Required) The OpenID Connect Client ID for the Google web application.
+- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for Google Login.
+- `login_scopes` - (Optional) The list of OAuth 2.0 scopes that should be requested as part of Google Sign-In authentication.
+
+---
+`login` block supports the following:
+- `allowed_external_redirect_urls` - (Optional) External URLs that can be redirected to as part of logging in or logging out of the app. This is an advanced setting typically only needed by Windows Store application backends.
+- `cookie_expiration_convention` - (Optional) The method by which cookies expire. Possible values include: `FixedTime`, and `IdentityProviderDerived`. Defaults to `FixedTime`.
+- `cookie_expiration_time` - (Optional) The time after the request is made when the session cookie should expire. Defaults to `08:00:00`.
+- `logout_endpoint` - (Optional) The endpoint to which logout requests should be made.
+- `nonce_expiration_time` - (Optional) The time after the request is made when the nonce should expire. Defaults to `00:05:00`.
+- `preserve_url_fragments_for_logins` - (Optional) Should the fragments from the request be preserved after the login request is made. Defaults to `false`.
+- `token_refresh_extension_time` - (Optional) The number of hours after session token expiration that a session token can be used to call the token refresh API. Defaults to `72` hours.
+- `token_store_enabled` - (Optional) Should the Token Store configuration Enabled. Defaults to `false`
+- `token_store_path` - (Optional) The directory path in the App Filesystem in which the tokens will be stored.
+- `token_store_sas_setting_name` - (Optional) The name of the app setting which contains the SAS URL of the blob storage containing the tokens.
+- `validate_nonce` - (Optional) Should the nonce be validated while completing the login flow. Defaults to `true`.
+
+---
+`microsoft_v2` block supports the following:
+- `allowed_audiences` - (Optional) Specifies a list of Allowed Audiences that will be requested as part of Microsoft Sign-In authentication.
+- `client_id` - (Required) The OAuth 2.0 client ID that was created for the app used for authentication.
+- `client_secret_setting_name` - (Required) The app setting name containing the OAuth 2.0 client secret that was created for the app used for authentication.
+- `login_scopes` - (Optional) The list of Login scopes that should be requested as part of Microsoft Account authentication.
+
+---
+`twitter_v2` block supports the following:
+- `consumer_key` - (Required) The OAuth 1.0a consumer key of the Twitter application used for sign-in.
+- `consumer_secret_setting_name` - (Required) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in.
+
+```terraform
+auth_settings_v2 = {
+  example = {
+    auth_enabled = true
+    active_directory_v2 = {
+      client_id                  = "00000000-0000-0000-0000-000000000000"
+      client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
+      login_scopes               = ["00000000-0000-0000-0000-000000000000"]
     }
   }
+}
 ```
 
 Type:
@@ -227,52 +331,51 @@ Type:
 ```hcl
 map(object({
     auth_enabled                            = optional(bool, false)
-    runtime_version                         = optional(string, "~1")
     config_file_path                        = optional(string)
-    require_authentication                  = optional(bool, false)
-    unauthenticated_action                  = optional(string, "RedirectToLoginPage")
     default_provider                        = optional(string)
     excluded_paths                          = optional(list(string))
-    require_https                           = optional(bool, true)
-    http_route_api_prefix                   = optional(string, "/.auth")
     forward_proxy_convention                = optional(string, "NoProxy")
     forward_proxy_custom_host_header_name   = optional(string)
     forward_proxy_custom_scheme_header_name = optional(string)
+    http_route_api_prefix                   = optional(string, "/.auth")
+    require_authentication                  = optional(bool, false)
+    require_https                           = optional(bool, true)
+    runtime_version                         = optional(string, "~1")
+    unauthenticated_action                  = optional(string, "RedirectToLoginPage")
+    active_directory_v2 = optional(map(object({
+      allowed_applications                 = optional(list(string))
+      allowed_audiences                    = optional(list(string))
+      allowed_groups                       = optional(list(string))
+      allowed_identities                   = optional(list(string))
+      client_id                            = optional(string)
+      client_secret_certificate_thumbprint = optional(string)
+      client_secret_setting_name           = optional(string)
+      jwt_allowed_client_applications      = optional(list(string))
+      jwt_allowed_groups                   = optional(list(string))
+      login_parameters                     = optional(map(any))
+      tenant_auth_endpoint                 = optional(string)
+      www_authentication_disabled          = optional(bool, false)
+    })))
     apple_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
       login_scopes               = optional(list(string))
     })))
-    active_directory_v2 = optional(map(object({
-      client_id                            = optional(string)
-      client_secret_setting_name           = optional(string)
-      client_secret_certificate_thumbprint = optional(string)
-      tenant_auth_endpoint                 = optional(string)
-      allowed_applications                 = optional(list(string))
-      allowed_identities                   = optional(list(string))
-      allowed_groups                       = optional(list(string))
-      allowed_audiences                    = optional(list(string))
-      jwt_allowed_client_applications      = optional(list(string))
-      jwt_allowed_groups                   = optional(list(string))
-      login_parameters                     = optional(map(any))
-      www_authentication_disabled          = optional(bool, false)
-    })))
     azure_static_web_app_v2 = optional(map(object({
       client_id = optional(string)
     })))
     custom_oidc_v2 = optional(map(object({
-      name                          = optional(string)
+      authorization_endpoint        = optional(string)
+      certification_uri             = optional(string)
+      client_credential_method      = optional(string)
       client_id                     = optional(string)
+      client_secret_setting_name    = optional(string)
+      issuer_endpoint               = optional(string)
+      name                          = optional(string)
+      name_claim_type               = optional(string)
       openid_configuration_endpoint = optional(string)
       scopes                        = optional(list(string))
-      client_credential_method      = optional(string)
-      client_secret_setting_name    = optional(string)
-      authorization_endpoint        = optional(string)
       token_endpoint                = optional(string)
-      issuer_endpoint               = optional(string)
-      certification_uri             = optional(string)
-      name_claim_type               = optional(string)
-
     })))
     facebook_v2 = optional(map(object({
       app_id                  = optional(string)
@@ -291,6 +394,19 @@ map(object({
       allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
     })))
+    login = map(object({
+      allowed_external_redirect_urls    = optional(list(string))
+      cookie_expiration_convention      = optional(string, "FixedTime")
+      cookie_expiration_time            = optional(string, "00:00:00")
+      logout_endpoint                   = optional(string)
+      nonce_expiration_time             = optional(string, "00:05:00")
+      preserve_url_fragments_for_logins = optional(bool, false)
+      token_refresh_extension_time      = optional(number, 72)
+      token_store_enabled               = optional(bool, false)
+      token_store_path                  = optional(string)
+      token_store_sas_setting_name      = optional(string)
+      validate_nonce                    = optional(bool, true)
+    }))
     microsoft_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
@@ -301,19 +417,7 @@ map(object({
       consumer_key                 = optional(string)
       consumer_secret_setting_name = optional(string)
     })))
-    login = map(object({
-      logout_endpoint                   = optional(string)
-      token_store_enabled               = optional(bool, false)
-      token_refresh_extension_time      = optional(number, 72)
-      token_store_path                  = optional(string)
-      token_store_sas_setting_name      = optional(string)
-      preserve_url_fragments_for_logins = optional(bool, false)
-      allowed_external_redirect_urls    = optional(list(string))
-      cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "00:00:00")
-      validate_nonce                    = optional(bool, true)
-      nonce_expiration_time             = optional(string, "00:05:00")
-    }))
+
   }))
 ```
 
@@ -353,7 +457,9 @@ Type:
 
 ```hcl
 map(object({
-    name = optional(string)
+    enabled             = optional(bool, true)
+    name                = optional(string)
+    storage_account_url = optional(string)
     schedule = optional(map(object({
       frequency_interval       = optional(number)
       frequency_unit           = optional(string)
@@ -361,8 +467,6 @@ map(object({
       retention_period_in_days = optional(number)
       start_time               = optional(string)
     })))
-    storage_account_url = optional(string)
-    enabled             = optional(bool, true)
   }))
 ```
 
@@ -567,22 +671,6 @@ Type: `bool`
 
 Default: `false`
 
-### <a name="input_identities"></a> [identities](#input\_identities)
-
-Description:   A map of identities to assign to the resource.   
-  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-Type:
-
-```hcl
-map(object({
-    identity_type = optional(string, "SystemAssigned")
-    identity_ids  = optional(list(string))
-  }))
-```
-
-Default: `{}`
-
 ### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
 
 Description: The identity ID to use for Key Vault references.
@@ -729,86 +817,179 @@ Default: `{}`
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
 Description:   An object that configures the Function App's `site_config` block.
-  -`always_on` - (Optional) Is the Function App always on? Defaults to `false`.
-  -`api_definition_url` - (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
-  -`api_management_api_id` - (Optional) The API Management API identifier.
-  -`app_command_line` - (Optional) The command line to launch the application.
-  -`app_scale_limit` - (Optional) The maximum number of workers that the Function App can scale out to.
+ - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `false`.
+ - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
+ - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
+ - `app_command_line` - (Optional) The App command line to launch.
+ - `app_scale_limit` - (Optional) The number of workers this function app can scale out to. Only applicable to apps on the Consumption and Premium plan.
+ - `application_insights_connection_string` - (Optional) The Connection String for linking the Linux Function App to Application Insights.
+ - `application_insights_key` - (Optional) The Instrumentation Key for connecting the Linux Function App to Application Insights.
+ - `container_registry_managed_identity_client_id` - (Optional) The Client ID of the Managed Service Identity to use for connections to the Azure Container Registry.
+ - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
+ - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
+ - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
+ - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `Disabled`.
+ - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
+ - `health_check_path` - (Optional) The path to be checked for this function app health.
+ - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
+ - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
+ - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
+ - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+ - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
+ - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
+ - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
+ - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
+ - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+ - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
+ - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
+ - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
+ - `websockets_enabled` - (Optional) Should Web Sockets be enabled. Defaults to `false`.
+ - `worker_count` - (Optional) The number of Workers for this Linux Function App.
+
+ ---
+ `app_service_logs` block supports the following:
+ - `disk_quota_mb` - (Optional) The amount of disk space to use for logs. Valid values are between `25` and `100`. Defaults to `35`.
+ - `retention_period_days` - (Optional) The retention period for logs in days. Valid values are between `0` and `99999`.(never delete).
+
+ ---
+ `application_stack` block supports the following:
+ - `dotnet_version` - (Optional) The version of .NET to use. Possible values include `3.1`, `6.0`, `7.0` and `8.0`.
+ - `java_version` - (Optional) The Version of Java to use. Supported versions include `8`, `11` & `17`.
+ - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
+ - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
+ - `python_version` - (Optional) The version of Python to run. Possible values are `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
+ - `use_custom_runtime` - (Optional) Should the Linux Function App use a custom runtime?
+ - `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
+
+ ---
+ `docker` block supports the following:
+ - `image_name` - (Required) The name of the Docker image to use.
+ - `image_tag` - (Required) The image tag of the image to use.
+ - `registry_password` - (Optional) The password for the account to use to connect to the registry.
+ - `registry_url` - (Required) The URL of the docker registry.
+ - `registry_username` - (Optional) The username to use for connections to the registry.
+
+ ---
+ `cors` block supports the following:
+ - `allowed_origins` - (Optional) Specifies a list of origins that should be allowed to make cross-origin calls.
+ - `support_credentials` - (Optional) Are credentials allowed in CORS requests? Defaults to `false`.
+
+ ---
+ `ip_restriction` block supports the following:
+ - `action` - (Optional) The action to take. Possible values are `Allow` or `Deny`. Defaults to `Allow`.
+ - `ip_address` - (Optional) The CIDR notation of the IP or IP Range to match. For example: `10.0.0.0/24` or `192.168.10.1/32`
+ - `name` - (Optional) The name which should be used for this `ip_restriction`.
+ - `priority` - (Optional) The priority value of this `ip_restriction`. Defaults to `65000`.
+ - `service_tag` - (Optional) The Service Tag used for this IP Restriction.
+ - `virtual_network_subnet_id` - (Optional) The Virtual Network Subnet ID used for this IP Restriction.
+
+ ---
+ `headers` block supports the following:
+ - `x_azure_fdid` - (Optional) Specifies a list of Azure Front Door IDs.
+ - `x_fd_health_probe` - (Optional) Specifies if a Front Door Health Probe should be expected. The only possible value is `1`.
+ - `x_forwarded_for` - (Optional) Specifies a list of addresses for which matching should be applied. Omitting this value means allow any.
+ - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
+
+ ---
+ `scm_ip_restriction` block supports the following:
+ - `action` - (Optional) The action to take. Possible values are `Allow` or `Deny`. Defaults to `Allow`.
+ - `ip_address` - (Optional) The CIDR notation of the IP or IP Range to match. For example: `10.0.0.0/24` or `192.168.10.1/32`
+ - `name` - (Optional) The name which should be used for this `ip_restriction`.
+ - `priority` - (Optional) The priority value of this `ip_restriction`. Defaults to `65000`.
+ - `service_tag` - (Optional) The Service Tag used for this IP Restriction.
+ - `virtual_network_subnet_id` - (Optional) The Virtual Network Subnet ID used for this IP Restriction.
+
+ ---
+ `headers` block supports the following:
+ - `x_azure_fdid` - (Optional) Specifies a list of Azure Front Door IDs.
+ - `x_fd_health_probe` - (Optional) Specifies if a Front Door Health Probe should be expected. The only possible value is `1`.
+ - `x_forwarded_for` - (Optional) Specifies a list of addresses for which matching should be applied. Omitting this value means allow any.
+ - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
 
 Type:
 
 ```hcl
 object({
-    always_on                              = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
-    api_definition_url                     = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
-    api_management_api_id                  = optional(string)      # (Optional) The API Management API identifier.
-    app_command_line                       = optional(string)      # (Optional) The command line to launch the application.
-    app_scale_limit                        = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
-    application_insights_connection_string = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
-    application_insights_key               = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
-    application_stack = optional(map(object({
-      dotnet_version              = optional(string, "v4.0")
-      use_dotnet_isolated_runtime = optional(bool, false)
-      java_version                = optional(string)
-      node_version                = optional(string)
-      powershell_core_version     = optional(string)
-      use_custom_runtime          = optional(bool, false)
-    })), {})
+    always_on                                     = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
+    api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
+    api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
+    app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
+    app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
+    application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
+    application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
+    container_registry_managed_identity_client_id = optional(string)
+    container_registry_use_managed_identity       = optional(bool)
+    default_documents                             = optional(list(string))            #(Optional) Specifies a list of Default Documents for the Windows Function App.
+    elastic_instance_minimum                      = optional(number)                  #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
+    ftps_state                                    = optional(string, "Disabled")      #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
+    health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
+    health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
+    http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
+    minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    pre_warmed_instance_count                     = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
+    remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
+    runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
+    scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
+    use_32_bit_worker                             = optional(bool, true)              #(Optional) Should the 32-bit worker process be used. Defaults to false.
+    vnet_route_all_enabled                        = optional(bool, false)             #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
+    websockets_enabled                            = optional(bool, false)             #(Optional) Should Websockets be enabled. Defaults to false.
+    worker_count                                  = optional(number)                  #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
     app_service_logs = optional(map(object({
       disk_quota_mb         = optional(number, 35)
       retention_period_days = optional(number)
     })), {})
+    application_stack = optional(map(object({
+      dotnet_version              = optional(string, "v4.0")
+      java_version                = optional(string)
+      node_version                = optional(string)
+      powershell_core_version     = optional(string)
+      python_version              = optional(string)
+      use_custom_runtime          = optional(bool)
+      use_dotnet_isolated_runtime = optional(bool)
+      docker = optional(list(object({
+        image_name        = string
+        image_tag         = string
+        registry_password = optional(string)
+        registry_url      = string
+        registry_username = optional(string)
+      })))
+    })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))
       support_credentials = optional(bool, false)
-    })), {})                                                         #(Optional) A cors block as defined above.
-    default_documents                 = optional(list(string))       #(Optional) Specifies a list of Default Documents for the Windows Function App.
-    elastic_instance_minimum          = optional(number)             #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
-    ftps_state                        = optional(string, "Disabled") #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
-    health_check_path                 = optional(string)             #(Optional) The path to be checked for this Windows Function App health.
-    health_check_eviction_time_in_min = optional(number)             #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
-    http2_enabled                     = optional(bool, false)        #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    })), {}) #(Optional) A cors block as defined above.
     ip_restriction = optional(map(object({
-      action = optional(string, "Allow")
+      action                    = optional(string, "Allow")
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
       headers = optional(object({
         x_azure_fdid      = optional(list(string))
         x_fd_health_probe = optional(number)
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       }), {})
+    })), {}) #(Optional) One or more ip_restriction blocks as defined above.
+    scm_ip_restriction = optional(map(object({
+      action                    = optional(string, "Allow")
       ip_address                = optional(string)
       name                      = optional(string)
       priority                  = optional(number, 65000)
       service_tag               = optional(string)
       virtual_network_subnet_id = optional(string)
-    })), {})                                                             #(Optional) One or more ip_restriction blocks as defined above.
-    load_balancing_mode              = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
-    managed_pipeline_mode            = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
-    minimum_tls_version              = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
-    pre_warmed_instance_count        = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
-    remote_debugging_enabled         = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
-    remote_debugging_version         = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
-    runtime_scale_monitoring_enabled = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
-    scm_ip_restriction = optional(map(object({
-      action = optional(string, "Allow")
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
         x_fd_health_probe = optional(number)
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
-      ip_address                = optional(string)
-      name                      = optional(string)
-      priority                  = optional(number, 65000)
-      service_tag               = optional(string)
-      virtual_network_subnet_id = optional(string)
-    })), {})                                              #(Optional) One or more scm_ip_restriction blocks as defined above.
-    scm_minimum_tls_version     = optional(string, "1.2") #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
-    scm_use_main_ip_restriction = optional(bool, false)   #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
-    use_32_bit_worker           = optional(bool, true)    #(Optional) Should the 32-bit worker process be used. Defaults to false.
-    vnet_route_all_enabled      = optional(bool, false)   #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
-    websockets_enabled          = optional(bool, false)   #(Optional) Should Websockets be enabled. Defaults to false.
-    worker_count                = optional(number)        #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    })), {}) #(Optional) One or more scm_ip_restriction blocks as defined above.
   })
 ```
 
@@ -886,10 +1067,10 @@ Type:
 map(object({
     access_key   = optional(string)
     account_name = optional(string)
+    mount_path   = optional(string)
     name         = optional(string)
     share_name   = optional(string)
     type         = optional(string, "AzureFiles")
-    mount_path   = optional(string)
   }))
 ```
 
@@ -918,6 +1099,26 @@ Description: The map of tags to be applied to the resource
 Type: `map(any)`
 
 Default: `{}`
+
+### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
+
+Description: - `create` - (Defaults to 30 minutes) Used when creating the Linux Function App.
+- `delete` - (Defaults to 30 minutes) Used when deleting the Linux Function App.
+- `read` - (Defaults to 5 minutes) Used when retrieving the Linux Function App.
+- `update` - (Defaults to 30 minutes) Used when updating the Linux Function App.
+
+Type:
+
+```hcl
+object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+```
+
+Default: `null`
 
 ### <a name="input_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#input\_virtual\_network\_subnet\_id)
 
