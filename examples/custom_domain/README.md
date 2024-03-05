@@ -76,16 +76,6 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 }
 */
 
-data "azurerm_key_vault" "existing_keyvault" {
-  name                = "vault3-4-24"
-  resource_group_name = "rg-test"
-}
-
-data "azurerm_key_vault_secret" "stored_certificate" {
-  key_vault_id = data.azurerm_key_vault.existing_keyvault.id
-  name         = "donvmccoy"
-}
-
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -94,9 +84,9 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.0
+  # version = 0.1.1
 
-  enable_telemetry = false # see variables.tf
+  enable_telemetry = true # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-custom-domain"
   resource_group_name = azurerm_resource_group.example.name
@@ -112,14 +102,14 @@ module "test" {
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
-
+    /*
     custom_domain_1 = {
 
-      zone_resource_group_name = "rg-personal-domain"
+      zone_resource_group_name = "<resource_group_name where zone is located>"
 
       create_txt_records = true
       txt_name           = "asuid.${module.naming.function_app.name_unique}"
-      txt_zone_name      = "donvmccoy.com"
+      txt_zone_name      = "<domain_name>"
       txt_records = {
         record = {
           value = "" # Leave empty as module will reference Function App ID after Function App creation
@@ -128,7 +118,7 @@ module "test" {
 
       create_cname_records = true
       cname_name           = "${module.naming.function_app.name_unique}"
-      cname_zone_name      = "donvmccoy.com"
+      cname_zone_name      = "<domain_name"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
 
       create_certificate   = true
@@ -137,12 +127,12 @@ module "test" {
       pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}.donvmccoy.com"
+      hostname            = "${module.naming.function_app.name_unique}.<domain_name>"
       resource_group_name = azurerm_resource_group.example.name
       ssl_state           = "SniEnabled"
       thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
     }
-
+*/
   }
 
   tags = {
@@ -220,8 +210,6 @@ The following resources are used by this module:
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
-- [azurerm_key_vault.existing_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) (data source)
-- [azurerm_key_vault_secret.stored_certificate](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_secret) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
