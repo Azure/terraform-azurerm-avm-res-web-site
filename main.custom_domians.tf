@@ -6,7 +6,7 @@ resource "azurerm_app_service_certificate" "this" {
   resource_group_name = each.value.resource_group_name
   app_service_plan_id = each.value.app_service_plan_resource_id
   key_vault_secret_id = each.value.key_vault_secret_id
-  password            = each.vale.pfx_password
+  password            = each.value.pfx_password
   pfx_blob            = each.value.pfx_blob
   tags                = each.value.inherit_tags ? merge(each.value.tags, var.tags) : each.value.tags
 }
