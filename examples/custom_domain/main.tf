@@ -83,7 +83,7 @@ module "test" {
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = 0.1.0
 
-  enable_telemetry = false # see variables.tf
+  enable_telemetry = var.enable_telemetry # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-custom-domain"
   resource_group_name = azurerm_resource_group.example.name
