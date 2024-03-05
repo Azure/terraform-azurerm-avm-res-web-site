@@ -72,6 +72,7 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 }
 */
 
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -80,9 +81,9 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.1
+  # version = 0.1.0
 
-  enable_telemetry = true # see variables.tf
+  enable_telemetry = false # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-custom-domain"
   resource_group_name = azurerm_resource_group.example.name
@@ -101,11 +102,11 @@ module "test" {
     /*
     custom_domain_1 = {
 
-      zone_resource_group_name = "<resource_group_name where zone is located>"
+      zone_resource_group_name = "<zone_resource_group_name>"
 
       create_txt_records = true
       txt_name           = "asuid.${module.naming.function_app.name_unique}"
-      txt_zone_name      = "<domain_name>"
+      txt_zone_name      = "<zone_name>"
       txt_records = {
         record = {
           value = "" # Leave empty as module will reference Function App ID after Function App creation
@@ -114,7 +115,7 @@ module "test" {
 
       create_cname_records = true
       cname_name           = "${module.naming.function_app.name_unique}"
-      cname_zone_name      = "<domain_name"
+      cname_zone_name      = "<zone_name>"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
 
       create_certificate   = true
@@ -123,7 +124,7 @@ module "test" {
       pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}.<domain_name>"
+      hostname            = "${module.naming.function_app.name_unique}.<root_domain>"
       resource_group_name = azurerm_resource_group.example.name
       ssl_state           = "SniEnabled"
       thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
@@ -136,44 +137,3 @@ module "test" {
   }
 
 }
-
-# module "keyvault" {
-#   source  = "Azure/avm-res-keyvault-vault/azurerm"
-#   version = "0.5.1"
-
-#   name                = module.naming.key_vault.name_unique
-#   enable_telemetry    = false
-#   location            = azurerm_resource_group.this.location
-#   resource_group_name = azurerm_resource_group.this.name
-#   tenant_id           = data.azurerm_client_config.this.tenant_id
-
-#   network_acls = {
-#     default_action = "Allow"
-#     bypass         = "AzureServices"
-#   }
-
-#   # role_assignments = {
-#   #   deployment_user_secrets = { #give the deployment user access to secrets
-#   #     role_definition_id_or_name = "Key Vault Secrets Officer"
-#   #     principal_id               = data.azurerm_client_config.current.object_id
-#   #   }
-#   #   deployment_user_keys = { #give the deployment user access to keys
-#   #     role_definition_id_or_name = "Key Vault Crypto Officer"
-#   #     principal_id               = data.azurerm_client_config.current.object_id
-#   #   }
-#   #   user_managed_identity_keys = { #give the user assigned managed identity for the disk encryption set access to keys
-#   #     role_definition_id_or_name = "Key Vault Crypto Officer"
-#   #     principal_id               = azurerm_user_assigned_identity.test.principal_id
-#   #   }
-#   # }
-
-#   wait_for_rbac_before_key_operations = {
-#     create = "60s"
-#   }
-
-#   wait_for_rbac_before_secret_operations = {
-#     create = "60s"
-#   }
-
-#   tags = module.test.tags  
-# }

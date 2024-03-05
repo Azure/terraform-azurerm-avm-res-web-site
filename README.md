@@ -575,37 +575,79 @@ Default: `false`
 
 ### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
 
-Description:
+Description:   A map of custom domains to assign to the Function App.
+  - `create_certificate` - (Optional) Should a certificate be created for the custom domain? Defaults to `false`.
+  - `create_txt_records` - (Optional) Should TXT records be created for the custom domain? Defaults to `false`.
+  - `create_cname_records` - (Optional) Should CNAME records be created for the custom domain? Defaults to `false`.
+
+  ```terraform
+  custom_domains = {
+    # Allows for the configuration of custom domains for the Function App
+    # If not already set, the module allows for the creation of TXT and CNAME records
+
+    custom_domain_1 = {
+
+      zone_resource_group_name = "<zone_resource_group_name>"
+
+      create_txt_records = true
+      txt_name           = "asuid.<module.naming.function_app.name_unique>"
+      txt_zone_name      = "<zone_name>"
+      txt_records = {
+        record = {
+          value = "" # Leave empty as module will reference Function App ID after Function App creation
+        }
+      }
+
+      create_cname_records = true
+      cname_name           = "<module.naming.function_app.name_unique>"
+      cname_zone_name      = "<zone_name>"
+      cname_record         = "<module.naming.function_app.name_unique>-custom-domain.azurewebsites.net"
+
+      create_certificate   = true
+      certificate_name     = "<module.naming.function_app.name_unique>-<data.azurerm_key_vault_secret.stored_certificate.name>"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+
+      app_service_name    = "<module.naming.function_app.name_unique>-custom-domain"
+      hostname            = "<module.naming.function_app.name_unique>.<root_domain>"
+      resource_group_name = azurerm_resource_group.example.name
+      ssl_state           = "SniEnabled"
+      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
+    }
+
+  }
+```
 
 Type:
 
 ```hcl
 map(object({
-    create_certificate       = optional(bool, false)
-    certificate_name         = optional(string)
-    certificate_location     = optional(string)
-    pfx_blob                 = optional(string)
-    hostname                 = optional(string)
-    app_service_name         = optional(string)
-    zone_resource_group_name = optional(string)
-    resource_group_name      = optional(string)
-    ssl_state                = optional(string)
-    thumbprint_key           = optional(string)
-
-    ttl             = optional(number, 300)
-    validation_type = optional(string, "cname-delegation")
-
-    create_cname_records     = optional(bool, false)
-    cname_name               = optional(string)
-    cname_zone_name          = optional(string)
-    cname_record             = optional(string)
-    cname_target_resource_id = optional(string)
-
-    create_txt_records = optional(bool, false)
-    txt_name           = optional(string)
-    txt_zone_name      = optional(string)
-    txt_records        = optional(map(object({ value = string })))
-
+    create_certificate           = optional(bool, false)
+    certificate_name             = optional(string)
+    certificate_location         = optional(string)
+    pfx_blob                     = optional(string)
+    pfx_password                 = optional(string)
+    hostname                     = optional(string)
+    app_service_name             = optional(string)
+    app_service_plan_resource_id = optional(string)
+    key_vault_secret_id          = optional(string)
+    zone_resource_group_name     = optional(string)
+    resource_group_name          = optional(string)
+    ssl_state                    = optional(string)
+    inherit_tags                 = optional(bool, true)
+    tags                         = optional(map(any), {})
+    thumbprint_key               = optional(string)
+    ttl                          = optional(number, 300)
+    validation_type              = optional(string, "cname-delegation")
+    create_cname_records         = optional(bool, false)
+    cname_name                   = optional(string)
+    cname_zone_name              = optional(string)
+    cname_record                 = optional(string)
+    cname_target_resource_id     = optional(string)
+    create_txt_records           = optional(bool, false)
+    txt_name                     = optional(string)
+    txt_zone_name                = optional(string)
+    txt_records                  = optional(map(object({ value = string })))
   }))
 ```
 
