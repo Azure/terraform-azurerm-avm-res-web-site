@@ -45,6 +45,33 @@ variable "app_settings" {
   DESCRIPTION
 }
 
+variable "application_insights" {
+  type = object({
+    application_type                      = optional(string)
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+  DESCRIPTION
+}
+
 variable "auth_settings" {
   type = map(object({
     additional_login_parameters    = optional(list(string))
@@ -471,15 +498,31 @@ variable "content_share_force_disabled" {
 
 variable "custom_domains" {
   type = map(object({
-    create_certificate = optional(bool, false)
-    certificate_name = optional(string)
-    certificate_location = optional(string)
-    pfx_blob = optional(string)
-    hostname            = optional(string)
-    app_service_name    = optional(string)
-    resource_group_name = optional(string)
-    ssl_state           = optional(string)
-    thumbprint          = optional(string)
+    create_certificate       = optional(bool, false)
+    certificate_name         = optional(string)
+    certificate_location     = optional(string)
+    pfx_blob                 = optional(string)
+    hostname                 = optional(string)
+    app_service_name         = optional(string)
+    zone_resource_group_name = optional(string)
+    resource_group_name      = optional(string)
+    ssl_state                = optional(string)
+    thumbprint_key           = optional(string)
+
+    ttl             = optional(number, 300)
+    validation_type = optional(string, "cname-delegation")
+
+    create_cname_records     = optional(bool, false)
+    cname_name               = optional(string)
+    cname_zone_name          = optional(string)
+    cname_record             = optional(string)
+    cname_target_resource_id = optional(string)
+
+    create_txt_records = optional(bool, false)
+    txt_name           = optional(string)
+    txt_zone_name      = optional(string)
+    txt_records        = optional(map(object({ value = string })))
+
   }))
   default = {
 
@@ -566,6 +609,12 @@ variable "diagnostic_settings" {
     )
     error_message = "At least one of `workspace_resource_id`, `storage_account_resource_id`, `marketplace_partner_resource_id`, or `event_hub_authorization_rule_resource_id`, must be set."
   }
+}
+
+variable "enable_application_insights" {
+  type        = bool
+  default     = false
+  description = "Should Application Insights be enabled for the Function App?"
 }
 
 variable "enable_telemetry" {

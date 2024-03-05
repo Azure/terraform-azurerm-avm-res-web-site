@@ -5,7 +5,7 @@ resource "azurerm_windows_function_app" "this" {
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = var.service_plan_resource_id
-  app_settings                                   = var.app_settings
+  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
   builtin_logging_enabled                        = var.builtin_logging_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
   client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths

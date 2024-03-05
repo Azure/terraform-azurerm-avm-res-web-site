@@ -16,7 +16,6 @@ provider "azurerm" {
   features {}
 }
 
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -30,10 +29,6 @@ resource "random_integer" "region_index" {
   min = 0
 }
 ## End of section to provide a random Azure region for the resource group
-
-# locals {
-#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
-# }
 
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
@@ -64,13 +59,28 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "Y1"
 }
 
-# resource "azurerm_app_service_certificate" "example" {
-#   name                = "example-cert"
-#   resource_group_name = azurerm_resource_group.example.name
-#   location            = azurerm_resource_group.example.location
-#   pfx_blob            = filebase64("")
-#   password            = ""
-# }
+# Use data object to reference an existing Key Vault and stored certificate
+/*
+data "azurerm_key_vault" "existing_keyvault" {
+  name                = ""
+  resource_group_name = ""
+}
+ 
+data "azurerm_key_vault_secret" "stored_certificate" {
+  name         = ""
+  key_vault_id = data.azurerm_key_vault.existing_keyvault.id
+}
+*/
+
+data "azurerm_key_vault" "existing_keyvault" {
+  name                = "vault3-4-24"
+  resource_group_name = "rg-test"
+}
+
+data "azurerm_key_vault_secret" "stored_certificate" {
+  key_vault_id = data.azurerm_key_vault.existing_keyvault.id
+  name         = "donvmccoy"
+}
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -95,16 +105,45 @@ module "test" {
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
 
-#   custom_domains = {
-#     custom_domain_1 = {
-#         create_certificate = false
-#       hostname            = "${module.test.name}.donvmccoy.com"
-#       app_service_name    = module.test.name
-#       resource_group_name = azurerm_resource_group.example.name
-#       ssl_state           = "SniEnabled"
-#       thumbprint          = azurerm_app_service_certificate.example.thumbprint
-#     }
-#   }
+  custom_domains = {
+    # Allows for the configuration of custom domains for the Function App
+    # If not already set, the module allows for the creation of TXT and CNAME records
+
+    custom_domain_1 = {
+
+      zone_resource_group_name = "rg-personal-domain"
+
+      create_txt_records = true
+      txt_name           = "asuid.${module.naming.function_app.name_unique}"
+      txt_zone_name      = "donvmccoy.com"
+      txt_records = {
+        record = {
+          value = "" # Leave empty as module will reference Function App ID after Function App creation
+        }
+      }
+
+      create_cname_records = true
+      cname_name           = "${module.naming.function_app.name_unique}"
+      cname_zone_name      = "donvmccoy.com"
+      cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
+
+      create_certificate   = true
+      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+
+      app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
+      hostname            = "${module.naming.function_app.name_unique}.donvmccoy.com"
+      resource_group_name = azurerm_resource_group.example.name
+      ssl_state           = "SniEnabled"
+      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
+    }
+
+  }
+
+  tags = {
+    environment = "dev-tf"
+  }
 
 }
 
@@ -118,5 +157,33 @@ module "test" {
 #   resource_group_name = azurerm_resource_group.this.name
 #   tenant_id           = data.azurerm_client_config.this.tenant_id
 
-  
+#   network_acls = {
+#     default_action = "Allow"
+#     bypass         = "AzureServices"
+#   }
+
+#   # role_assignments = {
+#   #   deployment_user_secrets = { #give the deployment user access to secrets
+#   #     role_definition_id_or_name = "Key Vault Secrets Officer"
+#   #     principal_id               = data.azurerm_client_config.current.object_id
+#   #   }
+#   #   deployment_user_keys = { #give the deployment user access to keys
+#   #     role_definition_id_or_name = "Key Vault Crypto Officer"
+#   #     principal_id               = data.azurerm_client_config.current.object_id
+#   #   }
+#   #   user_managed_identity_keys = { #give the user assigned managed identity for the disk encryption set access to keys
+#   #     role_definition_id_or_name = "Key Vault Crypto Officer"
+#   #     principal_id               = azurerm_user_assigned_identity.test.principal_id
+#   #   }
+#   # }
+
+#   wait_for_rbac_before_key_operations = {
+#     create = "60s"
+#   }
+
+#   wait_for_rbac_before_secret_operations = {
+#     create = "60s"
+#   }
+
+#   tags = module.test.tags  
 # }

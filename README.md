@@ -28,7 +28,11 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
+- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
+- [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
+- [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
@@ -94,6 +98,35 @@ Description:   A map of key-value pairs for [App Settings](https://docs.microsof
 ```
 
 Type: `map(string)`
+
+Default: `{}`
+
+### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
+
+Description:
+
+Type:
+
+```hcl
+object({
+    application_type                      = optional(string)
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  })
+```
 
 Default: `{}`
 
@@ -548,11 +581,31 @@ Type:
 
 ```hcl
 map(object({
-    hostname            = optional(string)
-    app_service_name    = optional(string)
-    resource_group_name = optional(string)
-    ssl_state           = optional(string)
-    thumbprint          = optional(string)
+    create_certificate       = optional(bool, false)
+    certificate_name         = optional(string)
+    certificate_location     = optional(string)
+    pfx_blob                 = optional(string)
+    hostname                 = optional(string)
+    app_service_name         = optional(string)
+    zone_resource_group_name = optional(string)
+    resource_group_name      = optional(string)
+    ssl_state                = optional(string)
+    thumbprint_key           = optional(string)
+
+    ttl             = optional(number, 300)
+    validation_type = optional(string, "cname-delegation")
+
+    create_cname_records     = optional(bool, false)
+    cname_name               = optional(string)
+    cname_zone_name          = optional(string)
+    cname_record             = optional(string)
+    cname_target_resource_id = optional(string)
+
+    create_txt_records = optional(bool, false)
+    txt_name           = optional(string)
+    txt_zone_name      = optional(string)
+    txt_records        = optional(map(object({ value = string })))
+
   }))
 ```
 
@@ -628,6 +681,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)
+
+Description: Should Application Insights be enabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 

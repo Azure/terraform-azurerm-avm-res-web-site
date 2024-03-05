@@ -1,5 +1,6 @@
 # TODO: insert locals here.
 locals {
+  custom_domain_verification_id = var.os_type == "Windows" ? azurerm_windows_function_app.this[0].custom_domain_verification_id : azurerm_linux_function_app.this[0].custom_domain_verification_id
   managed_identities = {
     system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {
       this = {

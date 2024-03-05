@@ -136,6 +136,19 @@ module "test" {
 
   public_network_access_enabled = false
 
+  enable_application_insights = true
+
+  application_insights = {
+    name                  = module.naming.application_insights.name_unique
+    resource_group_name   = azurerm_resource_group.example.name
+    location              = azurerm_resource_group.example.location
+    application_type      = "web"
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    tags = {
+      environment = "dev-tf"
+    }
+  }
+
   managed_identities = {
     # Identities can only be used with the Standard SKU
 
