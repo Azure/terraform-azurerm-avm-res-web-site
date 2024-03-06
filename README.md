@@ -28,6 +28,11 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
+- [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
+- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
+- [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
+- [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
@@ -93,6 +98,35 @@ Description:   A map of key-value pairs for [App Settings](https://docs.microsof
 ```
 
 Type: `map(string)`
+
+Default: `{}`
+
+### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
+
+Description:
+
+Type:
+
+```hcl
+object({
+    application_type                      = optional(string)
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  })
+```
 
 Default: `{}`
 
@@ -539,6 +573,86 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
+
+Description:   A map of custom domains to assign to the Function App.
+  - `create_certificate` - (Optional) Should a certificate be created for the custom domain? Defaults to `false`.
+  - `create_txt_records` - (Optional) Should TXT records be created for the custom domain? Defaults to `false`.
+  - `create_cname_records` - (Optional) Should CNAME records be created for the custom domain? Defaults to `false`.
+
+  ```terraform
+  custom_domains = {
+    # Allows for the configuration of custom domains for the Function App
+    # If not already set, the module allows for the creation of TXT and CNAME records
+
+    custom_domain_1 = {
+
+      zone_resource_group_name = "<zone_resource_group_name>"
+
+      create_txt_records = true
+      txt_name           = "asuid.<module.naming.function_app.name_unique>"
+      txt_zone_name      = "<zone_name>"
+      txt_records = {
+        record = {
+          value = "" # Leave empty as module will reference Function App ID after Function App creation
+        }
+      }
+
+      create_cname_records = true
+      cname_name           = "<module.naming.function_app.name_unique>"
+      cname_zone_name      = "<zone_name>"
+      cname_record         = "<module.naming.function_app.name_unique>-custom-domain.azurewebsites.net"
+
+      create_certificate   = true
+      certificate_name     = "<module.naming.function_app.name_unique>-<data.azurerm_key_vault_secret.stored_certificate.name>"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+
+      app_service_name    = "<module.naming.function_app.name_unique>-custom-domain"
+      hostname            = "<module.naming.function_app.name_unique>.<root_domain>"
+      resource_group_name = azurerm_resource_group.example.name
+      ssl_state           = "SniEnabled"
+      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
+    }
+
+  }
+```
+
+Type:
+
+```hcl
+map(object({
+    create_certificate           = optional(bool, false)
+    certificate_name             = optional(string)
+    certificate_location         = optional(string)
+    pfx_blob                     = optional(string)
+    pfx_password                 = optional(string)
+    hostname                     = optional(string)
+    app_service_name             = optional(string)
+    app_service_plan_resource_id = optional(string)
+    key_vault_secret_id          = optional(string)
+    zone_resource_group_name     = optional(string)
+    resource_group_name          = optional(string)
+    ssl_state                    = optional(string)
+    inherit_tags                 = optional(bool, true)
+    tags                         = optional(map(any), {})
+    thumbprint_key               = optional(string)
+    ttl                          = optional(number, 300)
+    validation_type              = optional(string, "cname-delegation")
+    create_cname_records         = optional(bool, false)
+    cname_name                   = optional(string)
+    cname_zone_name              = optional(string)
+    cname_record                 = optional(string)
+    cname_target_resource_id     = optional(string)
+    create_txt_records           = optional(bool, false)
+    txt_name                     = optional(string)
+    txt_zone_name                = optional(string)
+    txt_records                  = optional(map(object({ value = string })))
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
 Description:   The Customer Managed Keys that should be associated with the Function App.
@@ -609,6 +723,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)
+
+Description: Should Application Insights be enabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 

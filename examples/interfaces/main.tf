@@ -113,7 +113,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.0
+  # version = 0.1.1
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
@@ -129,6 +129,19 @@ module "test" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
 
   public_network_access_enabled = false
+
+  enable_application_insights = true
+
+  application_insights = {
+    name                  = module.naming.application_insights.name_unique
+    resource_group_name   = azurerm_resource_group.example.name
+    location              = azurerm_resource_group.example.location
+    application_type      = "web"
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    tags = {
+      environment = "dev-tf"
+    }
+  }
 
   managed_identities = {
     # Identities can only be used with the Standard SKU

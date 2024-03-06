@@ -44,6 +44,3 @@ avm.tflint_example.hcl
 .DS_Store
 avm.tflint.merged.hcl
 avm.tflint_example.merged.hcl
-
-# Ignore custom Python scripts
-alphabetize_variables.py 
