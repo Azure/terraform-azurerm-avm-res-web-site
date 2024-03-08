@@ -496,6 +496,12 @@ variable "content_share_force_disabled" {
   description = "Should content share be force disabled for the Function App?"
 }
 
+variable "create_storage_account" {
+  type        = bool
+  default     = true
+  description = "Should a Storage Account be created for the Function App?"
+}
+
 variable "custom_domains" {
   type = map(object({
     create_certificate           = optional(bool, false)
@@ -1015,6 +1021,25 @@ variable "sticky_settings" {
       connection_string_names = ["example1", "example2"]
     }
   }
+  DESCRIPTION
+}
+
+variable "storage_account" {
+  type = object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
   DESCRIPTION
 }
 

@@ -573,6 +573,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account)
+
+Description: Should a Storage Account be created for the Function App?
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
 
 Description:   A map of custom domains to assign to the Function App.
@@ -1124,6 +1132,28 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
+
+Description:   A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
 Description: The access key of the Storage Account to deploy the Function App in.
@@ -1273,7 +1303,13 @@ Description: The default hostname of the resource.
 
 ## Modules
 
-No modules.
+The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.1
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

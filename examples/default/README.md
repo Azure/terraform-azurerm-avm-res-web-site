@@ -53,14 +53,6 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "LRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
-}
-
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
   # This will equate to Consumption (Serverless) in portal
@@ -79,18 +71,26 @@ module "test" {
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = 0.1.1
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Use these variables for an existing storage account
+  # storage_account_name       = azurerm_storage_account.example.name
+  # storage_account_access_key = azurerm_storage_account.example.primary_access_key
+
+  # Uses the avm-res-storage-storageaccount module to create a new storage account
+  storage_account = {
+    name                = module.naming.storage_account.name_unique
+    resource_group_name = azurerm_resource_group.example.name
+  }
+
 }
 ```
 
@@ -119,7 +119,6 @@ The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
-- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
