@@ -71,7 +71,7 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.1
+  # version = 0.1.2
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
