@@ -1,5 +1,6 @@
+### Function App [START] ###
 resource "azurerm_windows_function_app" "this" {
-  count = var.os_type == "Windows" ? 1 : 0
+  count = var.kind == "functionapp" && var.os_type == "Windows" ? 1 : 0
 
   location                                       = coalesce(var.location)
   name                                           = var.name
@@ -408,7 +409,7 @@ resource "azurerm_windows_function_app" "this" {
 }
 
 resource "azurerm_linux_function_app" "this" {
-  count = var.os_type == "Linux" ? 1 : 0
+  count = var.kind == "functionapp" && var.os_type == "Linux" ? 1 : 0
 
   location                                       = coalesce(var.location)
   name                                           = var.name
@@ -829,3 +830,37 @@ resource "azurerm_linux_function_app" "this" {
     }
   }
 }
+### Function App [END] ###
+
+### Web App [START] ###
+
+resource "azurerm_windows_web_app" "this" {
+  count = var.kind == "webapp" && var.os_type == "Windows" ? 1 : 0
+
+  location                                       = coalesce(var.location)
+  name                                           = var.name
+  resource_group_name                            = var.resource_group_name
+  service_plan_id                            = var.service_plan_resource_id
+  app_settings                                   = var.app_settings
+
+  site_config {
+  }
+    
+}
+
+resource "azurerm_linux_web_app" "this" {
+  count = var.kind == "webapp" && var.os_type == "Linux" ? 1 : 0
+
+  location                                       = coalesce(var.location)
+  name                                           = var.name
+  resource_group_name                            = var.resource_group_name
+  service_plan_id                            = var.service_plan_resource_id
+  app_settings                                   = var.app_settings
+
+  site_config {
+  }
+    
+}
+
+
+### Web App [END] ###

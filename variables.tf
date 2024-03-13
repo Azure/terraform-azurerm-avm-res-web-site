@@ -1,4 +1,9 @@
 # Required Inputs
+variable "kind" {
+  type = string
+  description = "The type of App Service to deploy. Possible values are `functionapp` and `webapp`."
+}
+
 variable "name" {
   type        = string
   description = "The name which should be used for the Function App."
@@ -6,7 +11,7 @@ variable "name" {
 
 variable "os_type" {
   type        = string
-  description = "The operating system that should be the same type of the App Service Plan to deploy the Function App in."
+  description = "The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in."
 }
 
 variable "resource_group_name" {
