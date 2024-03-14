@@ -1,6 +1,6 @@
 # Required Inputs
 variable "kind" {
-  type = string
+  type        = string
   description = "The type of App Service to deploy. Possible values are `functionapp` and `webapp`."
 }
 
@@ -398,6 +398,43 @@ auth_settings_v2 = {
 DESCRIPTION
 }
 
+variable "auto_heal_setting" {
+  type = map(object({
+    action = optional(object({
+      action_type = string
+      custom_action = optional(object({
+        executable = string
+        parameters = optional(string)
+      }))
+      minimum_process_execution_time = optional(string, "00:00:00")
+    }))
+    trigger = optional(object({
+      private_memory_kb = optional(number)
+      requests = optional(object({
+        count    = number
+        interval = string
+      }))
+      slow_request = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
+      status_code = optional(map(object({
+        count             = number
+        interval          = string
+        status_code_range = number
+        path              = optional(string)
+        sub_status        = optional(number)
+        win32_status_code = optional(number)
+      })), {})
+    }))
+  }))
+  default = {
+
+  }
+}
+
 variable "backup" {
   type = map(object({
     enabled             = optional(bool, true)
@@ -449,6 +486,12 @@ variable "builtin_logging_enabled" {
   type        = bool
   default     = true
   description = "Should builtin logging be enabled for the Function App?"
+}
+
+variable "client_affinity_enabled" {
+  type        = bool
+  default     = false
+  description = "Should client affinity be enabled for the Function App?"
 }
 
 variable "client_certificate_enabled" {
@@ -725,6 +768,32 @@ variable "lock" {
   }
 }
 
+variable "logs" {
+  type = map(object({
+    application_logs = optional(object({
+      azure_blob_storage = optional(object({
+        level             = optional(string, "Off")
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system_level = optional(string, "Off")
+    }))
+    detailed_error_messages = optional(bool, false)
+    failed_request_tracing  = optional(bool, false)
+    http_logs = optional(object({
+      azure_blob_storage_http = optional(object({
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system = optional(object({
+        retention_in_days = optional(number, 0)
+        retention_in_mb   = number
+      }))
+    }))
+  }))
+  default = {}
+}
+
 # tflint-ignore: terraform_unused_declarations
 variable "managed_identities" {
   type = object({
@@ -828,6 +897,7 @@ variable "site_config" {
     api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
     api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
     app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
+    auto_heal_enabled                             = optional(bool)        # (Optional) Should auto-heal be enabled for the Function App?
     app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
     application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
     application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
@@ -839,6 +909,7 @@ variable "site_config" {
     health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
     health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
@@ -846,6 +917,7 @@ variable "site_config" {
     remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
     remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
     runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_ip_restriction_default_action             = optional(string, "Allow")         #(Optional) The default action for SCM IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
     use_32_bit_worker                             = optional(bool, false)             #(Optional) Should the 32-bit worker process be used. Defaults to false.

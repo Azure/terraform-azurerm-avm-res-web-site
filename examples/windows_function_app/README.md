@@ -1,5 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
+# Default example
 
+This deploys the module with a Windows Function App in its simplest form.
 
 ```hcl
 terraform {
@@ -20,6 +22,7 @@ provider "azurerm" {
   features {}
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -33,6 +36,10 @@ resource "random_integer" "region_index" {
   min = 0
 }
 ## End of section to provide a random Azure region for the resource group
+
+# locals {
+#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
+# }
 
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
@@ -63,19 +70,14 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "Y1"
 }
 
-# Use data object to reference an existing Key Vault and stored certificate
-/*
-data "azurerm_key_vault" "existing_keyvault" {
-  name                = ""
-  resource_group_name = ""
-}
- 
-data "azurerm_key_vault_secret" "stored_certificate" {
-  name         = ""
-  key_vault_id = data.azurerm_key_vault.existing_keyvault.id
-}
-*/
+# resource "azurerm_windows_function_app_slot" "example" {
+#   name = "example-slot"
+#   function_app_id = module.test.resource.id
+#   storage_account_name       = azurerm_storage_account.example.name
+#   storage_account_access_key = azurerm_storage_account.example.primary_access_key 
 
+#   site_config {}
+# }
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -83,13 +85,12 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 # with a data source.
 module "test" {
   source = "../../"
-
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = "0.1.3"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-custom-domain"
+  name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
@@ -100,47 +101,6 @@ module "test" {
 
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
-
-  custom_domains = {
-    # Allows for the configuration of custom domains for the Function App
-    # If not already set, the module allows for the creation of TXT and CNAME records
-    /*
-    custom_domain_1 = {
-
-      zone_resource_group_name = "<zone_resource_group_name>"
-
-      create_txt_records = true
-      txt_name           = "asuid.${module.naming.function_app.name_unique}"
-      txt_zone_name      = "<zone_name>"
-      txt_records = {
-        record = {
-          value = "" # Leave empty as module will reference Function App ID after Function App creation
-        }
-      }
-
-      create_cname_records = true
-      cname_name           = "${module.naming.function_app.name_unique}"
-      cname_zone_name      = "<zone_name>"
-      cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
-
-      create_certificate   = true
-      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      certificate_location = azurerm_resource_group.example.location
-      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
-
-      app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}.<root_domain>"
-      resource_group_name = azurerm_resource_group.example.name
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
-    }
-*/
-  }
-
-  tags = {
-    environment = "dev-tf"
-  }
-
 }
 ```
 
@@ -217,4 +177,8 @@ Source: ../../
 
 Version:
 
+<!-- markdownlint-disable-next-line MD041 -->
+## Data Collection
+
+The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at <https://go.microsoft.com/fwlink/?LinkID=824704>. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 <!-- END_TF_DOCS -->

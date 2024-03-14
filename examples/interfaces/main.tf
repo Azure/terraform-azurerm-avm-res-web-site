@@ -113,7 +113,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.2
+  # version = "0.1.3"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
@@ -121,6 +121,7 @@ module "test" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
+  kind    = "functionapp"
   os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id

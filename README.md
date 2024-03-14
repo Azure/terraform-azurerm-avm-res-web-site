@@ -34,6 +34,7 @@ The following resources are used by this module:
 - [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
 - [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
+- [azurerm_linux_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
@@ -43,12 +44,19 @@ The following resources are used by this module:
 - [azurerm_role_assignment.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
+- [azurerm_windows_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_web_app) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
 The following input variables are required:
+
+### <a name="input_kind"></a> [kind](#input\_kind)
+
+Description: The type of App Service to deploy. Possible values are `functionapp` and `webapp`.
+
+Type: `string`
 
 ### <a name="input_name"></a> [name](#input\_name)
 
@@ -58,7 +66,7 @@ Type: `string`
 
 ### <a name="input_os_type"></a> [os\_type](#input\_os\_type)
 
-Description: The operating system that should be the same type of the App Service Plan to deploy the Function App in.
+Description: The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in.
 
 Type: `string`
 
@@ -456,6 +464,48 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_auto_heal_setting"></a> [auto\_heal\_setting](#input\_auto\_heal\_setting)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    action = optional(object({
+      action_type = string
+      custom_action = optional(object({
+        executable = string
+        parameters = optional(string)
+      }))
+      minimum_process_execution_time = optional(string, "00:00:00")
+    }))
+    trigger = optional(object({
+      private_memory_kb = optional(number)
+      requests = optional(object({
+        count    = number
+        interval = string
+      }))
+      slow_request = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
+      status_code = optional(map(object({
+        count             = number
+        interval          = string
+        status_code_range = number
+        path              = optional(string)
+        sub_status        = optional(number)
+        win32_status_code = optional(number)
+      })), {})
+    }))
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_backup"></a> [backup](#input\_backup)
 
 Description:   A map of backup settings to assign to the Function App.
@@ -512,6 +562,14 @@ Description: Should builtin logging be enabled for the Function App?
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_client_affinity_enabled"></a> [client\_affinity\_enabled](#input\_client\_affinity\_enabled)
+
+Description: Should client affinity be enabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_client_certificate_enabled"></a> [client\_certificate\_enabled](#input\_client\_certificate\_enabled)
 
@@ -805,6 +863,39 @@ object({
 
 Default: `{}`
 
+### <a name="input_logs"></a> [logs](#input\_logs)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    application_logs = optional(object({
+      azure_blob_storage = optional(object({
+        level             = optional(string, "Off")
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system_level = optional(string, "Off")
+    }))
+    detailed_error_messages = optional(bool, false)
+    failed_request_tracing  = optional(bool, false)
+    http_logs = optional(object({
+      azure_blob_storage_http = optional(object({
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system = optional(object({
+        retention_in_days = optional(number, 0)
+        retention_in_mb   = number
+      }))
+    }))
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
 Description: Managed identities to be created for the resource.
@@ -1017,6 +1108,7 @@ object({
     api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
     api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
     app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
+    auto_heal_enabled                             = optional(bool)        # (Optional) Should auto-heal be enabled for the Function App?
     app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
     application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
     application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
@@ -1028,6 +1120,7 @@ object({
     health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
     health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
@@ -1035,6 +1128,7 @@ object({
     remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
     remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
     runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_ip_restriction_default_action             = optional(string, "Allow")         #(Optional) The default action for SCM IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
     use_32_bit_worker                             = optional(bool, false)             #(Optional) Should the 32-bit worker process be used. Defaults to false.

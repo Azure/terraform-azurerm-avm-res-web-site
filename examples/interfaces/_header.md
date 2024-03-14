@@ -1,3 +1,3 @@
 # Default example
 
-This deploys the module using some of the interfaces.
+This deploys the module as a Windows Function App using some of the interfaces.

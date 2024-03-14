@@ -59,19 +59,10 @@ resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
   # This will equate to Consumption (Serverless) in portal
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
+  os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
-
-# resource "azurerm_windows_function_app_slot" "example" {
-#   name = "example-slot"
-#   function_app_id = module.test.resource.id
-#   storage_account_name       = azurerm_storage_account.example.name
-#   storage_account_access_key = azurerm_storage_account.example.primary_access_key 
-
-#   site_config {}
-# }
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -80,14 +71,15 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.2
+  # version = "0.1.3"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-windows"
+  name                = "${module.naming.app_service.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
+  kind    = "webapp"
   os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
