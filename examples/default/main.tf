@@ -70,7 +70,7 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.1.3"
+  # version = "0.2.0"
 
   enable_telemetry = false # see variables.tf
 
@@ -78,18 +78,18 @@ module "test" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable
-  os_type = azurerm_service_plan.example.os_type 
+  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable in v0.2.0
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-/* 
-  # Using existing storage account
+  /* 
+  # Uses an existing storage account
   storage_account_name       = module.avm_res_storage_storageaccount.name
   storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 */
 
-  
+
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
   create_storage_account = true
   storage_account = {

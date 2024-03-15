@@ -631,6 +631,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account)
+
+Description: Should a Storage Account be created for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
 
 Description:   A map of custom domains to assign to the Function App.
@@ -742,7 +750,7 @@ Default: `{}`
 
 ### <a name="input_daily_memory_time_quota"></a> [daily\_memory\_time\_quota](#input\_daily\_memory\_time\_quota)
 
-Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to 0.
+Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`.
 
 Type: `number`
 
@@ -802,7 +810,7 @@ Default: `true`
 
 ### <a name="input_enabled"></a> [enabled](#input\_enabled)
 
-Description: Is the Function App enabled? Defaults to true.
+Description: Is the Function App enabled? Defaults to `true`.
 
 Type: `bool`
 
@@ -818,7 +826,7 @@ Default: `true`
 
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
-Description: The version of the Azure Functions runtime to use. Defaults to ~3.
+Description: The version of the Azure Functions runtime to use. Defaults to `~4`.
 
 Type: `string`
 
@@ -986,9 +994,9 @@ Description: A map of role assignments to create on this resource. The map key i
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
 - `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
 - `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `condition_version` - The version of the condition syntax. Valid values are `2.0`.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 
@@ -1140,7 +1148,7 @@ object({
       retention_period_days = optional(number)
     })), {})
     application_stack = optional(map(object({
-      dotnet_version              = optional(string, "v4.0")
+      dotnet_version              = optional(string)
       java_version                = optional(string)
       node_version                = optional(string)
       powershell_core_version     = optional(string)
@@ -1154,6 +1162,15 @@ object({
         registry_url      = string
         registry_username = optional(string)
       })))
+      current_stack                = optional(string)
+      docker_image_name            = optional(string)
+      docker_registry_url          = optional(string)
+      docker_registry_username     = optional(string)
+      docker_registry_password     = optional(string)
+      docker_container_name        = optional(string)
+      docker_container_tag         = optional(string)
+      java_embedded_server_enabled = optional(bool)
+      tomcat_version               = optional(bool)
     })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))
@@ -1214,6 +1231,28 @@ map(object({
     app_setting_names       = optional(list(string))
     connection_string_names = optional(list(string))
   }))
+```
+
+Default: `{}`
+
+### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
+
+Description:   A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
 ```
 
 Default: `{}`
@@ -1367,7 +1406,13 @@ Description: The default hostname of the resource.
 
 ## Modules
 
-No modules.
+The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.1
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

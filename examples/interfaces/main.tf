@@ -53,12 +53,19 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "LRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
+module "avm_res_storage_storageaccount" {
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "0.1.1"
+
+  enable_telemetry              = var.enable_telemetry
+  name                          = module.naming.storage_account.name_unique
+  resource_group_name           = azurerm_resource_group.example.name
+  shared_access_key_enabled     = true
+  public_network_access_enabled = true
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = "Allow"
+  }
 }
 
 resource "azurerm_log_analytics_workspace" "example" {
@@ -113,7 +120,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.1.3"
+  # version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
@@ -126,8 +133,8 @@ module "test" {
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 
   public_network_access_enabled = false
 

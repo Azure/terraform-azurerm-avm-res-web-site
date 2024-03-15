@@ -544,7 +544,8 @@ variable "content_share_force_disabled" {
   description = "Should content share be force disabled for the Function App?"
 }
 
-variable "create_storage_account" { # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
+variable "create_storage_account" {
+  # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
   type        = bool
   default     = false
   description = "Should a Storage Account be created for the Function App?"
@@ -946,15 +947,15 @@ variable "site_config" {
         registry_url      = string
         registry_username = optional(string)
       })))
-      current_stack = optional(string)
-      docker_image_name = optional(string)
-      docker_registry_url = optional(string)
-      docker_registry_username = optional(string)
-      docker_registry_password = optional(string)
-      docker_container_name = optional(string)
-      docker_container_tag = optional(string)
+      current_stack                = optional(string)
+      docker_image_name            = optional(string)
+      docker_registry_url          = optional(string)
+      docker_registry_username     = optional(string)
+      docker_registry_password     = optional(string)
+      docker_container_name        = optional(string)
+      docker_container_tag         = optional(string)
       java_embedded_server_enabled = optional(bool)
-      tomcat_version = optional(bool)
+      tomcat_version               = optional(bool)
     })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))

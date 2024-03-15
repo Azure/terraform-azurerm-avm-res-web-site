@@ -37,10 +37,6 @@ resource "random_integer" "region_index" {
 }
 ## End of section to provide a random Azure region for the resource group
 
-# locals {
-#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
-# }
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -53,13 +49,20 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "LRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
-}
+# module "avm_res_storage_storageaccount" {
+#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
+#   version = "0.1.1"
+
+#   enable_telemetry = false
+#   name                          = module.naming.storage_account.name_unique
+#   resource_group_name           = azurerm_resource_group.example.name
+#   shared_access_key_enabled     = true
+#   public_network_access_enabled = true
+#   network_rules = {
+#     bypass         = ["AzureServices"]
+#     default_action = "Allow"
+#   }
+# }
 
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
@@ -70,28 +73,35 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "Y1"
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.1.3"
+  # version = "0.2.0"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # see variables.tf
 
   name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
-  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable in v0.2.0
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  /* 
+  # Uses an existing storage account
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+*/
+
+
+  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
+  create_storage_account = true
+  storage_account = {
+    name                = module.naming.storage_account.name_unique
+    resource_group_name = azurerm_resource_group.example.name
+  }
 }
 ```
 
@@ -120,7 +130,6 @@ The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
-- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -145,6 +154,10 @@ Default: `true`
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: This is the full output for the resource.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
