@@ -544,6 +544,12 @@ variable "content_share_force_disabled" {
   description = "Should content share be force disabled for the Function App?"
 }
 
+variable "create_storage_account" { # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
+  type        = bool
+  default     = false
+  description = "Should a Storage Account be created for the Function App?"
+}
+
 variable "custom_domains" {
   type = map(object({
     create_certificate           = optional(bool, false)
@@ -622,9 +628,6 @@ variable "custom_domains" {
   DESCRIPTION
 }
 
-# required AVM interfaces
-# remove only if not supported by the resource
-# tflint-ignore: terraform_unused_declarations
 variable "customer_managed_key" {
   type = object({
     key_vault_resource_id              = optional(string)
@@ -653,7 +656,7 @@ variable "customer_managed_key" {
 variable "daily_memory_time_quota" {
   type        = number
   default     = 0
-  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to 0."
+  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`."
 }
 
 variable "diagnostic_settings" {
@@ -720,7 +723,7 @@ variable "enable_telemetry" {
 variable "enabled" {
   type        = bool
   default     = true
-  description = "Is the Function App enabled? Defaults to true."
+  description = "Is the Function App enabled? Defaults to `true`."
 }
 
 variable "ftp_publish_basic_authentication_enabled" {
@@ -732,7 +735,7 @@ variable "ftp_publish_basic_authentication_enabled" {
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
-  description = "The version of the Azure Functions runtime to use. Defaults to ~3."
+  description = "The version of the Azure Functions runtime to use. Defaults to `~4`."
 }
 
 variable "https_only" {
@@ -883,9 +886,9 @@ A map of role assignments to create on this resource. The map key is deliberatel
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
 - `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
 - `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `condition_version` - The version of the condition syntax. Valid values are `2.0`.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
@@ -1101,6 +1104,26 @@ variable "sticky_settings" {
       connection_string_names = ["example1", "example2"]
     }
   }
+  DESCRIPTION
+}
+
+variable "storage_account" {
+  type = object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+  ```
   DESCRIPTION
 }
 
