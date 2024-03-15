@@ -485,7 +485,7 @@ resource "azurerm_linux_function_app" "this" {
         java_version                = application_stack.value.java_version != null ? application_stack.value.java_version : null
         node_version                = application_stack.value.node_version != null ? application_stack.value.node_version : null
         powershell_core_version     = application_stack.value.powershell_core_version != null ? application_stack.value.powershell_core_version : null
-        python_version              = application_stack.value.python_version
+        python_version              = application_stack.value.python_version != null ? application_stack.value.python_version : null
         use_custom_runtime          = application_stack.value.use_custom_runtime == true ? application_stack.value.use_custom_runtime : null
         use_dotnet_isolated_runtime = application_stack.value.use_dotnet_isolated_runtime != null ? application_stack.value.use_dotnet_isolated_runtime : null
 

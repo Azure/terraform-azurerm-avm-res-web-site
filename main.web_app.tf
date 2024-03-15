@@ -56,17 +56,21 @@ resource "azurerm_windows_web_app" "this" {
       for_each = var.site_config.application_stack
 
       content {
+        current_stack = application_stack.value.current_stack
         docker_image_name        = application_stack.value.docker_image_name
-        docker_registry_password = application_stack.value.docker_registry_password
         docker_registry_url      = application_stack.value.docker_registry_url
         docker_registry_username = application_stack.value.docker_registry_username
-        dotnet_version           = application_stack.value.dotnet_version != null ? application_stack.value.dotnet_version : null
-        # go_version = application_stack.value.go_version != null ? application_stack.value.go_version : null
-        # java_server = application_stack.value.java_server != null ? application_stack.value.java_server : null
-        # java_server_version = application_stack.value.java_server_version != null ? application_stack.value.java_server_version : null
-        java_version = application_stack.value.java_version != null ? application_stack.value.java_version : null
-        node_version = application_stack.value.node_version != null ? application_stack.value.node_version : null
-        php_version  = application_stack.value.php_version != null ? application_stack.value.php_version : null
+        docker_registry_password = application_stack.value.docker_registry_password
+        docker_container_name = application_stack.value.docker_container_name
+        docker_container_tag = application_stack.value.docker_container_tag
+        dotnet_version           = application_stack.value.current_stack == "dotnet" ? application_stack.value.dotnet_version : null
+        dotnet_core_version = application_stack.value.current_stack == "dotnetcore" ? application_stack.value.dotnet_core_version : null
+        tomcat_version = application_stack.value.tomcat_version != null ? application_stack.value.tomcat_version : null
+        java_embedded_server_enabled = application_stack.value.java_embedded_server_enabled != null ? application_stack.value.java_embedded_server_enabled : null
+        java_version = application_stack.value.current_stack == "java" ? application_stack.value.java_version : null
+        node_version = application_stack.value.current_stack == "node" ? application_stack.value.node_version : null
+        php_version  = application_stack.value.current_stack == "php" ? application_stack.value.php_version : null
+        python = application_stack.value.current_stack == "python" ? application_stack.value.python : null
       }
     }
     dynamic "auto_heal_setting" {

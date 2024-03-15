@@ -929,7 +929,7 @@ variable "site_config" {
       retention_period_days = optional(number)
     })), {})
     application_stack = optional(map(object({
-      dotnet_version              = optional(string, "v4.0")
+      dotnet_version              = optional(string)
       java_version                = optional(string)
       node_version                = optional(string)
       powershell_core_version     = optional(string)
@@ -943,6 +943,15 @@ variable "site_config" {
         registry_url      = string
         registry_username = optional(string)
       })))
+      current_stack = optional(string)
+      docker_image_name = optional(string)
+      docker_registry_url = optional(string)
+      docker_registry_username = optional(string)
+      docker_registry_password = optional(string)
+      docker_container_name = optional(string)
+      docker_container_tag = optional(string)
+      java_embedded_server_enabled = optional(bool)
+      tomcat_version = optional(bool)
     })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))

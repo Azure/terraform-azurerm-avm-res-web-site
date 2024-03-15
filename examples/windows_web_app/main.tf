@@ -86,4 +86,14 @@ module "test" {
 
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
+
+  site_config = {
+    application_stack = {
+      as1 = {
+        current_stack = "dotnet"
+        dotnet_version = "v4.0"
+      }
+    }
+  }
+
 }
