@@ -433,6 +433,37 @@ variable "auto_heal_setting" {
   default = {
 
   }
+  description = <<DESCRIPTION
+
+  Configures the Auto Heal settings for the Function App. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+
+  - `action` - (Optional) The action to take when the trigger is activated.
+    - `action_type` - (Required) The type of action to take. Possible values include: `CustomAction`, `Recycle`, `LogEvent`, `HttpRequst`.
+    - `custom_action` - (Optional) The custom action to take when the trigger is activated.
+      - `executable` - (Required) The executable to run when the trigger is activated.
+      - `parameters` - (Optional) The parameters to pass to the executable.
+    - `minimum_process_execution_time` - (Optional) The minimum process execution time before the action is taken. Defaults to `00:00:00`.
+  - `trigger` - (Optional) The trigger to activate the action.
+    - `private_memory_kb` - (Optional) The private memory in kilobytes to trigger the action.
+    - `requests` - (Optional) The requests trigger to activate the action.
+      - `count` - (Required) The number of requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+    - `slow_request` - (Optional) The slow request trigger to activate the action.
+      - `count` - (Required) The number of slow requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `take_taken` - (Required) The time taken to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+    - `status_code` - (Optional) The status code trigger to activate the action.
+      - `count` - (Required) The number of status codes to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `status_code_range` - (Required) The status code range to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+      - `sub_status` - (Optional) The sub status to trigger the action.
+      - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
+
+  ```terraform
+
+  DESCRIPTION
 }
 
 variable "backup" {
