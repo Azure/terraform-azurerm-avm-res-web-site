@@ -774,17 +774,17 @@ variable "lock" {
 
 variable "logs" {
   type = map(object({
-    application_logs = optional(object({
+    application_logs = optional(map(object({
       azure_blob_storage = optional(object({
         level             = optional(string, "Off")
         retention_in_days = optional(number, 0)
         sas_url           = string
       }))
       file_system_level = optional(string, "Off")
-    }))
+    })), {})
     detailed_error_messages = optional(bool, false)
     failed_request_tracing  = optional(bool, false)
-    http_logs = optional(object({
+    http_logs = optional(map(object({
       azure_blob_storage_http = optional(object({
         retention_in_days = optional(number, 0)
         sas_url           = string
@@ -793,9 +793,15 @@ variable "logs" {
         retention_in_days = optional(number, 0)
         retention_in_mb   = number
       }))
-    }))
+    })), {})
   }))
-  default = {}
+  default     = {}
+  description = <<DESCRIPTION
+
+A map of logs to create on the Function App.
+
+
+  DESCRIPTION
 }
 
 # tflint-ignore: terraform_unused_declarations
