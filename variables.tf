@@ -2,6 +2,11 @@
 variable "kind" {
   type        = string
   description = "The type of App Service to deploy. Possible values are `functionapp` and `webapp`."
+
+  validation {
+    error_message = "The value must be on of: `functionapp` or `webapp`"
+    condition     = contains(["functionapp", "webapp"], var.kind)
+  }
 }
 
 variable "name" {
@@ -287,7 +292,9 @@ variable "auth_settings_v2" {
     })))
 
   }))
-  default     = {}
+  default = {
+
+  }
   description = <<DESCRIPTION
 A map of authentication settings (V2) to assign to the Function App.
     
@@ -464,6 +471,7 @@ variable "auto_heal_setting" {
   ```terraform
 
   DESCRIPTION
+  nullable    = false
 }
 
 variable "backup" {
@@ -573,13 +581,6 @@ variable "content_share_force_disabled" {
   type        = bool
   default     = false
   description = "Should content share be force disabled for the Function App?"
-}
-
-variable "create_storage_account" {
-  # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
-  type        = bool
-  default     = false
-  description = "Should a Storage Account be created for the Function App?"
 }
 
 variable "custom_domains" {
@@ -764,6 +765,52 @@ variable "ftp_publish_basic_authentication_enabled" {
   description = "Should basic authentication be enabled for FTP publish?"
 }
 
+variable "function_app_create_storage_account" {
+  # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
+  type        = bool
+  default     = false
+  description = "Should a Storage Account be created for the Function App?"
+}
+
+variable "function_app_storage_account" {
+  type = object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+  ```
+  DESCRIPTION
+}
+
+variable "function_app_storage_account_access_key" {
+  type        = string
+  default     = null
+  description = "The access key of the Storage Account to deploy the Function App in."
+  sensitive   = true
+}
+
+variable "function_app_storage_account_name" {
+  type        = string
+  default     = null
+  description = "The name of the Storage Account to deploy the Function App in."
+}
+
+variable "function_app_storage_uses_managed_identity" {
+  type        = bool
+  default     = false
+  description = "Should the Storage Account use a Managed Identity?"
+}
+
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
@@ -826,13 +873,16 @@ variable "logs" {
       }))
     })), {})
   }))
-  default     = {}
+  default = {
+
+  }
   description = <<DESCRIPTION
 
 A map of logs to create on the Function App.
 
 
   DESCRIPTION
+  nullable    = false
 }
 
 # tflint-ignore: terraform_unused_declarations
@@ -1145,59 +1195,34 @@ variable "sticky_settings" {
   DESCRIPTION
 }
 
-variable "storage_account" {
-  type = object({
-    name                = optional(string)
-    resource_group_name = optional(string)
-  })
-  default = {
-
-  }
-  description = <<DESCRIPTION
-  A map of objects that represent a Storage Account to mount to the Function App.
-
-  - `name` - (Optional) The name of the Storage Account.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
-
-  ```terraform
-
-  ```
-  DESCRIPTION
-}
-
-variable "storage_account_access_key" {
+variable "storage_key_vault_secret_id" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account to deploy the Function App in."
-  sensitive   = true
+  description = "The ID of the secret in the key vault to use for the Storage Account access key."
 }
 
-variable "storage_account_name" {
-  type        = string
-  default     = null
-  description = "The name of the Storage Account to deploy the Function App in."
-}
-
-variable "storage_accounts" {
+variable "storage_shares_to_mount" {
   type = map(object({
-    access_key   = optional(string)
-    account_name = optional(string)
-    mount_path   = optional(string)
-    name         = optional(string)
-    share_name   = optional(string)
+    access_key   = string
+    account_name = string
+    mount_path   = string
+    name         = string
+    share_name   = string
     type         = optional(string, "AzureFiles")
   }))
   default = {
 
   }
   description = <<DESCRIPTION
-  A map of objects that represent Storage Accounts to mount to the Function App.
+  A map of objects that represent Storage Account FILE SHARES to mount to the Function App.
+  This functionality is only available for Linux Function Apps, via [documentation](https://learn.microsoft.com/en-us/azure/azure-functions/storage-considerations?tabs=azure-cli)
+
   The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `access_key` - (Optional) The access key of the Storage Account.
   - `account_name` - (Optional) The name of the Storage Account.
   - `name` - (Optional) The name of the Storage Account to mount.
   - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of Storage Account. Defaults to `AzureFiles`.
+  - `type` - (Optional) The type of Storage Account. Currently, only a `type` of `AzureFiles` is supported. Defaults to `AzureFiles`.
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
@@ -1213,18 +1238,6 @@ variable "storage_accounts" {
   }
   ```
   DESCRIPTION
-}
-
-variable "storage_key_vault_secret_id" {
-  type        = string
-  default     = null
-  description = "The ID of the secret in the key vault to use for the Storage Account access key."
-}
-
-variable "storage_uses_managed_identity" {
-  type        = bool
-  default     = false
-  description = "Should the Storage Account use a Managed Identity?"
 }
 
 # tflint-ignore: terraform_unused_declarations

@@ -660,14 +660,6 @@ Type: `bool`
 
 Default: `false`
 
-### <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account)
-
-Description: Should a Storage Account be created for the Function App?
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
 
 Description:   A map of custom domains to assign to the Function App.
@@ -852,6 +844,60 @@ Description: Should basic authentication be enabled for FTP publish?
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_function_app_create_storage_account"></a> [function\_app\_create\_storage\_account](#input\_function\_app\_create\_storage\_account)
+
+Description: Should a Storage Account be created for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_function_app_storage_account"></a> [function\_app\_storage\_account](#input\_function\_app\_storage\_account)
+
+Description:   A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+```
+
+Default: `{}`
+
+### <a name="input_function_app_storage_account_access_key"></a> [function\_app\_storage\_account\_access\_key](#input\_function\_app\_storage\_account\_access\_key)
+
+Description: The access key of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_function_app_storage_account_name"></a> [function\_app\_storage\_account\_name](#input\_function\_app\_storage\_account\_name)
+
+Description: The name of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_function_app_storage_uses_managed_identity"></a> [function\_app\_storage\_uses\_managed\_identity](#input\_function\_app\_storage\_uses\_managed\_identity)
+
+Description: Should the Storage Account use a Managed Identity?
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
@@ -1265,53 +1311,25 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
+### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
 
-Description:   A map of objects that represent a Storage Account to mount to the Function App.
-
-  - `name` - (Optional) The name of the Storage Account.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
-
-  ```terraform
-
-```
-
-Type:
-
-```hcl
-object({
-    name                = optional(string)
-    resource_group_name = optional(string)
-  })
-```
-
-Default: `{}`
-
-### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
-
-Description: The access key of the Storage Account to deploy the Function App in.
+Description: The ID of the secret in the key vault to use for the Storage Account access key.
 
 Type: `string`
 
 Default: `null`
 
-### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
+### <a name="input_storage_shares_to_mount"></a> [storage\_shares\_to\_mount](#input\_storage\_shares\_to\_mount)
 
-Description: The name of the Storage Account to deploy the Function App in.
+Description:   A map of objects that represent Storage Account FILE SHARES to mount to the Function App.  
+  This functionality is only available for Linux Function Apps, via [documentation](https://learn.microsoft.com/en-us/azure/azure-functions/storage-considerations?tabs=azure-cli)
 
-Type: `string`
-
-Default: `null`
-
-### <a name="input_storage_accounts"></a> [storage\_accounts](#input\_storage\_accounts)
-
-Description:   A map of objects that represent Storage Accounts to mount to the Function App.  
   The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `access_key` - (Optional) The access key of the Storage Account.
   - `account_name` - (Optional) The name of the Storage Account.
   - `name` - (Optional) The name of the Storage Account to mount.
   - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of Storage Account. Defaults to `AzureFiles`.
+  - `type` - (Optional) The type of Storage Account. Currently, only a `type` of `AzureFiles` is supported. Defaults to `AzureFiles`.
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
@@ -1331,32 +1349,16 @@ Type:
 
 ```hcl
 map(object({
-    access_key   = optional(string)
-    account_name = optional(string)
-    mount_path   = optional(string)
-    name         = optional(string)
-    share_name   = optional(string)
+    access_key   = string
+    account_name = string
+    mount_path   = string
+    name         = string
+    share_name   = string
     type         = optional(string, "AzureFiles")
   }))
 ```
 
 Default: `{}`
-
-### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
-
-Description: The ID of the secret in the key vault to use for the Storage Account access key.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
-
-Description: Should the Storage Account use a Managed Identity?
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

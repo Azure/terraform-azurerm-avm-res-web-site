@@ -18,10 +18,10 @@ resource "azurerm_windows_function_app" "this" {
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
-  storage_account_access_key                     = var.storage_account_access_key != null && var.storage_uses_managed_identity != true && var.create_storage_account != true ? var.storage_account_access_key : var.storage_account_access_key == null && var.storage_uses_managed_identity != true && var.create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
-  storage_account_name                           = var.create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.storage_account_name
+  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
+  storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null && var.storage_account == null ? var.storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null && var.function_app_storage_account == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
@@ -385,7 +385,7 @@ resource "azurerm_windows_function_app" "this" {
 
   }
   dynamic "storage_account" {
-    for_each = var.storage_accounts
+    for_each = var.storage_shares_to_mount
 
     content {
       access_key   = storage_account.value.access_key
@@ -427,10 +427,10 @@ resource "azurerm_linux_function_app" "this" {
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
-  storage_account_access_key                     = var.storage_account_access_key != null && var.storage_uses_managed_identity != true ? var.storage_account_access_key : null
-  storage_account_name                           = var.storage_account_name
+  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true ? var.function_app_storage_account_access_key : null
+  storage_account_name                           = var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
@@ -810,7 +810,7 @@ resource "azurerm_linux_function_app" "this" {
 
   }
   dynamic "storage_account" {
-    for_each = var.storage_accounts
+    for_each = var.storage_shares_to_mount
 
     content {
       access_key   = storage_account.value.access_key

@@ -87,12 +87,12 @@ module "test" {
   # Uses an existing storage account
   storage_account_name       = module.avm_res_storage_storageaccount.name
   storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-*/
+  */
 
 
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  create_storage_account = true
-  storage_account = {
+  function_app_create_storage_account = true
+  function_app_storage_account = {
     name                = module.naming.storage_account.name_unique
     resource_group_name = azurerm_resource_group.example.name
   }

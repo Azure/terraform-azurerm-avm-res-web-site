@@ -133,8 +133,8 @@ module "test" {
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
+  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 
   public_network_access_enabled = false
 

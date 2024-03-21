@@ -470,7 +470,7 @@ resource "azurerm_windows_web_app" "this" {
     }
   }
   dynamic "storage_account" {
-    for_each = var.storage_accounts
+    for_each = var.storage_shares_to_mount
 
     content {
       access_key   = storage_account.value.access_key
@@ -961,7 +961,7 @@ resource "azurerm_linux_web_app" "this" {
     }
   }
   dynamic "storage_account" {
-    for_each = var.storage_accounts
+    for_each = var.storage_shares_to_mount
 
     content {
       access_key   = storage_account.value.access_key

@@ -51,7 +51,7 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.1.1"
 
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry              = false # var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
   shared_access_key_enabled     = true
@@ -80,7 +80,7 @@ module "test" {
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = "0.2.0"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # var.enable_telemetry # see variables.tf
 
   name                = "${module.naming.app_service.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
@@ -90,9 +90,6 @@ module "test" {
   os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 
   site_config = {
     application_stack = {
