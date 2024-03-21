@@ -106,7 +106,8 @@ Default: `{}`
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-Description:
+Description:   
+  The Application Insights settings to assign to the Function App.
 
 Type:
 

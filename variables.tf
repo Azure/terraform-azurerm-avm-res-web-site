@@ -79,6 +79,8 @@ variable "application_insights" {
   }
   description = <<DESCRIPTION
 
+  The Application Insights settings to assign to the Function App.
+
   DESCRIPTION
 }
 
