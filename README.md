@@ -43,6 +43,7 @@ The following resources are used by this module:
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
 - [azurerm_role_assignment.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_service_plan.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
 - [azurerm_windows_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_web_app) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
@@ -73,12 +74,6 @@ Type: `string`
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
 Description: The name of the Resource Group where the Function App will be deployed.
-
-Type: `string`
-
-### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
-
-Description: The resource ID of the App Service Plan to deploy the Function App in.
 
 Type: `string`
 
@@ -660,6 +655,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_create_service_plan"></a> [create\_service\_plan](#input\_create\_service\_plan)
+
+Description: Should the module create a new App Service Plan for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_custom_domains"></a> [custom\_domains](#input\_custom\_domains)
 
 Description:   A map of custom domains to assign to the Function App.
@@ -995,6 +998,24 @@ object({
 
 Default: `{}`
 
+### <a name="input_new_service_plan"></a> [new\_service\_plan](#input\_new\_service\_plan)
+
+Description:   
+  A map of objects that represent a new App Service Plan to create for the Function App.
+
+Type:
+
+```hcl
+object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+    location            = optional(string)
+    sku_name            = optional(string)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
 Description: A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -1091,6 +1112,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+
+Description: The resource ID of the App Service Plan to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 

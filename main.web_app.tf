@@ -4,7 +4,7 @@ resource "azurerm_windows_web_app" "this" {
   location                                       = coalesce(var.location)
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
-  service_plan_id                                = var.service_plan_resource_id
+  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
@@ -499,7 +499,7 @@ resource "azurerm_linux_web_app" "this" {
   location                                       = coalesce(var.location)
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
-  service_plan_id                                = var.service_plan_resource_id
+  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled

@@ -17,16 +17,16 @@ variable "name" {
 variable "os_type" {
   type        = string
   description = "The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in."
+
+  validation {
+    error_message = "The value must be on of: `Linux` or `Windows`"
+    condition     = contains(["Linux", "Windows"], var.os_type)
+  }
 }
 
 variable "resource_group_name" {
   type        = string
   description = "The name of the Resource Group where the Function App will be deployed."
-}
-
-variable "service_plan_resource_id" {
-  type        = string
-  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
 # Optional Inputs
@@ -583,6 +583,12 @@ variable "content_share_force_disabled" {
   description = "Should content share be force disabled for the Function App?"
 }
 
+variable "create_service_plan" {
+  type        = bool
+  default     = false
+  description = "Should the module create a new App Service Plan for the Function App?"
+}
+
 variable "custom_domains" {
   type = map(object({
     create_certificate           = optional(bool, false)
@@ -895,6 +901,23 @@ variable "managed_identities" {
   description = "Managed identities to be created for the resource."
 }
 
+variable "new_service_plan" {
+  type = object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+    location            = optional(string)
+    sku_name            = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+  A map of objects that represent a new App Service Plan to create for the Function App.
+
+  DESCRIPTION
+}
+
 variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
@@ -980,6 +1003,12 @@ A map of role assignments to create on this resource. The map key is deliberatel
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
+}
+
+variable "service_plan_resource_id" {
+  type        = string
+  default     = null
+  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
 variable "site_config" {

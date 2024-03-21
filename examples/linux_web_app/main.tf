@@ -47,20 +47,20 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+# module "avm_res_storage_storageaccount" {
+#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
+#   version = "0.1.1"
 
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
-}
+#   enable_telemetry              = var.enable_telemetry
+#   name                          = module.naming.storage_account.name_unique
+#   resource_group_name           = azurerm_resource_group.example.name
+#   shared_access_key_enabled     = true
+#   public_network_access_enabled = true
+#   network_rules = {
+#     bypass         = ["AzureServices"]
+#     default_action = "Allow"
+#   }
+# }
 
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
@@ -90,7 +90,4 @@ module "test" {
   os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 }

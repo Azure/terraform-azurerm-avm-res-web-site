@@ -124,7 +124,7 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-interfaces"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
