@@ -6,4 +6,5 @@ resource "azurerm_service_plan" "this" {
   os_type             = var.os_type
   resource_group_name = coalesce(var.new_service_plan.resource_group_name, var.resource_group_name)
   sku_name            = var.new_service_plan.sku_name
+  tags                = var.tags
 }

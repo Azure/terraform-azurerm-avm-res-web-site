@@ -23,4 +23,5 @@ module "avm_res_storage_storageaccount" {
     bypass         = ["AzureServices"]
     default_action = "Allow"
   }
+  tags = var.tags
 }
