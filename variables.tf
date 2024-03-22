@@ -905,10 +905,11 @@ variable "managed_identities" {
 
 variable "new_service_plan" {
   type = object({
-    name                = optional(string)
-    resource_group_name = optional(string)
-    location            = optional(string)
-    sku_name            = optional(string)
+    name                                = optional(string)
+    resource_group_name                 = optional(string)
+    location                            = optional(string)
+    sku_name                            = optional(string)
+    app_service_environment_resource_id = optional(string)
   })
   default = {
 
@@ -916,6 +917,14 @@ variable "new_service_plan" {
   description = <<DESCRIPTION
 
   A map of objects that represent a new App Service Plan to create for the Function App.
+
+  - `name` - (Optional) The name of the App Service Plan.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
+  - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
+  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `B1`.
+  - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
+
+  ```terraform
 
   DESCRIPTION
 }
