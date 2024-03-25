@@ -63,31 +63,18 @@ module "avm_res_storage_storageaccount" {
 }
 
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "Y1"
 }
 
-# resource "azurerm_windows_function_app_slot" "example" {
-#   name = "example-slot"
-#   function_app_id = module.test.resource.id
-#   storage_account_name       = azurerm_storage_account.example.name
-#   storage_account_access_key = azurerm_storage_account.example.primary_access_key 
-
-#   site_config {}
-# }
-
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.1.3"
+  # version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 

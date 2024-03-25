@@ -78,9 +78,6 @@ resource "azurerm_service_plan" "example" {
 }
 
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"

@@ -72,9 +72,6 @@ resource "azurerm_service_plan" "example" {
 }
 
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
@@ -92,15 +89,7 @@ module "test" {
   service_plan_resource_id = azurerm_service_plan.example.id
 
   site_config = {
-    /*
-    # Example of setting the application stack
-    application_stack = {
-      as1 = {
-        current_stack  = "dotnet"
-        dotnet_version = "v4.0"
-      }
-    }
-    */
+
   }
 
 }

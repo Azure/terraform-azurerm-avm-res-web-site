@@ -47,24 +47,8 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-# module "avm_res_storage_storageaccount" {
-#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-#   version = "0.1.1"
-
-#   enable_telemetry              = var.enable_telemetry
-#   name                          = module.naming.storage_account.name_unique
-#   resource_group_name           = azurerm_resource_group.example.name
-#   shared_access_key_enabled     = true
-#   public_network_access_enabled = true
-#   network_rules = {
-#     bypass         = ["AzureServices"]
-#     default_action = "Allow"
-#   }
-# }
-
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
@@ -72,9 +56,6 @@ resource "azurerm_service_plan" "example" {
 }
 
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
@@ -87,7 +68,7 @@ module "test" {
   location            = azurerm_resource_group.example.location
 
   kind    = "webapp"
-  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 }
