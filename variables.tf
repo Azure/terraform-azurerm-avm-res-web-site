@@ -1,4 +1,14 @@
 # Required Inputs
+variable "kind" {
+  type        = string
+  description = "The type of App Service to deploy. Possible values are `functionapp` and `webapp`."
+
+  validation {
+    error_message = "The value must be on of: `functionapp` or `webapp`"
+    condition     = contains(["functionapp", "webapp"], var.kind)
+  }
+}
+
 variable "name" {
   type        = string
   description = "The name which should be used for the Function App."
@@ -6,17 +16,17 @@ variable "name" {
 
 variable "os_type" {
   type        = string
-  description = "The operating system that should be the same type of the App Service Plan to deploy the Function App in."
+  description = "The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in."
+
+  validation {
+    error_message = "The value must be on of: `Linux` or `Windows`"
+    condition     = contains(["Linux", "Windows"], var.os_type)
+  }
 }
 
 variable "resource_group_name" {
   type        = string
   description = "The name of the Resource Group where the Function App will be deployed."
-}
-
-variable "service_plan_resource_id" {
-  type        = string
-  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
 # Optional Inputs
@@ -68,6 +78,8 @@ variable "application_insights" {
 
   }
   description = <<DESCRIPTION
+
+  The Application Insights settings to assign to the Function App.
 
   DESCRIPTION
 }
@@ -282,7 +294,9 @@ variable "auth_settings_v2" {
     })))
 
   }))
-  default     = {}
+  default = {
+
+  }
   description = <<DESCRIPTION
 A map of authentication settings (V2) to assign to the Function App.
     
@@ -393,6 +407,75 @@ auth_settings_v2 = {
 DESCRIPTION
 }
 
+variable "auto_heal_setting" {
+  type = map(object({
+    action = optional(object({
+      action_type = string
+      custom_action = optional(object({
+        executable = string
+        parameters = optional(string)
+      }))
+      minimum_process_execution_time = optional(string, "00:00:00")
+    }))
+    trigger = optional(object({
+      private_memory_kb = optional(number)
+      requests = optional(object({
+        count    = number
+        interval = string
+      }))
+      slow_request = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
+      status_code = optional(map(object({
+        count             = number
+        interval          = string
+        status_code_range = number
+        path              = optional(string)
+        sub_status        = optional(number)
+        win32_status_code = optional(number)
+      })), {})
+    }))
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+  Configures the Auto Heal settings for the Function App. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+
+  - `action` - (Optional) The action to take when the trigger is activated.
+    - `action_type` - (Required) The type of action to take. Possible values include: `CustomAction`, `Recycle`, `LogEvent`, `HttpRequst`.
+    - `custom_action` - (Optional) The custom action to take when the trigger is activated.
+      - `executable` - (Required) The executable to run when the trigger is activated.
+      - `parameters` - (Optional) The parameters to pass to the executable.
+    - `minimum_process_execution_time` - (Optional) The minimum process execution time before the action is taken. Defaults to `00:00:00`.
+  - `trigger` - (Optional) The trigger to activate the action.
+    - `private_memory_kb` - (Optional) The private memory in kilobytes to trigger the action.
+    - `requests` - (Optional) The requests trigger to activate the action.
+      - `count` - (Required) The number of requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+    - `slow_request` - (Optional) The slow request trigger to activate the action.
+      - `count` - (Required) The number of slow requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `take_taken` - (Required) The time taken to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+    - `status_code` - (Optional) The status code trigger to activate the action.
+      - `count` - (Required) The number of status codes to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `status_code_range` - (Required) The status code range to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+      - `sub_status` - (Optional) The sub status to trigger the action.
+      - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
+
+  ```terraform
+
+  DESCRIPTION
+  nullable    = false
+}
+
 variable "backup" {
   type = map(object({
     enabled             = optional(bool, true)
@@ -446,6 +529,12 @@ variable "builtin_logging_enabled" {
   description = "Should builtin logging be enabled for the Function App?"
 }
 
+variable "client_affinity_enabled" {
+  type        = bool
+  default     = false
+  description = "Should client affinity be enabled for the Function App?"
+}
+
 variable "client_certificate_enabled" {
   type        = bool
   default     = false
@@ -494,6 +583,12 @@ variable "content_share_force_disabled" {
   type        = bool
   default     = false
   description = "Should content share be force disabled for the Function App?"
+}
+
+variable "create_service_plan" {
+  type        = bool
+  default     = false
+  description = "Should the module create a new App Service Plan for the Function App?"
 }
 
 variable "custom_domains" {
@@ -574,9 +669,6 @@ variable "custom_domains" {
   DESCRIPTION
 }
 
-# required AVM interfaces
-# remove only if not supported by the resource
-# tflint-ignore: terraform_unused_declarations
 variable "customer_managed_key" {
   type = object({
     key_vault_resource_id              = optional(string)
@@ -605,7 +697,7 @@ variable "customer_managed_key" {
 variable "daily_memory_time_quota" {
   type        = number
   default     = 0
-  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to 0."
+  description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`."
 }
 
 variable "diagnostic_settings" {
@@ -672,7 +764,7 @@ variable "enable_telemetry" {
 variable "enabled" {
   type        = bool
   default     = true
-  description = "Is the Function App enabled? Defaults to true."
+  description = "Is the Function App enabled? Defaults to `true`."
 }
 
 variable "ftp_publish_basic_authentication_enabled" {
@@ -681,10 +773,56 @@ variable "ftp_publish_basic_authentication_enabled" {
   description = "Should basic authentication be enabled for FTP publish?"
 }
 
+variable "function_app_create_storage_account" {
+  # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
+  type        = bool
+  default     = false
+  description = "Should a Storage Account be created for the Function App?"
+}
+
+variable "function_app_storage_account" {
+  type = object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+  ```
+  DESCRIPTION
+}
+
+variable "function_app_storage_account_access_key" {
+  type        = string
+  default     = null
+  description = "The access key of the Storage Account to deploy the Function App in."
+  sensitive   = true
+}
+
+variable "function_app_storage_account_name" {
+  type        = string
+  default     = null
+  description = "The name of the Storage Account to deploy the Function App in."
+}
+
+variable "function_app_storage_uses_managed_identity" {
+  type        = bool
+  default     = false
+  description = "Should the Storage Account use a Managed Identity?"
+}
+
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
-  description = "The version of the Azure Functions runtime to use. Defaults to ~3."
+  description = "The version of the Azure Functions runtime to use. Defaults to `~4`."
 }
 
 variable "https_only" {
@@ -720,6 +858,41 @@ variable "lock" {
   }
 }
 
+variable "logs" {
+  type = map(object({
+    application_logs = optional(map(object({
+      azure_blob_storage = optional(object({
+        level             = optional(string, "Off")
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system_level = optional(string, "Off")
+    })), {})
+    detailed_error_messages = optional(bool, false)
+    failed_request_tracing  = optional(bool, false)
+    http_logs = optional(map(object({
+      azure_blob_storage_http = optional(object({
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system = optional(object({
+        retention_in_days = optional(number, 0)
+        retention_in_mb   = number
+      }))
+    })), {})
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+A map of logs to create on the Function App.
+
+
+  DESCRIPTION
+  nullable    = false
+}
+
 # tflint-ignore: terraform_unused_declarations
 variable "managed_identities" {
   type = object({
@@ -728,6 +901,32 @@ variable "managed_identities" {
   })
   default     = {}
   description = "Managed identities to be created for the resource."
+}
+
+variable "new_service_plan" {
+  type = object({
+    name                                = optional(string)
+    resource_group_name                 = optional(string)
+    location                            = optional(string)
+    sku_name                            = optional(string)
+    app_service_environment_resource_id = optional(string)
+  })
+  default = {
+
+  }
+  description = <<DESCRIPTION
+
+  A map of objects that represent a new App Service Plan to create for the Function App.
+
+  - `name` - (Optional) The name of the App Service Plan.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
+  - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
+  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `B1`.
+  - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
+
+  ```terraform
+
+  DESCRIPTION
 }
 
 variable "private_endpoints" {
@@ -809,12 +1008,18 @@ A map of role assignments to create on this resource. The map key is deliberatel
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
 - `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
 - `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `condition_version` - The version of the condition syntax. Valid values are `2.0`.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
+}
+
+variable "service_plan_resource_id" {
+  type        = string
+  default     = null
+  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
 variable "site_config" {
@@ -823,6 +1028,7 @@ variable "site_config" {
     api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
     api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
     app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
+    auto_heal_enabled                             = optional(bool)        # (Optional) Should auto-heal be enabled for the Function App?
     app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
     application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
     application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
@@ -834,6 +1040,7 @@ variable "site_config" {
     health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
     health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
@@ -841,6 +1048,7 @@ variable "site_config" {
     remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
     remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
     runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_ip_restriction_default_action             = optional(string, "Allow")         #(Optional) The default action for SCM IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
     use_32_bit_worker                             = optional(bool, false)             #(Optional) Should the 32-bit worker process be used. Defaults to false.
@@ -852,7 +1060,7 @@ variable "site_config" {
       retention_period_days = optional(number)
     })), {})
     application_stack = optional(map(object({
-      dotnet_version              = optional(string, "v4.0")
+      dotnet_version              = optional(string)
       java_version                = optional(string)
       node_version                = optional(string)
       powershell_core_version     = optional(string)
@@ -866,6 +1074,15 @@ variable "site_config" {
         registry_url      = string
         registry_username = optional(string)
       })))
+      current_stack                = optional(string)
+      docker_image_name            = optional(string)
+      docker_registry_url          = optional(string)
+      docker_registry_username     = optional(string)
+      docker_registry_password     = optional(string)
+      docker_container_name        = optional(string)
+      docker_container_tag         = optional(string)
+      java_embedded_server_enabled = optional(bool)
+      tomcat_version               = optional(bool)
     })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))
@@ -1018,39 +1235,34 @@ variable "sticky_settings" {
   DESCRIPTION
 }
 
-variable "storage_account_access_key" {
+variable "storage_key_vault_secret_id" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account to deploy the Function App in."
-  sensitive   = true
+  description = "The ID of the secret in the key vault to use for the Storage Account access key."
 }
 
-variable "storage_account_name" {
-  type        = string
-  default     = null
-  description = "The name of the Storage Account to deploy the Function App in."
-}
-
-variable "storage_accounts" {
+variable "storage_shares_to_mount" {
   type = map(object({
-    access_key   = optional(string)
-    account_name = optional(string)
-    mount_path   = optional(string)
-    name         = optional(string)
-    share_name   = optional(string)
+    access_key   = string
+    account_name = string
+    mount_path   = string
+    name         = string
+    share_name   = string
     type         = optional(string, "AzureFiles")
   }))
   default = {
 
   }
   description = <<DESCRIPTION
-  A map of objects that represent Storage Accounts to mount to the Function App.
+  A map of objects that represent Storage Account FILE SHARES to mount to the Function App.
+  This functionality is only available for Linux Function Apps, via [documentation](https://learn.microsoft.com/en-us/azure/azure-functions/storage-considerations?tabs=azure-cli)
+
   The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `access_key` - (Optional) The access key of the Storage Account.
   - `account_name` - (Optional) The name of the Storage Account.
   - `name` - (Optional) The name of the Storage Account to mount.
   - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of Storage Account. Defaults to `AzureFiles`.
+  - `type` - (Optional) The type of Storage Account. Currently, only a `type` of `AzureFiles` is supported. Defaults to `AzureFiles`.
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
@@ -1066,18 +1278,6 @@ variable "storage_accounts" {
   }
   ```
   DESCRIPTION
-}
-
-variable "storage_key_vault_secret_id" {
-  type        = string
-  default     = null
-  description = "The ID of the secret in the key vault to use for the Storage Account access key."
-}
-
-variable "storage_uses_managed_identity" {
-  type        = bool
-  default     = false
-  description = "Should the Storage Account use a Managed Identity?"
 }
 
 # tflint-ignore: terraform_unused_declarations

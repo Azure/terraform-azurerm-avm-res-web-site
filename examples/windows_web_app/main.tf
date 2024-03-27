@@ -47,13 +47,20 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "LRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
-}
+# module "avm_res_storage_storageaccount" {
+#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
+#   version = "0.1.1"
+
+#   enable_telemetry              = false # var.enable_telemetry
+#   name                          = module.naming.storage_account.name_unique
+#   resource_group_name           = azurerm_resource_group.example.name
+#   shared_access_key_enabled     = true
+#   public_network_access_enabled = true
+#   network_rules = {
+#     bypass         = ["AzureServices"]
+#     default_action = "Allow"
+#   }
+# }
 
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
@@ -61,37 +68,28 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
 
-# resource "azurerm_windows_function_app_slot" "example" {
-#   name = "example-slot"
-#   function_app_id = module.test.resource.id
-#   storage_account_name       = azurerm_storage_account.example.name
-#   storage_account_access_key = azurerm_storage_account.example.primary_access_key 
-
-#   site_config {}
-# }
-
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = 0.1.2
+  # version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-windows"
+  name                = "${module.naming.app_service.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  kind    = "webapp"
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  site_config = {
+
+  }
+
 }

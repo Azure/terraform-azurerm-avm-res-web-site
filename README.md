@@ -34,6 +34,7 @@ The following resources are used by this module:
 - [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
 - [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
+- [azurerm_linux_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
@@ -42,13 +43,21 @@ The following resources are used by this module:
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
 - [azurerm_role_assignment.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_service_plan.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
+- [azurerm_windows_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_web_app) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
 The following input variables are required:
+
+### <a name="input_kind"></a> [kind](#input\_kind)
+
+Description: The type of App Service to deploy. Possible values are `functionapp` and `webapp`.
+
+Type: `string`
 
 ### <a name="input_name"></a> [name](#input\_name)
 
@@ -58,19 +67,13 @@ Type: `string`
 
 ### <a name="input_os_type"></a> [os\_type](#input\_os\_type)
 
-Description: The operating system that should be the same type of the App Service Plan to deploy the Function App in.
+Description: The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in.
 
 Type: `string`
 
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
 Description: The name of the Resource Group where the Function App will be deployed.
-
-Type: `string`
-
-### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
-
-Description: The resource ID of the App Service Plan to deploy the Function App in.
 
 Type: `string`
 
@@ -103,7 +106,8 @@ Default: `{}`
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-Description:
+Description:   
+  The Application Insights settings to assign to the Function App.
 
 Type:
 
@@ -456,6 +460,77 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_auto_heal_setting"></a> [auto\_heal\_setting](#input\_auto\_heal\_setting)
+
+Description:   
+  Configures the Auto Heal settings for the Function App. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+
+  - `action` - (Optional) The action to take when the trigger is activated.
+    - `action_type` - (Required) The type of action to take. Possible values include: `CustomAction`, `Recycle`, `LogEvent`, `HttpRequst`.
+    - `custom_action` - (Optional) The custom action to take when the trigger is activated.
+      - `executable` - (Required) The executable to run when the trigger is activated.
+      - `parameters` - (Optional) The parameters to pass to the executable.
+    - `minimum_process_execution_time` - (Optional) The minimum process execution time before the action is taken. Defaults to `00:00:00`.
+  - `trigger` - (Optional) The trigger to activate the action.
+    - `private_memory_kb` - (Optional) The private memory in kilobytes to trigger the action.
+    - `requests` - (Optional) The requests trigger to activate the action.
+      - `count` - (Required) The number of requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+    - `slow_request` - (Optional) The slow request trigger to activate the action.
+      - `count` - (Required) The number of slow requests to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `take_taken` - (Required) The time taken to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+    - `status_code` - (Optional) The status code trigger to activate the action.
+      - `count` - (Required) The number of status codes to trigger the action.
+      - `interval` - (Required) The interval to trigger the action.
+      - `status_code_range` - (Required) The status code range to trigger the action.
+      - `path` - (Optional) The path to trigger the action.
+      - `sub_status` - (Optional) The sub status to trigger the action.
+      - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+map(object({
+    action = optional(object({
+      action_type = string
+      custom_action = optional(object({
+        executable = string
+        parameters = optional(string)
+      }))
+      minimum_process_execution_time = optional(string, "00:00:00")
+    }))
+    trigger = optional(object({
+      private_memory_kb = optional(number)
+      requests = optional(object({
+        count    = number
+        interval = string
+      }))
+      slow_request = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
+      status_code = optional(map(object({
+        count             = number
+        interval          = string
+        status_code_range = number
+        path              = optional(string)
+        sub_status        = optional(number)
+        win32_status_code = optional(number)
+      })), {})
+    }))
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_backup"></a> [backup](#input\_backup)
 
 Description:   A map of backup settings to assign to the Function App.
@@ -513,6 +588,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_client_affinity_enabled"></a> [client\_affinity\_enabled](#input\_client\_affinity\_enabled)
+
+Description: Should client affinity be enabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_client_certificate_enabled"></a> [client\_certificate\_enabled](#input\_client\_certificate\_enabled)
 
 Description: Should client certificate be enabled for the Function App?
@@ -568,6 +651,14 @@ Default: `{}`
 ### <a name="input_content_share_force_disabled"></a> [content\_share\_force\_disabled](#input\_content\_share\_force\_disabled)
 
 Description: Should content share be force disabled for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_create_service_plan"></a> [create\_service\_plan](#input\_create\_service\_plan)
+
+Description: Should the module create a new App Service Plan for the Function App?
 
 Type: `bool`
 
@@ -684,7 +775,7 @@ Default: `{}`
 
 ### <a name="input_daily_memory_time_quota"></a> [daily\_memory\_time\_quota](#input\_daily\_memory\_time\_quota)
 
-Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to 0.
+Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`.
 
 Type: `number`
 
@@ -744,7 +835,7 @@ Default: `true`
 
 ### <a name="input_enabled"></a> [enabled](#input\_enabled)
 
-Description: Is the Function App enabled? Defaults to true.
+Description: Is the Function App enabled? Defaults to `true`.
 
 Type: `bool`
 
@@ -758,9 +849,63 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_function_app_create_storage_account"></a> [function\_app\_create\_storage\_account](#input\_function\_app\_create\_storage\_account)
+
+Description: Should a Storage Account be created for the Function App?
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_function_app_storage_account"></a> [function\_app\_storage\_account](#input\_function\_app\_storage\_account)
+
+Description:   A map of objects that represent a Storage Account to mount to the Function App.
+
+  - `name` - (Optional) The name of the Storage Account.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+object({
+    name                = optional(string)
+    resource_group_name = optional(string)
+  })
+```
+
+Default: `{}`
+
+### <a name="input_function_app_storage_account_access_key"></a> [function\_app\_storage\_account\_access\_key](#input\_function\_app\_storage\_account\_access\_key)
+
+Description: The access key of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_function_app_storage_account_name"></a> [function\_app\_storage\_account\_name](#input\_function\_app\_storage\_account\_name)
+
+Description: The name of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_function_app_storage_uses_managed_identity"></a> [function\_app\_storage\_uses\_managed\_identity](#input\_function\_app\_storage\_uses\_managed\_identity)
+
+Description: Should the Storage Account use a Managed Identity?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
-Description: The version of the Azure Functions runtime to use. Defaults to ~3.
+Description: The version of the Azure Functions runtime to use. Defaults to `~4`.
 
 Type: `string`
 
@@ -805,6 +950,40 @@ object({
 
 Default: `{}`
 
+### <a name="input_logs"></a> [logs](#input\_logs)
+
+Description:   
+A map of logs to create on the Function App.
+
+Type:
+
+```hcl
+map(object({
+    application_logs = optional(map(object({
+      azure_blob_storage = optional(object({
+        level             = optional(string, "Off")
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system_level = optional(string, "Off")
+    })), {})
+    detailed_error_messages = optional(bool, false)
+    failed_request_tracing  = optional(bool, false)
+    http_logs = optional(map(object({
+      azure_blob_storage_http = optional(object({
+        retention_in_days = optional(number, 0)
+        sas_url           = string
+      }))
+      file_system = optional(object({
+        retention_in_days = optional(number, 0)
+        retention_in_mb   = number
+      }))
+    })), {})
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
 Description: Managed identities to be created for the resource.
@@ -815,6 +994,35 @@ Type:
 object({
     system_assigned            = optional(bool, false)
     user_assigned_resource_ids = optional(set(string), [])
+  })
+```
+
+Default: `{}`
+
+### <a name="input_new_service_plan"></a> [new\_service\_plan](#input\_new\_service\_plan)
+
+Description:   
+  A map of objects that represent a new App Service Plan to create for the Function App.
+
+  - `name` - (Optional) The name of the App Service Plan.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
+  - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
+  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `B1`.
+  - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
+
+  ```terraform
+
+```
+
+Type:
+
+```hcl
+object({
+    name                                = optional(string)
+    resource_group_name                 = optional(string)
+    location                            = optional(string)
+    sku_name                            = optional(string)
+    app_service_environment_resource_id = optional(string)
   })
 ```
 
@@ -895,9 +1103,9 @@ Description: A map of role assignments to create on this resource. The map key i
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
 - `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
 - `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `condition_version` - The version of the condition syntax. Valid values are `2.0`.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 
@@ -916,6 +1124,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+
+Description: The resource ID of the App Service Plan to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
@@ -1017,6 +1233,7 @@ object({
     api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
     api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
     app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
+    auto_heal_enabled                             = optional(bool)        # (Optional) Should auto-heal be enabled for the Function App?
     app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
     application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
     application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
@@ -1028,6 +1245,7 @@ object({
     health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
     health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
+    ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
@@ -1035,6 +1253,7 @@ object({
     remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
     remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
     runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
+    scm_ip_restriction_default_action             = optional(string, "Allow")         #(Optional) The default action for SCM IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
     use_32_bit_worker                             = optional(bool, false)             #(Optional) Should the 32-bit worker process be used. Defaults to false.
@@ -1046,7 +1265,7 @@ object({
       retention_period_days = optional(number)
     })), {})
     application_stack = optional(map(object({
-      dotnet_version              = optional(string, "v4.0")
+      dotnet_version              = optional(string)
       java_version                = optional(string)
       node_version                = optional(string)
       powershell_core_version     = optional(string)
@@ -1060,6 +1279,15 @@ object({
         registry_url      = string
         registry_username = optional(string)
       })))
+      current_stack                = optional(string)
+      docker_image_name            = optional(string)
+      docker_registry_url          = optional(string)
+      docker_registry_username     = optional(string)
+      docker_registry_password     = optional(string)
+      docker_container_name        = optional(string)
+      docker_container_tag         = optional(string)
+      java_embedded_server_enabled = optional(bool)
+      tomcat_version               = optional(bool)
     })), {})
     cors = optional(map(object({
       allowed_origins     = optional(list(string))
@@ -1124,31 +1352,25 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
+### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
 
-Description: The access key of the Storage Account to deploy the Function App in.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
-
-Description: The name of the Storage Account to deploy the Function App in.
+Description: The ID of the secret in the key vault to use for the Storage Account access key.
 
 Type: `string`
 
 Default: `null`
 
-### <a name="input_storage_accounts"></a> [storage\_accounts](#input\_storage\_accounts)
+### <a name="input_storage_shares_to_mount"></a> [storage\_shares\_to\_mount](#input\_storage\_shares\_to\_mount)
 
-Description:   A map of objects that represent Storage Accounts to mount to the Function App.  
+Description:   A map of objects that represent Storage Account FILE SHARES to mount to the Function App.  
+  This functionality is only available for Linux Function Apps, via [documentation](https://learn.microsoft.com/en-us/azure/azure-functions/storage-considerations?tabs=azure-cli)
+
   The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `access_key` - (Optional) The access key of the Storage Account.
   - `account_name` - (Optional) The name of the Storage Account.
   - `name` - (Optional) The name of the Storage Account to mount.
   - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of Storage Account. Defaults to `AzureFiles`.
+  - `type` - (Optional) The type of Storage Account. Currently, only a `type` of `AzureFiles` is supported. Defaults to `AzureFiles`.
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
@@ -1168,32 +1390,16 @@ Type:
 
 ```hcl
 map(object({
-    access_key   = optional(string)
-    account_name = optional(string)
-    mount_path   = optional(string)
-    name         = optional(string)
-    share_name   = optional(string)
+    access_key   = string
+    account_name = string
+    mount_path   = string
+    name         = string
+    share_name   = string
     type         = optional(string, "AzureFiles")
   }))
 ```
 
 Default: `{}`
-
-### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
-
-Description: The ID of the secret in the key vault to use for the Storage Account access key.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
-
-Description: Should the Storage Account use a Managed Identity?
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
@@ -1273,7 +1479,13 @@ Description: The default hostname of the resource.
 
 ## Modules
 
-No modules.
+The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.1
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the module with a Linux Function App in its simplest form.
 
 ```hcl
 terraform {
@@ -37,6 +37,10 @@ resource "random_integer" "region_index" {
 }
 ## End of section to provide a random Azure region for the resource group
 
+# locals {
+#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
+# }
+
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -49,12 +53,11 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-/*
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.1.1"
 
-  enable_telemetry = false
+  enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
   shared_access_key_enabled     = true
@@ -64,19 +67,17 @@ module "avm_res_storage_storageaccount" {
     default_action = "Allow"
   }
 }
-*/
 
-/*
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
   # This will equate to Consumption (Serverless) in portal
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
+  os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "Y1"
 }
-*/
 
+# This is the module call
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
@@ -84,38 +85,17 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable in v0.2.0
-  os_type = "Windows"
+  kind    = "functionapp"
+  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
 
-
-  /*
-  # Uses an existing app service plan
-  os_type = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
-  */
 
-  # Creates a new app service plan
-  create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
-
-  /* 
-  # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-  */
-
-  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
-  }
+  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
+  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 }
 ```
 
@@ -143,6 +123,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -166,19 +147,17 @@ Default: `true`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_name"></a> [name](#output\_name)
-
-Description: This is the full output for the resource.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: This is the full output for the resource.
+No outputs.
 
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.1
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

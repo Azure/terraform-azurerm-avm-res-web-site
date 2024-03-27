@@ -31,6 +31,10 @@ resource "random_integer" "region_index" {
 }
 ## End of section to provide a random Azure region for the resource group
 
+# locals {
+#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
+# }
+
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -43,34 +47,15 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-/*
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
-
-  enable_telemetry = false
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
-}
-*/
-
-/*
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
+  os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
-*/
 
+# This is the module call
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
@@ -78,36 +63,12 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry # see variables.tf
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.app_service.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable in v0.2.0
-  os_type = "Windows"
-
-
-  /*
-  # Uses an existing app service plan
+  kind    = "webapp"
   os_type = azurerm_service_plan.example.os_type
+
   service_plan_resource_id = azurerm_service_plan.example.id
-  */
-
-  # Creates a new app service plan
-  create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
-
-  /* 
-  # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-  */
-
-  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
-  }
 }
