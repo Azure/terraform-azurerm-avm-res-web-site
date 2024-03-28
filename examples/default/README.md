@@ -80,15 +80,15 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.0"
+  # version = "0.2.1"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp" # BREAKING CHANGE: `kind` is newly required variable in v0.2.0
+  kind    = "functionapp"
   os_type = "Windows"
 
 
@@ -175,6 +175,14 @@ Description: This is the full output for the resource.
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
+
+### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+
+Description: Full output of service plan created
+
+### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+
+Description: Full output of storage account created
 
 ## Modules
 
