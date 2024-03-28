@@ -39,5 +39,5 @@ output "service_plan" {
 
 output "storage_account" {
   description = "The storage account resource."
-  value       = azurerm_storage_account.this[0]
+  value       = module.avm_res_storage_storageaccount[0]
 }
