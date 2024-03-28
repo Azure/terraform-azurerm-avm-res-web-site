@@ -1457,6 +1457,10 @@ Default: `null`
 
 The following outputs are exported:
 
+### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
+
+Description: The application insights resource.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.
@@ -1476,6 +1480,14 @@ Description: A map of private endpoints. The map key is the supplied input to va
 ### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
 Description: The default hostname of the resource.
+
+### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+
+Description: The service plan resource.
+
+### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+
+Description: The storage account resource.
 
 ## Modules
 
