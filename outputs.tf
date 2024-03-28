@@ -1,6 +1,6 @@
 output "application_insights" {
   description = "The application insights resource."
-  value       = azurerm_application_insights.this[0]
+  value       = var.enable_application_insights ? azurerm_application_insights.this[0] : null
 }
 
 output "name" {
@@ -34,10 +34,10 @@ output "resource_uri" {
 
 output "service_plan" {
   description = "The service plan resource."
-  value       = azurerm_service_plan.this[0]
+  value       = var.create_service_plan ? azurerm_service_plan.this[0] : null
 }
 
 output "storage_account" {
   description = "The storage account resource."
-  value       = module.avm_res_storage_storageaccount[0]
+  value       = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0] : null
 }

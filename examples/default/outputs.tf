@@ -16,5 +16,6 @@ output "service_plan" {
 
 output "storage_account" {
   description = "Full output of storage account created"
+  sensitive   = true
   value       = module.test.storage_account
 }
