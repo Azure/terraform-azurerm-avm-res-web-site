@@ -37,40 +37,19 @@ resource "random_integer" "region_index" {
 }
 ## End of section to provide a random Azure region for the resource group
 
-# locals {
-#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
-# }
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
-# module "avm_res_storage_storageaccount" {
-#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-#   version = "0.1.1"
-
-#   enable_telemetry              = false # var.enable_telemetry
-#   name                          = module.naming.storage_account.name_unique
-#   resource_group_name           = azurerm_resource_group.example.name
-#   shared_access_key_enabled     = true
-#   public_network_access_enabled = true
-#   network_rules = {
-#     bypass         = ["AzureServices"]
-#     default_action = "Allow"
-#   }
-# }
-
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
@@ -81,9 +60,9 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.0"
+  # version = "0.2.1"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.app_service.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
@@ -149,7 +128,19 @@ Default: `true`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: Name for the resource.
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: This is the full output for the resource.
+
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+
+Description: This is the URI for the resource.
 
 ## Modules
 

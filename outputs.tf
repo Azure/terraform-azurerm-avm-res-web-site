@@ -1,3 +1,8 @@
+output "application_insights" {
+  description = "The application insights resource."
+  value       = var.enable_application_insights ? azurerm_application_insights.this[0] : null
+}
+
 output "name" {
   description = "The name of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
@@ -25,4 +30,14 @@ output "resource_private_endpoints" {
 output "resource_uri" {
   description = "The default hostname of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname)) : null
+}
+
+output "service_plan" {
+  description = "The service plan resource."
+  value       = var.create_service_plan ? azurerm_service_plan.this[0] : null
+}
+
+output "storage_account" {
+  description = "The storage account resource."
+  value       = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0] : null
 }

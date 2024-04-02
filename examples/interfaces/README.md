@@ -83,8 +83,7 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
@@ -126,9 +125,9 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.0"
+  # version = "0.2.1"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-interfaces"
   resource_group_name = azurerm_resource_group.example.name
@@ -256,30 +255,21 @@ module "test" {
 }
 
 
-
-# check "dns" {
-#   data "azurerm_private_dns_a_record" "assertion" {
-#     name                = local.split_subdomain[0]
-#     zone_name           = azurerm_private_dns_zone.example.name
-#     resource_group_name = azurerm_resource_group.example.name
-#   }
-#   assert {
-#     condition     = one(data.azurerm_private_dns_a_record.assertion.records) == one(module.test.resource_private_endpoints["primary"].private_service_connection).private_ip_address
-#     error_message = "The private DNS A record for the private endpoint is not correct."
-#   }
-# }
+/*
+check "dns" {
+  data "azurerm_private_dns_a_record" "assertion" {
+    name                = local.split_subdomain[0]
+    zone_name           = azurerm_private_dns_zone.example.name
+    resource_group_name = azurerm_resource_group.example.name
+  }
+  assert {
+    condition     = one(data.azurerm_private_dns_a_record.assertion.records) == one(module.test.resource_private_endpoints["primary"].private_service_connection).private_ip_address
+    error_message = "The private DNS A record for the private endpoint is not correct."
+  }
+}
+*/
 
 # VM to test private endpoint connectivity
-
-# module "regions" {
-#   source  = "Azure/regions/azurerm"
-#   version = ">= 0.4.0"
-# }
-
-#seed the test regions 
-# locals {
-#   test_regions = ["centralus", "eastasia", "westus2", "eastus2", "westeurope", "japaneast"]
-# }
 
 # This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index_vm" {
@@ -466,7 +456,19 @@ Default: `true`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: Name for the resource.
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: This is the full output for the resource.
+
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+
+Description: This is the URI for the resource.
 
 ## Modules
 

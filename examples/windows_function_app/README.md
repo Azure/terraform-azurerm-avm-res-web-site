@@ -37,10 +37,6 @@ resource "random_integer" "region_index" {
 }
 ## End of section to provide a random Azure region for the resource group
 
-# locals {
-#   test_regions = ["eastus2", "westus2", "centralus", "westeurope", "eastasia", "japaneast"]
-# }
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -80,16 +76,16 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.0"
+  # version = "0.2.1"
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = azurerm_service_plan.example.os_type # "Linux" / "Windows" / azurerm_service_plan.example.os_type
+  os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
@@ -146,7 +142,19 @@ Default: `true`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: Name for the resource.
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: This is the full output for the resource.
+
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+
+Description: This is the URI for the resource.
 
 ## Modules
 
