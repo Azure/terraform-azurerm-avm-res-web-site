@@ -1270,6 +1270,11 @@ object({
       node_version                = optional(string)
       powershell_core_version     = optional(string)
       python_version              = optional(string)
+      go_version                  = optional(string)
+      ruby_version                = optional(string)
+      java_server                 = optional(string)
+      java_server_version         = optional(string)
+      php_version                 = optional(string)
       use_custom_runtime          = optional(bool)
       use_dotnet_isolated_runtime = optional(bool)
       docker = optional(list(object({
