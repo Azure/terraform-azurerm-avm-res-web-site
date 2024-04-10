@@ -125,7 +125,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.1"
+  # version = "0.3.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -183,17 +183,15 @@ module "test" {
     */
   }
 
-  lock = {
-    kind = "None"
+  # lock = {
+  #   /*
+  #   kind = "ReadOnly"
+  #   */
 
-    /*
-    kind = "ReadOnly"
-    */
-
-    /*
-    kind = "CanNotDelete"
-    */
-  }
+  #   /*
+  #   kind = "CanNotDelete"
+  #   */
+  # }
 
   private_endpoints = {
     # Use of private endpoints requires Standard SKU
@@ -205,19 +203,15 @@ module "test" {
       inherit_lock = true
       inherit_tags = true
 
-      lock = {
-        /*
-        kind = "None"
-        */
+      # lock = {
+      #   /*
+      #   kind = "ReadOnly"
+      #   */
 
-        /*
-        kind = "ReadOnly"
-        */
-
-        /*
-        kind = "CanNotDelete"
-        */
-      }
+      #   /*
+      #   kind = "CanNotDelete"
+      #   */
+      # }
 
       role_assignments = {
         role_assignment_1 = {

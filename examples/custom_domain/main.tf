@@ -84,7 +84,7 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.1"
+  # version = "0.3.0"
 
   enable_telemetry = var.enable_telemetry
 

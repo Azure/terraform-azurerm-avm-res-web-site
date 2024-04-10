@@ -671,12 +671,14 @@ variable "custom_domains" {
 
 variable "customer_managed_key" {
   type = object({
-    key_vault_resource_id              = optional(string)
-    key_name                           = optional(string)
-    key_version                        = optional(string, null)
-    user_assigned_identity_resource_id = optional(string, null)
+    key_vault_resource_id = optional(string)
+    key_name              = optional(string)
+    key_version           = optional(string, null)
+    user_assigned_identity = optional(object({
+      resource_id = string
+    }), null)
   })
-  default     = {}
+  default     = null
   description = <<DESCRIPTION
   The Customer Managed Keys that should be associated with the Function App.
   - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
@@ -845,16 +847,16 @@ variable "location" {
 
 variable "lock" {
   type = object({
+    kind = string
     name = optional(string, null)
-    kind = optional(string, "None")
+
   })
-  default     = {}
-  description = "The lock level to apply. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`."
-  nullable    = false
+  default     = null
+  description = "The lock level to apply. Possible values for `kind` are `None`, `CanNotDelete`, and `ReadOnly`."
 
   validation {
-    condition     = contains(["CanNotDelete", "ReadOnly", "None"], var.lock.kind)
-    error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
+    condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
+    error_message = "The lock level must be one of: `CanNotDelete`, or `ReadOnly`."
   }
 }
 
@@ -901,6 +903,7 @@ variable "managed_identities" {
   })
   default     = {}
   description = "Managed identities to be created for the resource."
+  nullable    = false
 }
 
 variable "new_service_plan" {
@@ -942,10 +945,10 @@ variable "private_endpoints" {
       delegated_managed_identity_resource_id = optional(string, null)
     })), {})
     lock = optional(object({
+      kind = string
       name = optional(string, null)
-      kind = optional(string, "None")
-    }), {})
-    tags                                    = optional(map(any), null)
+    }), null)
+    tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
@@ -983,6 +986,14 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `inherit_lock` - (Optional) Should the private endpoint inherit the lock from the parent resource? Defaults to `true`.
 - `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 DESCRIPTION
+  nullable    = false
+}
+
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
+  nullable    = false
 }
 
 variable "public_network_access_enabled" {
@@ -1014,6 +1025,7 @@ A map of role assignments to create on this resource. The map key is deliberatel
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "service_plan_resource_id" {
@@ -1282,8 +1294,8 @@ variable "storage_shares_to_mount" {
 
 # tflint-ignore: terraform_unused_declarations
 variable "tags" {
-  type        = map(any)
-  default     = {}
+  type        = map(string)
+  default     = null
   description = "The map of tags to be applied to the resource"
 }
 
