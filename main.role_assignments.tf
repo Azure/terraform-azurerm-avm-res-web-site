@@ -15,7 +15,7 @@ resource "azurerm_role_assignment" "pe" {
   for_each = local.pe_role_assignments
 
   principal_id                           = each.value.role_assignment.principal_id
-  scope                                  = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this[each.key.private_endpoint_key].id : azurerm_private_endpoint.this_unmanaged_dns_zone_groups[each.key.private_endpoint_key].id
+  scope                                  = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this[each.value.private_endpoint_key].id : azurerm_private_endpoint.this_unmanaged_dns_zone_groups[each.value.private_endpoint_key].id
   condition                              = each.value.role_assignment.condition
   condition_version                      = each.value.role_assignment.condition_version
   delegated_managed_identity_resource_id = each.value.role_assignment.delegated_managed_identity_resource_id
