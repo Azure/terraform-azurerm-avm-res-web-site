@@ -194,9 +194,6 @@ module "test" {
       private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
       subnet_resource_id            = azurerm_subnet.example.id
 
-      inherit_lock = true
-      inherit_tags = true
-
       # lock = {
       #   /*
       #   kind = "ReadOnly"

@@ -29,6 +29,18 @@ variable "resource_group_name" {
   description = "The name of the Resource Group where the Function App will be deployed."
 }
 
+variable "all_child_resources_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Should the Function App inherit the lock from the parent resource? Defaults to `true`."
+}
+
+variable "all_child_resources_inherit_tags" {
+  type        = bool
+  default     = true
+  description = "Should the Function App inherit tags from the parent resource? Defaults to `true`."
+}
+
 # Optional Inputs
 variable "app_settings" {
   type = map(string)
@@ -669,33 +681,6 @@ variable "custom_domains" {
   DESCRIPTION
 }
 
-variable "customer_managed_key" {
-  type = object({
-    key_vault_resource_id = optional(string)
-    key_name              = optional(string)
-    key_version           = optional(string, null)
-    user_assigned_identity = optional(object({
-      resource_id = string
-    }), null)
-  })
-  default     = null
-  description = <<DESCRIPTION
-  The Customer Managed Keys that should be associated with the Function App.
-  - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
-  - `key_name` - (Optional) The name of the key in the Key Vault.
-  - `key_version` - (Optional) The version of the key in the Key Vault.
-  - `user_assigned_identity_resource_id` - (Optional) The resource ID of the User Assigned Identity to use for the Customer Managed Key.
-  ```terraform
-  customer_managed_key = {
-    key_vault_resource_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.KeyVault/vaults/example"
-    key_name                           = "example"
-    key_version                        = "00000000-0000-0000-0000-000000000000"
-    user_assigned_identity_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
-  }
-  ```
-  DESCRIPTION
-}
-
 variable "daily_memory_time_quota" {
   type        = number
   default     = 0
@@ -961,8 +946,8 @@ variable "private_endpoints" {
       name               = string
       private_ip_address = string
     })), {})
-    inherit_lock = optional(bool, true)
-    inherit_tags = optional(bool, true)
+    # inherit_lock = optional(bool, true)
+    # inherit_tags = optional(bool, true)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -987,6 +972,12 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 DESCRIPTION
   nullable    = false
+}
+
+variable "private_endpoints_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Should the private endpoints inherit the lock from the parent resource? Defaults to `true`."
 }
 
 variable "private_endpoints_manage_dns_zone_group" {

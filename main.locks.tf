@@ -16,11 +16,11 @@ resource "azurerm_management_lock" "this" {
 }
 
 resource "azurerm_management_lock" "pe" {
-  for_each = { for private_endpoint, pe_values in var.private_endpoints : private_endpoint => pe_values if((pe_values.inherit_lock && var.lock != null) || (pe_values.lock != null)) }
+  for_each = { for private_endpoint, pe_values in var.private_endpoints : private_endpoint => pe_values if(((var.all_child_resources_inherit_lock || var.private_endpoints_inherit_lock) && var.lock != null) || (pe_values.lock != null)) }
 
-  lock_level = each.value.inherit_lock ? var.lock.kind : each.value.lock.kind
+  lock_level = (var.all_child_resources_inherit_lock || var.private_endpoints_inherit_lock) ? var.lock.kind : each.value.lock.kind
   name       = each.value.lock != null ? each.value.lock.name : (each.value.name != null ? "lock-${each.value.name}" : "lock-pe-${var.name}")
-  scope      = azurerm_private_endpoint.this[each.key].id
+  scope      = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this[each.key].id : azurerm_private_endpoint.this_unmanaged_dns_zone_groups[each.key].id
 
   depends_on = [
     azurerm_linux_function_app.this,

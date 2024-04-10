@@ -7,7 +7,7 @@ resource "azurerm_private_endpoint" "this" {
   resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
+  tags                          = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
 
   private_service_connection {
     is_manual_connection           = false
@@ -43,7 +43,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
   resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
+  tags                          = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
 
   private_service_connection {
     is_manual_connection           = false

@@ -82,6 +82,22 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_all_child_resources_inherit_lock"></a> [all\_child\_resources\_inherit\_lock](#input\_all\_child\_resources\_inherit\_lock)
+
+Description: Should the Function App inherit the lock from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_all_child_resources_inherit_tags"></a> [all\_child\_resources\_inherit\_tags](#input\_all\_child\_resources\_inherit\_tags)
+
+Description: Should the Function App inherit tags from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings)
 
 Description:   A map of key-value pairs for [App Settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings) and custom values to assign to the Function App.
@@ -745,37 +761,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
-
-Description:   The Customer Managed Keys that should be associated with the Function App.
-  - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
-  - `key_name` - (Optional) The name of the key in the Key Vault.
-  - `key_version` - (Optional) The version of the key in the Key Vault.
-  - `user_assigned_identity_resource_id` - (Optional) The resource ID of the User Assigned Identity to use for the Customer Managed Key.
-  ```terraform
-  customer_managed_key = {
-    key_vault_resource_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.KeyVault/vaults/example"
-    key_name                           = "example"
-    key_version                        = "00000000-0000-0000-0000-000000000000"
-    user_assigned_identity_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
-  }
-```
-
-Type:
-
-```hcl
-object({
-    key_vault_resource_id = optional(string)
-    key_name              = optional(string)
-    key_version           = optional(string, null)
-    user_assigned_identity = optional(object({
-      resource_id = string
-    }), null)
-  })
-```
-
-Default: `null`
-
 ### <a name="input_daily_memory_time_quota"></a> [daily\_memory\_time\_quota](#input\_daily\_memory\_time\_quota)
 
 Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`.
@@ -1085,12 +1070,20 @@ map(object({
       name               = string
       private_ip_address = string
     })), {})
-    inherit_lock = optional(bool, true)
-    inherit_tags = optional(bool, true)
+    # inherit_lock = optional(bool, true)
+    # inherit_tags = optional(bool, true)
   }))
 ```
 
 Default: `{}`
+
+### <a name="input_private_endpoints_inherit_lock"></a> [private\_endpoints\_inherit\_lock](#input\_private\_endpoints\_inherit\_lock)
+
+Description: Should the private endpoints inherit the lock from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_private_endpoints_manage_dns_zone_group"></a> [private\_endpoints\_manage\_dns\_zone\_group](#input\_private\_endpoints\_manage\_dns\_zone\_group)
 
