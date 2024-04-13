@@ -1169,6 +1169,11 @@ variable "site_config" {
  - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
  - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
  - `python_version` - (Optional) The version of Python to run. Possible values are `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
+ - `go_version` - (Optional) The version of Go to use. Possible values are `1.18`, and `1.19`.
+ - `ruby_version` - (Optional) The version of Ruby to use. Possible values are `2.6`, and `2.7`.
+ - `java_server` - (Optional) The Java server type. Possible values are `JAVA`, `TOMCAT`, and `JBOSSEAP`.
+ - `java_server_version` - (Optional) The version of the Java server to use.
+ - `php_version` - (Optional) The version of PHP to use. Possible values are `7.4`, `8.0`, `8.1`, and `8.2`.
  - `use_custom_runtime` - (Optional) Should the Linux Function App use a custom runtime?
  - `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
 
