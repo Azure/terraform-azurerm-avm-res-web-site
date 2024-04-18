@@ -130,7 +130,7 @@ Type:
 
 ```hcl
 object({
-    application_type                      = optional(string)
+    application_type                      = optional(string, "web")
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
