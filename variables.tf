@@ -747,7 +747,7 @@ variable "diagnostic_settings" {
 
 variable "enable_application_insights" {
   type        = bool
-  default     = false
+  default     = true
   description = "Should Application Insights be enabled for the Function App?"
 }
 
