@@ -39,6 +39,7 @@ The following resources are used by this module:
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
+- [azurerm_private_endpoint.this_unmanaged_dns_zone_groups](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
 - [azurerm_role_assignment.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
@@ -80,6 +81,22 @@ Type: `string`
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_all_child_resources_inherit_lock"></a> [all\_child\_resources\_inherit\_lock](#input\_all\_child\_resources\_inherit\_lock)
+
+Description: Should the Function App inherit the lock from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_all_child_resources_inherit_tags"></a> [all\_child\_resources\_inherit\_tags](#input\_all\_child\_resources\_inherit\_tags)
+
+Description: Should the Function App inherit tags from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings)
 
@@ -744,35 +761,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
-
-Description:   The Customer Managed Keys that should be associated with the Function App.
-  - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
-  - `key_name` - (Optional) The name of the key in the Key Vault.
-  - `key_version` - (Optional) The version of the key in the Key Vault.
-  - `user_assigned_identity_resource_id` - (Optional) The resource ID of the User Assigned Identity to use for the Customer Managed Key.
-  ```terraform
-  customer_managed_key = {
-    key_vault_resource_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.KeyVault/vaults/example"
-    key_name                           = "example"
-    key_version                        = "00000000-0000-0000-0000-000000000000"
-    user_assigned_identity_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
-  }
-```
-
-Type:
-
-```hcl
-object({
-    key_vault_resource_id              = optional(string)
-    key_name                           = optional(string)
-    key_version                        = optional(string, null)
-    user_assigned_identity_resource_id = optional(string, null)
-  })
-```
-
-Default: `{}`
-
 ### <a name="input_daily_memory_time_quota"></a> [daily\_memory\_time\_quota](#input\_daily\_memory\_time\_quota)
 
 Description: (Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`.
@@ -937,18 +925,19 @@ Default: `null`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
-Description: The lock level to apply. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`.
+Description: The lock level to apply. Possible values for `kind` are `None`, `CanNotDelete`, and `ReadOnly`.
 
 Type:
 
 ```hcl
 object({
+    kind = string
     name = optional(string, null)
-    kind = optional(string, "None")
+
   })
 ```
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_logs"></a> [logs](#input\_logs)
 
@@ -1065,10 +1054,10 @@ map(object({
       delegated_managed_identity_resource_id = optional(string, null)
     })), {})
     lock = optional(object({
+      kind = string
       name = optional(string, null)
-      kind = optional(string, "None")
-    }), {})
-    tags                                    = optional(map(any), null)
+    }), null)
+    tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
@@ -1081,12 +1070,28 @@ map(object({
       name               = string
       private_ip_address = string
     })), {})
-    inherit_lock = optional(bool, true)
-    inherit_tags = optional(bool, true)
+    # inherit_lock = optional(bool, true)
+    # inherit_tags = optional(bool, true)
   }))
 ```
 
 Default: `{}`
+
+### <a name="input_private_endpoints_inherit_lock"></a> [private\_endpoints\_inherit\_lock](#input\_private\_endpoints\_inherit\_lock)
+
+Description: Should the private endpoints inherit the lock from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_private_endpoints_manage_dns_zone_group"></a> [private\_endpoints\_manage\_dns\_zone\_group](#input\_private\_endpoints\_manage\_dns\_zone\_group)
+
+Description: Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
@@ -1177,6 +1182,11 @@ Description:   An object that configures the Function App's `site_config` block.
  - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
  - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
  - `python_version` - (Optional) The version of Python to run. Possible values are `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
+ - `go_version` - (Optional) The version of Go to use. Possible values are `1.18`, and `1.19`.
+ - `ruby_version` - (Optional) The version of Ruby to use. Possible values are `2.6`, and `2.7`.
+ - `java_server` - (Optional) The Java server type. Possible values are `JAVA`, `TOMCAT`, and `JBOSSEAP`.
+ - `java_server_version` - (Optional) The version of the Java server to use.
+ - `php_version` - (Optional) The version of PHP to use. Possible values are `7.4`, `8.0`, `8.1`, and `8.2`.
  - `use_custom_runtime` - (Optional) Should the Linux Function App use a custom runtime?
  - `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
 
@@ -1270,6 +1280,11 @@ object({
       node_version                = optional(string)
       powershell_core_version     = optional(string)
       python_version              = optional(string)
+      go_version                  = optional(string)
+      ruby_version                = optional(string)
+      java_server                 = optional(string)
+      java_server_version         = optional(string)
+      php_version                 = optional(string)
       use_custom_runtime          = optional(bool)
       use_dotnet_isolated_runtime = optional(bool)
       docker = optional(list(object({
@@ -1405,9 +1420,9 @@ Default: `{}`
 
 Description: The map of tags to be applied to the resource
 
-Type: `map(any)`
+Type: `map(string)`
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
 

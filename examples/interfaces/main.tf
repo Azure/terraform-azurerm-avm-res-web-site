@@ -16,8 +16,13 @@ terraform {
   }
 }
 
+# tflint-ignore: terraform_module_provider_declaration, terraform_output_separate, terraform_variable_separate
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 ## Section to provide a random Azure region for the resource group
@@ -119,7 +124,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.2.1"
+  # version = "0.3.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -177,17 +182,15 @@ module "test" {
     */
   }
 
-  lock = {
-    kind = "None"
+  # lock = {
+  #   /*
+  #   kind = "ReadOnly"
+  #   */
 
-    /*
-    kind = "ReadOnly"
-    */
-
-    /*
-    kind = "CanNotDelete"
-    */
-  }
+  #   /*
+  #   kind = "CanNotDelete"
+  #   */
+  # }
 
   private_endpoints = {
     # Use of private endpoints requires Standard SKU
@@ -196,22 +199,15 @@ module "test" {
       private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
       subnet_resource_id            = azurerm_subnet.example.id
 
-      inherit_lock = true
-      inherit_tags = true
+      # lock = {
+      #   /*
+      #   kind = "ReadOnly"
+      #   */
 
-      lock = {
-        /*
-        kind = "None"
-        */
-
-        /*
-        kind = "ReadOnly"
-        */
-
-        /*
-        kind = "CanNotDelete"
-        */
-      }
+      #   /*
+      #   kind = "CanNotDelete"
+      #   */
+      # }
 
       role_assignments = {
         role_assignment_1 = {

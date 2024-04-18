@@ -29,6 +29,18 @@ variable "resource_group_name" {
   description = "The name of the Resource Group where the Function App will be deployed."
 }
 
+variable "all_child_resources_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Should the Function App inherit the lock from the parent resource? Defaults to `true`."
+}
+
+variable "all_child_resources_inherit_tags" {
+  type        = bool
+  default     = true
+  description = "Should the Function App inherit tags from the parent resource? Defaults to `true`."
+}
+
 # Optional Inputs
 variable "app_settings" {
   type = map(string)
@@ -669,31 +681,6 @@ variable "custom_domains" {
   DESCRIPTION
 }
 
-variable "customer_managed_key" {
-  type = object({
-    key_vault_resource_id              = optional(string)
-    key_name                           = optional(string)
-    key_version                        = optional(string, null)
-    user_assigned_identity_resource_id = optional(string, null)
-  })
-  default     = {}
-  description = <<DESCRIPTION
-  The Customer Managed Keys that should be associated with the Function App.
-  - `key_vault_resource_id` - (Optional) The resource ID of the Key Vault to use for the Customer Managed Key.
-  - `key_name` - (Optional) The name of the key in the Key Vault.
-  - `key_version` - (Optional) The version of the key in the Key Vault.
-  - `user_assigned_identity_resource_id` - (Optional) The resource ID of the User Assigned Identity to use for the Customer Managed Key.
-  ```terraform
-  customer_managed_key = {
-    key_vault_resource_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.KeyVault/vaults/example"
-    key_name                           = "example"
-    key_version                        = "00000000-0000-0000-0000-000000000000"
-    user_assigned_identity_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
-  }
-  ```
-  DESCRIPTION
-}
-
 variable "daily_memory_time_quota" {
   type        = number
   default     = 0
@@ -845,16 +832,16 @@ variable "location" {
 
 variable "lock" {
   type = object({
+    kind = string
     name = optional(string, null)
-    kind = optional(string, "None")
+
   })
-  default     = {}
-  description = "The lock level to apply. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`."
-  nullable    = false
+  default     = null
+  description = "The lock level to apply. Possible values for `kind` are `None`, `CanNotDelete`, and `ReadOnly`."
 
   validation {
-    condition     = contains(["CanNotDelete", "ReadOnly", "None"], var.lock.kind)
-    error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
+    condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
+    error_message = "The lock level must be one of: `CanNotDelete`, or `ReadOnly`."
   }
 }
 
@@ -901,6 +888,7 @@ variable "managed_identities" {
   })
   default     = {}
   description = "Managed identities to be created for the resource."
+  nullable    = false
 }
 
 variable "new_service_plan" {
@@ -942,10 +930,10 @@ variable "private_endpoints" {
       delegated_managed_identity_resource_id = optional(string, null)
     })), {})
     lock = optional(object({
+      kind = string
       name = optional(string, null)
-      kind = optional(string, "None")
-    }), {})
-    tags                                    = optional(map(any), null)
+    }), null)
+    tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
@@ -958,8 +946,8 @@ variable "private_endpoints" {
       name               = string
       private_ip_address = string
     })), {})
-    inherit_lock = optional(bool, true)
-    inherit_tags = optional(bool, true)
+    # inherit_lock = optional(bool, true)
+    # inherit_tags = optional(bool, true)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -983,6 +971,20 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `inherit_lock` - (Optional) Should the private endpoint inherit the lock from the parent resource? Defaults to `true`.
 - `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 DESCRIPTION
+  nullable    = false
+}
+
+variable "private_endpoints_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Should the private endpoints inherit the lock from the parent resource? Defaults to `true`."
+}
+
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
+  nullable    = false
 }
 
 variable "public_network_access_enabled" {
@@ -1014,6 +1016,7 @@ A map of role assignments to create on this resource. The map key is deliberatel
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "service_plan_resource_id" {
@@ -1065,6 +1068,11 @@ variable "site_config" {
       node_version                = optional(string)
       powershell_core_version     = optional(string)
       python_version              = optional(string)
+      go_version                  = optional(string)
+      ruby_version                = optional(string)
+      java_server                 = optional(string)
+      java_server_version         = optional(string)
+      php_version                 = optional(string)
       use_custom_runtime          = optional(bool)
       use_dotnet_isolated_runtime = optional(bool)
       docker = optional(list(object({
@@ -1161,6 +1169,11 @@ variable "site_config" {
  - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
  - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
  - `python_version` - (Optional) The version of Python to run. Possible values are `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
+ - `go_version` - (Optional) The version of Go to use. Possible values are `1.18`, and `1.19`.
+ - `ruby_version` - (Optional) The version of Ruby to use. Possible values are `2.6`, and `2.7`.
+ - `java_server` - (Optional) The Java server type. Possible values are `JAVA`, `TOMCAT`, and `JBOSSEAP`.
+ - `java_server_version` - (Optional) The version of the Java server to use.
+ - `php_version` - (Optional) The version of PHP to use. Possible values are `7.4`, `8.0`, `8.1`, and `8.2`.
  - `use_custom_runtime` - (Optional) Should the Linux Function App use a custom runtime?
  - `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
 
@@ -1282,8 +1295,8 @@ variable "storage_shares_to_mount" {
 
 # tflint-ignore: terraform_unused_declarations
 variable "tags" {
-  type        = map(any)
-  default     = {}
+  type        = map(string)
+  default     = null
   description = "The map of tags to be applied to the resource"
 }
 
