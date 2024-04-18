@@ -130,7 +130,7 @@ Type:
 
 ```hcl
 object({
-    application_type                      = optional(string)
+    application_type                      = optional(string, "web")
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
@@ -809,7 +809,7 @@ Description: Should Application Insights be enabled for the Function App?
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -1036,8 +1036,6 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - The name of the IP configuration.
   - `private_ip_address` - The private IP address of the IP configuration.
-- `inherit_lock` - (Optional) Should the private endpoint inherit the lock from the parent resource? Defaults to `true`.
-- `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 
 Type:
 
@@ -1070,8 +1068,6 @@ map(object({
       name               = string
       private_ip_address = string
     })), {})
-    # inherit_lock = optional(bool, true)
-    # inherit_tags = optional(bool, true)
   }))
 ```
 

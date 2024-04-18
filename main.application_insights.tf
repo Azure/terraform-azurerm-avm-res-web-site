@@ -2,9 +2,9 @@ resource "azurerm_application_insights" "this" {
   count = var.enable_application_insights ? 1 : 0
 
   application_type                      = var.application_insights.application_type
-  location                              = var.application_insights.location
-  name                                  = var.application_insights.name
-  resource_group_name                   = var.application_insights.resource_group_name
+  location                              = coalesce(var.application_insights.location, var.location)
+  name                                  = coalesce(var.application_insights.name, "ai-${var.name}")
+  resource_group_name                   = coalesce(var.application_insights.resource_group_name, var.resource_group_name)
   daily_data_cap_in_gb                  = var.application_insights.daily_data_cap_in_gb
   daily_data_cap_notifications_disabled = var.application_insights.daily_data_cap_notifications_disabled
   disable_ip_masking                    = var.application_insights.disable_ip_masking

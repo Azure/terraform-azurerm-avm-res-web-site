@@ -69,7 +69,7 @@ variable "app_settings" {
 
 variable "application_insights" {
   type = object({
-    application_type                      = optional(string)
+    application_type                      = optional(string, "web")
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
@@ -734,7 +734,7 @@ variable "diagnostic_settings" {
 
 variable "enable_application_insights" {
   type        = bool
-  default     = false
+  default     = true
   description = "Should Application Insights be enabled for the Function App?"
 }
 
@@ -946,8 +946,6 @@ variable "private_endpoints" {
       name               = string
       private_ip_address = string
     })), {})
-    # inherit_lock = optional(bool, true)
-    # inherit_tags = optional(bool, true)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -968,8 +966,6 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - The name of the IP configuration.
   - `private_ip_address` - The private IP address of the IP configuration.
-- `inherit_lock` - (Optional) Should the private endpoint inherit the lock from the parent resource? Defaults to `true`.
-- `inherit_tags` - (Optional) Should the private endpoint inherit the tags from the parent resource? Defaults to `true`.
 DESCRIPTION
   nullable    = false
 }
