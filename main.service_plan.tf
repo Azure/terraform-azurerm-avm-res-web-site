@@ -8,4 +8,8 @@ resource "azurerm_service_plan" "this" {
   sku_name                   = var.new_service_plan.sku_name
   app_service_environment_id = var.new_service_plan.app_service_environment_resource_id
   tags                       = var.tags
+  # maximum_elastic_worker_count = var.new_service_plan.maximum_elastic_worker_count
+  # worker_count = var.new_service_plan.worker_count
+  # per_site_scaling_enabled = var.new_service_plan.per_site_scaling_enabled
+  zone_balancing_enabled = var.new_service_plan.zone_balancing_enabled
 }
