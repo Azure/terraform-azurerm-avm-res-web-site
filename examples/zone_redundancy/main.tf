@@ -79,7 +79,7 @@ resource "azurerm_service_plan" "example" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.3.0"
+  # version = "0.4.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -101,7 +101,7 @@ module "test" {
   create_service_plan = true
   new_service_plan = {
     sku_name               = "P1v3"
-    zone_balancing_enabled = true
+    # zone_balancing_enabled = true
   }
 
   /* 
