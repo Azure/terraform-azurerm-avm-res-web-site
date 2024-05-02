@@ -130,7 +130,7 @@ resource "azurerm_user_assigned_identity" "user" {
 module "test" {
   source = "../../"
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.3.0"
+  # version = "0.4.0"
 
   enable_telemetry = var.enable_telemetry
 
