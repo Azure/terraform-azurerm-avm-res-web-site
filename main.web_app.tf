@@ -131,11 +131,11 @@ resource "azurerm_windows_web_app" "this" {
 
       content {
         action                    = ip_restriction.value.action
-        ip_address                = scm_ip_restriction.value.ip_address
-        name                      = scm_ip_restriction.value.name
-        priority                  = scm_ip_restriction.value.priority
-        service_tag               = scm_ip_restriction.value.service_tag
-        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
 
         dynamic "headers" {
           for_each = ip_restriction.value.headers
@@ -622,11 +622,11 @@ resource "azurerm_linux_web_app" "this" {
 
       content {
         action                    = ip_restriction.value.action
-        ip_address                = scm_ip_restriction.value.ip_address
-        name                      = scm_ip_restriction.value.name
-        priority                  = scm_ip_restriction.value.priority
-        service_tag               = scm_ip_restriction.value.service_tag
-        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
 
         dynamic "headers" {
           for_each = ip_restriction.value.headers
