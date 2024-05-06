@@ -907,7 +907,6 @@ variable "new_service_plan" {
 
   }
   description = <<DESCRIPTION
-
   A map of objects that represent a new App Service Plan to create for the Function App.
 
   - `name` - (Optional) The name of the App Service Plan.
@@ -920,11 +919,6 @@ variable "new_service_plan" {
   - `per_site_scaling_enabled` - (Optional) Should per site scaling be enabled for the App Service Plan? Defaults to `false`.
   - `zone_balancing_enabled` - (Optional) Should zone balancing be enabled for the App Service Plan? Changing this forces a new resource to be created.
   > **NOTE:** If this setting is set to `true` and the `worker_count` value is specified, it should be set to a multiple of the number of availability zones in the region. Please see the Azure documentation for the number of Availability Zones in your region.
-
-  ```terraform
-
-  ```terraform
-
   DESCRIPTION
 }
 
