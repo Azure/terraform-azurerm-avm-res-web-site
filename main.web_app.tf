@@ -1,7 +1,7 @@
 resource "azurerm_windows_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Windows" ? 1 : 0
 
-  location                                       = coalesce(var.location)
+  location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
@@ -496,7 +496,7 @@ resource "azurerm_windows_web_app" "this" {
 resource "azurerm_linux_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Linux" ? 1 : 0
 
-  location                                       = coalesce(var.location)
+  location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
