@@ -1,11 +1,12 @@
 resource "azurerm_windows_function_app" "this" {
   count = var.kind == "functionapp" && var.os_type == "Windows" ? 1 : 0
 
-  location                                       = var.location
-  name                                           = var.name
-  resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
+  location            = var.location
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  service_plan_id     = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
+  # app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
+  app_settings                                   = var.app_settings
   builtin_logging_enabled                        = var.builtin_logging_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
   client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
@@ -13,7 +14,7 @@ resource "azurerm_windows_function_app" "this" {
   content_share_force_disabled                   = var.content_share_force_disabled
   daily_memory_time_quota                        = var.daily_memory_time_quota
   enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.ftp_publish_basic_authentication_enabled
+  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
   functions_extension_version                    = var.functions_extension_version
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
@@ -24,7 +25,7 @@ resource "azurerm_windows_function_app" "this" {
   storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null && var.function_app_storage_account == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
@@ -33,8 +34,8 @@ resource "azurerm_windows_function_app" "this" {
     api_management_api_id                  = var.site_config.api_management_api_id
     app_command_line                       = var.site_config.app_command_line
     app_scale_limit                        = var.site_config.app_scale_limit
-    application_insights_connection_string = var.site_config.application_insights_connection_string
-    application_insights_key               = var.site_config.application_insights_key
+    application_insights_connection_string = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].connection_string, var.site_config.application_insights_connection_string) : var.site_config.application_insights_connection_string
+    application_insights_key               = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].instrumentation_key, var.site_config.application_insights_key) : var.site_config.application_insights_key
     default_documents                      = var.site_config.default_documents
     elastic_instance_minimum               = var.site_config.elastic_instance_minimum
     ftps_state                             = var.site_config.ftps_state
@@ -410,11 +411,12 @@ resource "azurerm_windows_function_app" "this" {
 resource "azurerm_linux_function_app" "this" {
   count = var.kind == "functionapp" && var.os_type == "Linux" ? 1 : 0
 
-  location                                       = var.location
-  name                                           = var.name
-  resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
+  location            = var.location
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  service_plan_id     = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
+  # app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
+  app_settings                                   = var.app_settings
   builtin_logging_enabled                        = var.builtin_logging_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
   client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
@@ -422,7 +424,7 @@ resource "azurerm_linux_function_app" "this" {
   content_share_force_disabled                   = var.content_share_force_disabled
   daily_memory_time_quota                        = var.daily_memory_time_quota
   enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.ftp_publish_basic_authentication_enabled
+  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
   functions_extension_version                    = var.functions_extension_version
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
@@ -433,7 +435,7 @@ resource "azurerm_linux_function_app" "this" {
   storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
@@ -442,8 +444,8 @@ resource "azurerm_linux_function_app" "this" {
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
     app_scale_limit                               = var.site_config.app_scale_limit
-    application_insights_connection_string        = var.site_config.application_insights_connection_string
-    application_insights_key                      = var.site_config.application_insights_key
+    application_insights_connection_string        = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].connection_string, var.site_config.application_insights_connection_string) : var.site_config.application_insights_connection_string
+    application_insights_key                      = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].instrumentation_key, var.site_config.application_insights_key) : var.site_config.application_insights_key
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents

@@ -504,6 +504,7 @@ Description:
       - `interval` - (Required) The interval to trigger the action.
       - `take_taken` - (Required) The time taken to trigger the action.
       - `path` - (Optional) The path to trigger the action.
+      > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
     - `status_code` - (Optional) The status code trigger to activate the action.
       - `count` - (Required) The number of status codes to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
@@ -535,6 +536,12 @@ map(object({
         interval = string
       }))
       slow_request = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
+      slow_request_with_path = optional(map(object({
         count      = number
         interval   = string
         take_taken = string
@@ -1260,6 +1267,7 @@ object({
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
     ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    local_mysql_enabled                           = optional(bool, false)             #(Optional) Should local MySQL be enabled. Defaults to false.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     pre_warmed_instance_count                     = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
@@ -1339,6 +1347,22 @@ object({
         x_forwarded_host  = optional(list(string))
       })), {})
     })), {}) #(Optional) One or more scm_ip_restriction blocks as defined above.
+    virtual_application = optional(map(object({
+      physical_path   = optional(string, "site\\wwwroot")
+      preload_enabled = optional(bool, false)
+      virtual_directory = optional(map(object({
+        physical_path = optional(string)
+        virtual_path  = optional(string)
+      })), {})
+      virtual_path = optional(string, "/")
+      })),
+      {
+        default = {
+          physical_path   = "site\\wwwroot"
+          preload_enabled = false
+          virtual_path    = "/"
+        }
+    }) #(Optional) One or more virtual_application blocks as defined above.
   })
 ```
 
