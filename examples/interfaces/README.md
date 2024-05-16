@@ -52,11 +52,11 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-data "azurerm_client_config" "this" {}
+# data "azurerm_client_config" "this" {}
 
-data "azurerm_role_definition" "example" {
-  name = "Contributor"
-}
+# data "azurerm_role_definition" "example" {
+#   name = "Contributor"
+# }
 
 # This is required for resource modules
 resource "azurerm_resource_group" "example" {
@@ -215,12 +215,12 @@ module "test" {
       #   */
       # }
 
-      role_assignments = {
-        role_assignment_1 = {
-          role_definition_id_or_name = data.azurerm_role_definition.example.id
-          principal_id               = data.azurerm_client_config.this.object_id
-        }
-      }
+      # role_assignments = {
+      #   role_assignment_1 = {
+      #     role_definition_id_or_name = data.azurerm_role_definition.example.id
+      #     principal_id               = data.azurerm_client_config.this.object_id
+      #   }
+      # }
 
       tags = {
         webapp = "${module.naming.static_web_app.name_unique}-interfaces"
@@ -230,12 +230,12 @@ module "test" {
 
   }
 
-  role_assignments = {
-    role_assignment_1 = {
-      role_definition_id_or_name = data.azurerm_role_definition.example.id
-      principal_id               = data.azurerm_client_config.this.object_id
-    }
-  }
+  # role_assignments = {
+  #   role_assignment_1 = {
+  #     role_definition_id_or_name = data.azurerm_role_definition.example.id
+  #     principal_id               = data.azurerm_client_config.this.object_id
+  #   }
+  # }
 
   diagnostic_settings = {
     diagnostic_settings_1 = {
@@ -427,8 +427,6 @@ The following resources are used by this module:
 - [random_integer.region_index_vm](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_integer.zone_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [azapi_resource_list.example](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_list) (data source)
-- [azurerm_client_config.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
-- [azurerm_role_definition.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
 - [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 <!-- markdownlint-disable MD013 -->

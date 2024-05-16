@@ -46,11 +46,11 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-data "azurerm_client_config" "this" {}
+# data "azurerm_client_config" "this" {}
 
-data "azurerm_role_definition" "example" {
-  name = "Contributor"
-}
+# data "azurerm_role_definition" "example" {
+#   name = "Contributor"
+# }
 
 # This is required for resource modules
 resource "azurerm_resource_group" "example" {
@@ -209,12 +209,12 @@ module "test" {
       #   */
       # }
 
-      role_assignments = {
-        role_assignment_1 = {
-          role_definition_id_or_name = data.azurerm_role_definition.example.id
-          principal_id               = data.azurerm_client_config.this.object_id
-        }
-      }
+      # role_assignments = {
+      #   role_assignment_1 = {
+      #     role_definition_id_or_name = data.azurerm_role_definition.example.id
+      #     principal_id               = data.azurerm_client_config.this.object_id
+      #   }
+      # }
 
       tags = {
         webapp = "${module.naming.static_web_app.name_unique}-interfaces"
@@ -224,12 +224,12 @@ module "test" {
 
   }
 
-  role_assignments = {
-    role_assignment_1 = {
-      role_definition_id_or_name = data.azurerm_role_definition.example.id
-      principal_id               = data.azurerm_client_config.this.object_id
-    }
-  }
+  # role_assignments = {
+  #   role_assignment_1 = {
+  #     role_definition_id_or_name = data.azurerm_role_definition.example.id
+  #     principal_id               = data.azurerm_client_config.this.object_id
+  #   }
+  # }
 
   diagnostic_settings = {
     diagnostic_settings_1 = {
