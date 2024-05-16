@@ -9,6 +9,12 @@ variable "kind" {
   }
 }
 
+variable "location" {
+  type        = string
+  description = "Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location."
+  nullable    = false
+}
+
 variable "name" {
   type        = string
   description = "The name which should be used for the Function App."
@@ -441,6 +447,12 @@ variable "auto_heal_setting" {
         take_taken = string
         path       = optional(string)
       })), {})
+      slow_request_with_path = optional(map(object({
+        count      = number
+        interval   = string
+        take_taken = string
+        path       = optional(string)
+      })), {})
       status_code = optional(map(object({
         count             = number
         interval          = string
@@ -473,7 +485,8 @@ variable "auto_heal_setting" {
       - `count` - (Required) The number of slow requests to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
       - `take_taken` - (Required) The time taken to trigger the action.
-      - `path` - (Optional) The path to trigger the action.
+      - `path` - (Optional) The path to trigger the action. 
+      > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
     - `status_code` - (Optional) The status code trigger to activate the action.
       - `count` - (Required) The number of status codes to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
@@ -708,7 +721,7 @@ variable "diagnostic_settings" {
   - `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
   - `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
   - `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
-  - `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
+  - `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`. Will resolve to `null` as Function App / web App does not support Destination Table.
   - `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
   - `storage_account_resource_id` - (Optional) The resource ID of the Storage Account to send logs and metrics to.
   - `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
@@ -824,12 +837,6 @@ variable "key_vault_reference_identity_id" {
   description = "The identity ID to use for Key Vault references."
 }
 
-variable "location" {
-  type        = string
-  default     = null
-  description = "Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location."
-}
-
 variable "lock" {
   type = object({
     kind = string
@@ -933,6 +940,7 @@ variable "private_endpoints" {
       condition                              = optional(string, null)
       condition_version                      = optional(string, null)
       delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
     })), {})
     lock = optional(object({
       kind = string
@@ -958,6 +966,7 @@ A map of private endpoints to create on this resource. The map key is deliberate
 
 - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
 - `role_assignments` - (Optional) A map of role assignments to create on the private endpoint. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time. See `var.role_assignments` for more information.
+- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating private endpoints if the principal creating the assignment is constrained by RBAC rules that filters on the PrincipalType attribute.
 - `lock` - (Optional) The lock level to apply to the private endpoint. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -1003,6 +1012,7 @@ variable "role_assignments" {
     condition                              = optional(string, null)
     condition_version                      = optional(string, null)
     delegated_managed_identity_resource_id = optional(string, null)
+    principal_type                         = optional(string, null)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -1014,6 +1024,8 @@ A map of role assignments to create on this resource. The map key is deliberatel
 - `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
 - `condition` - The condition which will be used to scope the role assignment.
 - `condition_version` - The version of the condition syntax. Valid values are `2.0`.
+- `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
+- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
@@ -1046,6 +1058,7 @@ variable "site_config" {
     http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
     ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
     load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
+    local_mysql_enabled                           = optional(bool, false)             #(Optional) Should local MySQL be enabled. Defaults to false.
     managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
     minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
     pre_warmed_instance_count                     = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
@@ -1104,12 +1117,12 @@ variable "site_config" {
       priority                  = optional(number, 65000)
       service_tag               = optional(string)
       virtual_network_subnet_id = optional(string)
-      headers = optional(object({
+      headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
         x_fd_health_probe = optional(number)
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
-      }), {})
+      })), {})
     })), {}) #(Optional) One or more ip_restriction blocks as defined above.
     scm_ip_restriction = optional(map(object({
       action                    = optional(string, "Allow")
@@ -1125,6 +1138,22 @@ variable "site_config" {
         x_forwarded_host  = optional(list(string))
       })), {})
     })), {}) #(Optional) One or more scm_ip_restriction blocks as defined above.
+    virtual_application = optional(map(object({
+      physical_path   = optional(string, "site\\wwwroot")
+      preload_enabled = optional(bool, false)
+      virtual_directory = optional(map(object({
+        physical_path = optional(string)
+        virtual_path  = optional(string)
+      })), {})
+      virtual_path = optional(string, "/")
+      })),
+      {
+        default = {
+          physical_path   = "site\\wwwroot"
+          preload_enabled = false
+          virtual_path    = "/"
+        }
+    }) #(Optional) One or more virtual_application blocks as defined above.
   })
   default     = {}
   description = <<DESCRIPTION

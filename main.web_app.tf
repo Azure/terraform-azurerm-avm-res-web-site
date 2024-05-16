@@ -1,23 +1,23 @@
 resource "azurerm_windows_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Windows" ? 1 : 0
 
-  location                                       = coalesce(var.location)
+  location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
+  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
   client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
   client_certificate_mode                        = var.client_certificate_mode
   enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.ftp_publish_basic_authentication_enabled
+  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
@@ -103,6 +103,16 @@ resource "azurerm_windows_web_app" "this" {
               path       = slow_requests.value.path
             }
           }
+          dynamic "slow_request_with_path" {
+            for_each = auto_heal_setting.value.trigger.slow_request_with_path
+
+            content {
+              count      = slow_requests_with_path.value.count
+              interval   = slow_requests_with_path.value.interval
+              path       = slow_requests_with_path.value.path
+              time_taken = slow_requests_with_path.value.time_taken
+            }
+          }
           dynamic "status_code" {
             for_each = auto_heal_setting.value.trigger.status_code
 
@@ -168,6 +178,24 @@ resource "azurerm_windows_web_app" "this" {
             x_fd_health_probe = headers.value.x_fd_health_probe
             x_forwarded_for   = headers.value.x_forwarded_for
             x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+    dynamic "virtual_application" {
+      for_each = var.site_config.virtual_application
+
+      content {
+        physical_path = virtual_application.value.physical_path
+        preload       = virtual_application.value.preload_enabled
+        virtual_path  = virtual_application.value.virtual_path
+
+        dynamic "virtual_directory" {
+          for_each = virtual_application.value.virtual_directory
+
+          content {
+            physical_path = virtual_directory.value.physical_path
+            virtual_path  = virtual_directory.value.virtual_path
           }
         }
       }
@@ -496,23 +524,23 @@ resource "azurerm_windows_web_app" "this" {
 resource "azurerm_linux_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Linux" ? 1 : 0
 
-  location                                       = coalesce(var.location)
+  location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, var.app_settings) : var.app_settings
+  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
   client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
   client_certificate_mode                        = var.client_certificate_mode
   enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.ftp_publish_basic_authentication_enabled
+  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
