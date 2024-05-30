@@ -56,11 +56,12 @@ resource "azurerm_resource_group" "example" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+  version = "0.1.2"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
+  location                      = azurerm_resource_group.example.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
@@ -170,7 +171,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.1.1
+Version: 0.1.2
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

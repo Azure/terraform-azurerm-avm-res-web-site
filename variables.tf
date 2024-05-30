@@ -784,6 +784,7 @@ variable "function_app_storage_account" {
   type = object({
     name                = optional(string)
     resource_group_name = optional(string)
+    location            = optional(string)
   })
   default = {
 
@@ -793,6 +794,7 @@ variable "function_app_storage_account" {
 
   - `name` - (Optional) The name of the Storage Account.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+  - `location` - (Optional) The Azure region where the Storage Account will be deployed.
 
   ```terraform
 
