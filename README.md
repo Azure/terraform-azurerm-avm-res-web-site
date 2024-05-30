@@ -864,6 +864,7 @@ Description:   A map of objects that represent a Storage Account to mount to the
 
   - `name` - (Optional) The name of the Storage Account.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
+  - `location` - (Optional) The Azure region where the Storage Account will be deployed.
 
   ```terraform
 
@@ -875,6 +876,7 @@ Type:
 object({
     name                = optional(string)
     resource_group_name = optional(string)
+    location            = optional(string)
   })
 ```
 
@@ -1539,7 +1541,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.1.1
+Version: 0.1.2
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
