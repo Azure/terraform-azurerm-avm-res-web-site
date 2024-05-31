@@ -72,4 +72,24 @@ module "test" {
   os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
+
+  auth_settings_v2 = {
+    setting1 = {
+      auth_enabled     = true
+      default_provider = "AzureActiveDirectory"
+
+      active_directory_v2 = {
+        aad1 = {
+          client_id            = "0830ba8c-3905-4e82-9c24-d1d6bb20bd6b"
+          tenant_auth_endpoint = "https://login.microsoftonline.com/16b3c013-d300-468d-ac64-7eda0820b6d3/v2.0/"
+        }
+      }
+      login = {
+        login1 = {
+          token_store_enabled = true
+          validate_nonce      = true
+        }
+      }
+    }
+  }
 }
