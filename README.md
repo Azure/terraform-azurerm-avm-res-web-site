@@ -415,17 +415,17 @@ map(object({
       login_parameters                     = optional(map(any))
       tenant_auth_endpoint                 = optional(string)
       www_authentication_disabled          = optional(bool, false)
-    })))
+    })), {})
     apple_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
       login_scopes               = optional(list(string))
-    })))
+    })), {})
     azure_static_web_app_v2 = optional(map(object({
       client_id = optional(string)
-    })))
+    })), {})
     custom_oidc_v2 = optional(map(object({
-      authorization_endpoint        = optional(string)
+      authorisation_endpoint        = optional(string)
       certification_uri             = optional(string)
       client_credential_method      = optional(string)
       client_id                     = optional(string)
@@ -436,24 +436,24 @@ map(object({
       openid_configuration_endpoint = optional(string)
       scopes                        = optional(list(string))
       token_endpoint                = optional(string)
-    })))
+    })), {})
     facebook_v2 = optional(map(object({
       app_id                  = optional(string)
       app_secret_setting_name = optional(string)
       graph_api_version       = optional(string)
       login_scopes            = optional(list(string))
-    })))
+    })), {})
     github_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
       login_scopes               = optional(list(string))
-    })))
+    })), {})
     google_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
       allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
-    })))
+    })), {})
     login = map(object({
       allowed_external_redirect_urls    = optional(list(string))
       cookie_expiration_convention      = optional(string, "FixedTime")
@@ -472,11 +472,11 @@ map(object({
       client_secret_setting_name = optional(string)
       allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
-    })))
+    })), {})
     twitter_v2 = optional(map(object({
       consumer_key                 = optional(string)
       consumer_secret_setting_name = optional(string)
-    })))
+    })), {})
 
   }))
 ```
