@@ -1,23 +1,24 @@
 resource "azurerm_windows_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Windows" ? 1 : 0
 
-  location                                       = var.location
-  name                                           = var.name
-  resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
-  client_affinity_enabled                        = var.client_affinity_enabled
-  client_certificate_enabled                     = var.client_certificate_enabled
-  client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
-  client_certificate_mode                        = var.client_certificate_mode
-  enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
-  https_only                                     = var.https_only
-  key_vault_reference_identity_id                = var.key_vault_reference_identity_id
-  public_network_access_enabled                  = var.public_network_access_enabled
-  tags                                           = var.tags
-  virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
+  location                                 = var.location
+  name                                     = var.name
+  resource_group_name                      = var.resource_group_name
+  service_plan_id                          = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
+  app_settings                             = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
+  client_affinity_enabled                  = var.client_affinity_enabled
+  client_certificate_enabled               = var.client_certificate_enabled
+  client_certificate_exclusion_paths       = var.client_certificate_exclusion_paths
+  client_certificate_mode                  = var.client_certificate_mode
+  enabled                                  = var.enabled
+  ftp_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
+  https_only                               = var.https_only
+  key_vault_reference_identity_id          = var.key_vault_reference_identity_id
+  public_network_access_enabled            = var.public_network_access_enabled
+  tags                                     = var.tags
+  virtual_network_subnet_id                = var.virtual_network_subnet_id
+  # webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {
@@ -524,23 +525,24 @@ resource "azurerm_windows_web_app" "this" {
 resource "azurerm_linux_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Linux" ? 1 : 0
 
-  location                                       = var.location
-  name                                           = var.name
-  resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
-  client_affinity_enabled                        = var.client_affinity_enabled
-  client_certificate_enabled                     = var.client_certificate_enabled
-  client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
-  client_certificate_mode                        = var.client_certificate_mode
-  enabled                                        = var.enabled
-  ftp_publish_basic_authentication_enabled       = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
-  https_only                                     = var.https_only
-  key_vault_reference_identity_id                = var.key_vault_reference_identity_id
-  public_network_access_enabled                  = var.public_network_access_enabled
-  tags                                           = var.tags
-  virtual_network_subnet_id                      = var.virtual_network_subnet_id
-  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
+  location                                 = var.location
+  name                                     = var.name
+  resource_group_name                      = var.resource_group_name
+  service_plan_id                          = (var.create_service_plan == true && var.service_plan_resource_id == null) ? azurerm_service_plan.this[0].id : var.service_plan_resource_id
+  app_settings                             = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
+  client_affinity_enabled                  = var.client_affinity_enabled
+  client_certificate_enabled               = var.client_certificate_enabled
+  client_certificate_exclusion_paths       = var.client_certificate_exclusion_paths
+  client_certificate_mode                  = var.client_certificate_mode
+  enabled                                  = var.enabled
+  ftp_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.ftp_publish_basic_authentication_enabled
+  https_only                               = var.https_only
+  key_vault_reference_identity_id          = var.key_vault_reference_identity_id
+  public_network_access_enabled            = var.public_network_access_enabled
+  tags                                     = var.tags
+  virtual_network_subnet_id                = var.virtual_network_subnet_id
+  # webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "AllAllowed" ? var.webdeploy_publish_basic_authentication_enabled : false
+  webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
 
   site_config {

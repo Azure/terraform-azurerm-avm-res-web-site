@@ -86,7 +86,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.6.0"
+  # version = "0.6.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -96,7 +96,6 @@ module "test" {
 
   kind    = "functionapp"
   os_type = "Windows"
-
 
   /*
   # Uses an existing app service plan
