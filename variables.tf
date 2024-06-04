@@ -510,7 +510,7 @@ variable "backup" {
       frequency_interval       = optional(number)
       frequency_unit           = optional(string)
       keep_at_least_one_backup = optional(bool)
-      retention_period_in_days = optional(number)
+      retention_period_days    = optional(number)
       start_time               = optional(string)
     })))
   }))
