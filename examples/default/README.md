@@ -86,7 +86,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.6.2"
+  # version = "0.6.3"
 
   enable_telemetry = var.enable_telemetry
 
