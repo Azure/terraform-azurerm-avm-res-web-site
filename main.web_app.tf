@@ -26,7 +26,7 @@ resource "azurerm_windows_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled
+    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -79,13 +79,8 @@ resource "azurerm_windows_web_app" "this" {
 
       content {
         action {
-          action_type                    = auto_heal_setting.value.action_type
-          minimum_process_execution_time = auto_heal_setting.value.minimum_process_execution_time
-
-          custom_action {
-            executable = auto_heal_setting.value.custom_action.executable
-            parameters = auto_heal_setting.value.custom_action.parameters
-          }
+          action_type                    = auto_heal_setting.value.action.action_type
+          minimum_process_execution_time = auto_heal_setting.value.action.minimum_process_execution_time
         }
         trigger {
           private_memory_kb = auto_heal_setting.value.trigger.private_memory_kb
@@ -550,7 +545,7 @@ resource "azurerm_linux_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled
+    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -622,6 +617,16 @@ resource "azurerm_linux_web_app" "this" {
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
               path       = slow_requests.value.path
+            }
+          }
+          dynamic "slow_request_with_path" {
+            for_each = auto_heal_setting.value.trigger.slow_request_with_path
+
+            content {
+              count      = slow_requests_with_path.value.count
+              interval   = slow_requests_with_path.value.interval
+              path       = slow_requests_with_path.value.path
+              time_taken = slow_requests_with_path.value.time_taken
             }
           }
           dynamic "status_code" {

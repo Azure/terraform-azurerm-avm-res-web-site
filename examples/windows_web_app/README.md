@@ -79,8 +79,40 @@ module "test" {
   service_plan_resource_id = azurerm_service_plan.example.id
 
   site_config = {
-
+    # auto_heal_enabled = true
   }
+
+  # auto_heal_setting = {
+  #   setting_1 = {
+  #     action = {
+  #       action_type = "Recycle"
+  #       minimum_process_execution_time = "00:01:00"
+  #     }
+  #     trigger = {
+  #       # private_bytes_in_kb = 0
+  #       requests = {
+  #         count = 100
+  #         interval = "00:00:30"
+  #       }
+  #       status_code = {
+  #         status_5000 = {
+  #           count = 5000
+  #           interval = "00:05:00"
+  #           path = "/HealthCheck"
+  #           status_code_range = 500
+  #           sub_status = 0
+  #         }
+  #         status_6000 = {
+  #           count = 6000
+  #           interval = "00:05:00"
+  #           path = "/Get"
+  #           status_code_range = 500
+  #           sub_status = 0
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 
 }
 ```
