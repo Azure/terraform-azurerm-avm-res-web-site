@@ -574,7 +574,7 @@ variable "client_certificate_exclusion_paths" {
 
 variable "client_certificate_mode" {
   type        = string
-  default     = "Optional"
+  default     = "Required"
   description = "The client certificate mode for the Function App."
 }
 

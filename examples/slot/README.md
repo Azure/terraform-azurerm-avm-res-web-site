@@ -1,8 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form with FTP state configured to FTPS only and basic authentication toggled on.
-If you have any policies denying / auditing App Services that use basic authentication / local authentication, beware that configuration may not persist.
+This deploys the module utilizing app service slot capabilities.
 
 ```hcl
 terraform {
@@ -89,18 +88,18 @@ module "test" {
   # source             = "Azure/avm-res-web-site/azurerm"
   # version = "0.6.3"
 
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
 
   name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
-  os_type = "Linux"
+  kind    = "webapp"
+  os_type = "Windows"
 
-  site_config = {
-    ftps_state = "FtpsOnly"
-  }
+  # site_config = {
+  #   ftps_state = "FtpsOnly"
+  # }
 
 
   /*
@@ -122,10 +121,62 @@ module "test" {
   */
 
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
+  # function_app_create_storage_account = true
+  # function_app_storage_account = {
+  #   name                = module.naming.storage_account.name_unique
+  #   resource_group_name = azurerm_resource_group.example.name
+  # }
+
+  web_app_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+        always_on = true
+      }
+    },
+    slot2 = {
+      name = "development"
+      site_config = {
+        always_on         = true
+        auto_heal_enabled = true
+      }
+      auto_heal_setting = {
+        setting_1 = {
+          action = {
+            action_type                    = "Recycle"
+            minimum_process_execution_time = "00:01:00"
+          }
+          trigger = {
+            # private_bytes_in_kb = 0
+            requests = {
+              count    = 100
+              interval = "00:00:30"
+            }
+            status_code = {
+              status_5000 = {
+                count             = 5000
+                interval          = "00:05:00"
+                path              = "/HealthCheck"
+                status_code_range = 500
+                sub_status        = 0
+              }
+              status_6000 = {
+                count             = 6000
+                interval          = "00:05:00"
+                path              = "/Get"
+                status_code_range = 500
+                sub_status        = 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  app_service_active_slot = {
+    slot_key                = "slot2"
+    overwite_network_config = false
   }
 }
 ```
@@ -178,6 +229,14 @@ Default: `true`
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
+
+Description: ID of active slot
+
+### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
+
+Description: Full output of deployment slots created
 
 ### <a name="output_name"></a> [name](#output\_name)
 

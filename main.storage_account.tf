@@ -4,6 +4,8 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.1.2"
 
+  enable_telemetry = var.enable_telemetry
+
   name                          = var.function_app_storage_account.name
   resource_group_name           = coalesce(var.function_app_storage_account.resource_group_name, var.resource_group_name)
   location                      = coalesce(var.function_app_storage_account.location, var.location)
