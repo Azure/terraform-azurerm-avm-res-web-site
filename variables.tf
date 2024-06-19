@@ -1255,6 +1255,11 @@ variable "site_config" {
  - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
 
   DESCRIPTION
+
+  validation {
+    condition     = var.site_config.auto_heal_enabled != null && var.site_config.auto_heal_enabled != true ? contains([true, null], var.site_config.auto_heal_enabled) : true
+    error_message = "The value of `auto_heal_enabled` can only be set to `true` or `null`."
+  }
 }
 
 variable "sticky_settings" {

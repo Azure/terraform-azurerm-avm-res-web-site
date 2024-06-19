@@ -12,15 +12,19 @@ variable "app_service_active_slot" {
   DESCRIPTION
 }
 
-variable "web_app_slots" {
+variable "deployment_slots" {
   type = map(object({
     name                                           = optional(string)
     app_settings                                   = optional(map(string))
+    builtin_logging_enabled                        = optional(bool, true)
+    content_share_force_disabled                   = optional(bool, false)
     client_affinity_enabled                        = optional(bool, false)
     client_certificate_enabled                     = optional(bool, false)
     client_certificate_exclusion_paths             = optional(string, null)
     client_certificate_mode                        = optional(string, "Required")
+    daily_memory_time_quota                        = optional(number, 0)
     enabled                                        = optional(bool, true)
+    functions_extension_version                    = optional(string, "~4")
     ftp_publish_basic_authentication_enabled       = optional(bool, true)
     https_only                                     = optional(bool, false)
     key_vault_reference_identity_id                = optional(string, null)
@@ -383,7 +387,9 @@ variable "web_app_slots" {
     }), null)
 
   }))
-  default     = null
+  default = {
+
+  }
   description = <<DESCRIPTION
 
   ```

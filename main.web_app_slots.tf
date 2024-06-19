@@ -1,8 +1,8 @@
 resource "azurerm_windows_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.web_app_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" && var.web_app_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null }
 
   app_service_id                                 = azurerm_windows_web_app.this[0].id
-  name                                           = coalesce(each.value.name, "${each.key}")
+  name                                           = coalesce(each.value.name, each.key)
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, each.value.app_settings) : each.value.app_settings
   client_affinity_enabled                        = each.value.client_affinity_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
@@ -485,10 +485,10 @@ resource "azurerm_windows_web_app_slot" "this" {
 }
 
 resource "azurerm_linux_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.web_app_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.web_app_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.deployment_slots != null }
 
-  app_service_id                                 = azurerm_windows_web_app.this[0].id
-  name                                           = coalesce(each.value.name, "${each.key}")
+  app_service_id                                 = azurerm_linux_web_app.this[0].id
+  name                                           = coalesce(each.value.name, each.ke)
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, each.value.app_settings) : each.value.app_settings
   client_affinity_enabled                        = each.value.client_affinity_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
@@ -552,19 +552,14 @@ resource "azurerm_linux_web_app_slot" "this" {
       }
     }
     dynamic "auto_heal_setting" {
-      for_each = var.auto_heal_setting
+      for_each = each.value.auto_heal_setting
 
       content {
         action {
-          action_type = auto_heal_setting.value.action_type
-          # custom_action {
-          #   executable = auto_heal_setting.value.custom_action.executable
-          #   parameters = auto_heal_setting.value.custom_action.parameters
-          # }
-          minimum_process_execution_time = auto_heal_setting.value.minimum_process_execution_time
+          action_type                    = auto_heal_setting.value.action.action_type
+          minimum_process_execution_time = auto_heal_setting.value.action.minimum_process_execution_time
         }
         trigger {
-          # private_memory_kb = auto_heal_setting.value.trigger.private_memory_kb
           requests {
             count    = auto_heal_setting.value.trigger.requests.count
             interval = auto_heal_setting.value.trigger.requests.interval
@@ -657,6 +652,316 @@ resource "azurerm_linux_web_app_slot" "this" {
           }
         }
       }
+    }
+  }
+  dynamic "auth_settings" {
+    for_each = each.value.auth_settings
+
+    content {
+      enabled                        = auth_settings.value.enabled
+      additional_login_parameters    = auth_settings.value.additional_login_parameters
+      allowed_external_redirect_urls = auth_settings.value.allowed_external_redirect_urls
+      default_provider               = auth_settings.value.default_provider
+      issuer                         = auth_settings.value.issuer
+      runtime_version                = auth_settings.value.runtime_version
+      token_refresh_extension_hours  = auth_settings.value.token_refresh_extension_hours
+      token_store_enabled            = auth_settings.value.token_store_enabled
+      unauthenticated_client_action  = auth_settings.value.unauthenticated_client_action
+
+      dynamic "active_directory" {
+        for_each = auth_settings.value.active_directory
+
+        content {
+          client_id                  = active_directory.value.client_id
+          allowed_audiences          = active_directory.value.allowed_audiences
+          client_secret              = active_directory.value.client_secret
+          client_secret_setting_name = active_directory.value.client_secret_setting_name
+        }
+      }
+      dynamic "facebook" {
+        for_each = auth_settings.value.facebook
+
+        content {
+          app_id                  = facebook.value.app_id
+          app_secret              = facebook.value.app_secret
+          app_secret_setting_name = facebook.value.app_secret_setting_name
+          oauth_scopes            = facebook.value.oauth_scopes
+        }
+      }
+      dynamic "github" {
+        for_each = auth_settings.value.github
+
+        content {
+          client_id                  = github.value.client_id
+          client_secret              = github.value.client_secret
+          client_secret_setting_name = github.value.client_secret_setting_name
+          oauth_scopes               = github.value.oauth_scopes
+        }
+      }
+      dynamic "google" {
+        for_each = auth_settings.value.google
+
+        content {
+          client_id                  = google.value.client_id
+          client_secret              = google.value.client_secret
+          client_secret_setting_name = google.value.client_secret_setting_name
+          oauth_scopes               = google.value.oauth_scopes
+        }
+      }
+      dynamic "microsoft" {
+        for_each = auth_settings.value.microsoft
+
+        content {
+          client_id                  = microsoft.value.client_id
+          client_secret              = microsoft.value.client_secret
+          client_secret_setting_name = microsoft.value.client_secret_setting_name
+          oauth_scopes               = microsoft.value.oauth_scopes
+        }
+      }
+      dynamic "twitter" {
+        for_each = auth_settings.value.twitter
+
+        content {
+          consumer_key                 = twitter.value.consumer_key
+          consumer_secret              = twitter.value.consumer_secret
+          consumer_secret_setting_name = twitter.value.consumer_secret_setting_name
+        }
+      }
+    }
+  }
+  dynamic "auth_settings_v2" {
+    for_each = each.value.auth_settings_v2
+
+    content {
+      auth_enabled                            = auth_settings_v2.value.auth_enabled
+      config_file_path                        = auth_settings_v2.value.config_file_path
+      default_provider                        = auth_settings_v2.value.default_provider
+      excluded_paths                          = auth_settings_v2.value.excluded_paths
+      forward_proxy_convention                = auth_settings_v2.value.forward_proxy_convention
+      forward_proxy_custom_host_header_name   = auth_settings_v2.value.forward_proxy_custom_host_header_name
+      forward_proxy_custom_scheme_header_name = auth_settings_v2.value.forward_proxy_custom_scheme_header_name
+      http_route_api_prefix                   = auth_settings_v2.value.http_route_api_prefix
+      require_authentication                  = auth_settings_v2.value.require_authentication
+      require_https                           = auth_settings_v2.value.require_https
+      runtime_version                         = auth_settings_v2.value.runtime_version
+      unauthenticated_action                  = auth_settings_v2.value.unauthenticated_action
+
+      dynamic "login" {
+        for_each = auth_settings_v2.value.login
+
+        content {
+          allowed_external_redirect_urls    = login.value.allowed_external_redirect_urls
+          cookie_expiration_convention      = login.value.cookie_expiration_convention
+          cookie_expiration_time            = login.value.cookie_expiration_time
+          logout_endpoint                   = login.value.logout_endpoint
+          nonce_expiration_time             = login.value.nonce_expiration_time
+          preserve_url_fragments_for_logins = login.value.preserve_url_fragments_for_logins
+          token_refresh_extension_time      = login.value.token_refresh_extension_time
+          token_store_enabled               = login.value.token_store_enabled
+          token_store_path                  = login.value.token_store_path
+          token_store_sas_setting_name      = login.value.token_store_sas_setting_name
+          validate_nonce                    = login.value.validate_nonce
+        }
+      }
+      dynamic "active_directory_v2" {
+        for_each = auth_settings_v2.value.active_directory_v2
+
+        content {
+          client_id                            = active_directory_v2.value.client_id
+          tenant_auth_endpoint                 = active_directory_v2.value.tenant_auth_endpoint
+          allowed_applications                 = active_directory_v2.value.allowed_applications
+          allowed_audiences                    = active_directory_v2.value.allowed_audiences
+          allowed_groups                       = active_directory_v2.value.allowed_groups
+          allowed_identities                   = active_directory_v2.value.allowed_identities
+          client_secret_certificate_thumbprint = active_directory_v2.value.client_secret_certificate_thumbprint
+          client_secret_setting_name           = active_directory_v2.value.client_secret_setting_name
+          jwt_allowed_client_applications      = active_directory_v2.value.jwt_allowed_client_applications
+          jwt_allowed_groups                   = active_directory_v2.value.jwt_allowed_groups
+          login_parameters                     = active_directory_v2.value.login_parameters
+          www_authentication_disabled          = active_directory_v2.value.www_authentication_disabled
+        }
+      }
+      dynamic "apple_v2" {
+        for_each = auth_settings_v2.value.apple_v2
+
+        content {
+          client_id                  = apple_v2.value.client_id
+          client_secret_setting_name = apple_v2.value.client_secret_setting_name
+          login_scopes               = apple_v2.value.login_scopes
+        }
+      }
+      dynamic "azure_static_web_app_v2" {
+        for_each = auth_settings_v2.value.azure_static_web_app_v2
+
+        content {
+          client_id = azure_static_web_app_v2.value.client_id
+        }
+      }
+      dynamic "custom_oidc_v2" {
+        for_each = auth_settings_v2.value.custom_oidc_v2
+
+        content {
+          client_id                     = custom_oidc_v2.value.client_id
+          name                          = custom_oidc_v2.value.name
+          openid_configuration_endpoint = custom_oidc_v2.value.openid_configuration_endpoint
+          authorisation_endpoint        = custom_oidc_v2.value.authorisation_endpoint
+          certification_uri             = custom_oidc_v2.value.certification_uri
+          client_credential_method      = custom_oidc_v2.value.client_credential_method
+          client_secret_setting_name    = "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET"
+          issuer_endpoint               = custom_oidc_v2.value.issuer_endpoint
+          name_claim_type               = custom_oidc_v2.value.name_claim_type
+          scopes                        = custom_oidc_v2.value.scopes
+          token_endpoint                = custom_oidc_v2.value.token_endpoint
+        }
+
+      }
+      dynamic "facebook_v2" {
+        for_each = auth_settings_v2.value.facebook_v2
+
+        content {
+          app_id                  = facebook_v2.value.app_id
+          app_secret_setting_name = facebook_v2.value.app_secret_setting_name
+          graph_api_version       = facebook_v2.value.graph_api_version
+          login_scopes            = facebook_v2.value.login_scopes
+        }
+
+      }
+      dynamic "github_v2" {
+        for_each = auth_settings_v2.value.github_v2
+
+        content {
+          client_id                  = github_v2.value.client_id
+          client_secret_setting_name = github_v2.value.client_secret_setting_name
+          login_scopes               = github_v2.value.login_scopes
+        }
+      }
+      dynamic "google_v2" {
+        for_each = auth_settings_v2.value.google_v2
+
+        content {
+          client_id                  = google_v2.value.client_id
+          client_secret_setting_name = google_v2.value.client_secret_setting_name
+          allowed_audiences          = google_v2.value.allowed_audiences
+          login_scopes               = google_v2.value.login_scopes
+        }
+
+      }
+      dynamic "microsoft_v2" {
+        for_each = auth_settings_v2.value.microsoft_v2
+
+        content {
+          client_id                  = microsoft_v2.value.client_id
+          client_secret_setting_name = microsoft_v2.value.client_secret_setting_name
+          allowed_audiences          = microsoft_v2.value.allowed_audiences
+          login_scopes               = microsoft_v2.value.login_scopes
+        }
+      }
+      dynamic "twitter_v2" {
+        for_each = auth_settings_v2.value.twitter_v2
+
+        content {
+          consumer_key                 = twitter_v2.value.consumer_key
+          consumer_secret_setting_name = twitter_v2.value.consumer_secret_setting_name
+        }
+      }
+    }
+  }
+  dynamic "backup" {
+    for_each = each.value.backup
+
+    content {
+      name                = backup.value.name
+      storage_account_url = backup.value.storage_account_url
+      enabled             = backup.value.enabled
+
+      dynamic "schedule" {
+        for_each = backup.value.schedule
+
+        content {
+          frequency_interval       = schedule.value.frequency_interval
+          frequency_unit           = schedule.value.frequency_unit
+          keep_at_least_one_backup = schedule.value.keep_at_least_one_backup
+          retention_period_days    = schedule.value.retention_period_days
+          start_time               = schedule.value.start_time
+        }
+      }
+    }
+  }
+  dynamic "connection_string" {
+    for_each = each.value.connection_strings
+
+    content {
+      name  = connection_string.value.name
+      type  = connection_string.value.type
+      value = connection_string.value.value
+    }
+  }
+  dynamic "identity" {
+    for_each = local.managed_identities.system_assigned_user_assigned
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
+  }
+  dynamic "logs" {
+    for_each = each.value.logs
+
+    content {
+      detailed_error_messages = logs.value.detailed_error_messages
+      failed_request_tracing  = logs.value.failed_request_tracing
+
+      dynamic "application_logs" {
+        for_each = logs.value.application_logs
+
+        content {
+          file_system_level = application_logs.value.file_system_level
+
+          azure_blob_storage {
+            level             = application_logs.value.azure_blob_storage.level
+            retention_in_days = application_logs.value.azure_blob_storage.retention_in_days
+            sas_url           = application_logs.value.azure_blob_storage.sas_url
+          }
+        }
+
+      }
+      dynamic "http_logs" {
+        for_each = logs.value.http_logs
+
+        content {
+          azure_blob_storage {
+            sas_url           = http_logs.value.azure_blob_storage.sas_url
+            retention_in_days = http_logs.value.azure_blob_storage.retention_in_days
+          }
+          file_system {
+            retention_in_days = http_logs.value.file_system.retention_in_days
+            retention_in_mb   = http_logs.value.file_system.retention_in_mb
+          }
+        }
+
+      }
+    }
+  }
+  dynamic "storage_account" {
+    for_each = each.value.storage_shares_to_mount
+
+    content {
+      access_key   = storage_account.value.access_key
+      account_name = storage_account.value.account_name
+      name         = storage_account.value.name
+      share_name   = storage_account.value.share_name
+      type         = storage_account.value.type
+      mount_path   = storage_account.value.mount_path
+    }
+  }
+  dynamic "timeouts" {
+    for_each = each.value.timeouts == null ? [] : [each.value.timeouts]
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
     }
   }
 }

@@ -587,15 +587,10 @@ resource "azurerm_linux_web_app" "this" {
 
       content {
         action {
-          action_type = auto_heal_setting.value.action_type
-          # custom_action {
-          #   executable = auto_heal_setting.value.custom_action.executable
-          #   parameters = auto_heal_setting.value.custom_action.parameters
-          # }
-          minimum_process_execution_time = auto_heal_setting.value.minimum_process_execution_time
+          action_type                    = auto_heal_setting.value.action.action_type
+          minimum_process_execution_time = auto_heal_setting.value.action.minimum_process_execution_time
         }
         trigger {
-          # private_memory_kb = auto_heal_setting.value.trigger.private_memory_kb
           requests {
             count    = auto_heal_setting.value.trigger.requests.count
             interval = auto_heal_setting.value.trigger.requests.interval

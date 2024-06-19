@@ -49,5 +49,5 @@ output "web_app_active_slot" {
 
 output "web_app_deployment_slots" {
   description = "The deployment slots."
-  value       = var.kind == "webapp" && var.os_type == "Windows" && var.web_app_slots != null ? azurerm_windows_web_app_slot.this : azurerm_linux_web_app_slot.this
+  value       = var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_web_app_slot.this : azurerm_linux_web_app_slot.this
 }

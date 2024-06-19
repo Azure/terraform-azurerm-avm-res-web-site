@@ -5,7 +5,7 @@ This deploys the module as a Windows Function App using some of the interfaces.
 
 ```hcl
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = "~> 1.6"
   required_providers {
     azapi = {
       source  = "Azure/azapi"
@@ -132,7 +132,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.6.3"
+  # version = "0.7.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -392,7 +392,7 @@ module "avm_res_compute_virtualmachine" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (>=1.9.0)
 

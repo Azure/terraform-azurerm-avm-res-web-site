@@ -5,7 +5,7 @@ This deploys the module with a Windows Function App in its simplest form.
 
 ```hcl
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = "~> 1.6"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -106,7 +106,7 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
 

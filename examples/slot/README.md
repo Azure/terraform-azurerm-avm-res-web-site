@@ -5,7 +5,7 @@ This deploys the module utilizing app service slot capabilities.
 
 ```hcl
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = "~> 1.6"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -86,21 +86,16 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.6.3"
+  # version = "0.7.0"
 
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "webapp"
-  os_type = "Windows"
-
-  # site_config = {
-  #   ftps_state = "FtpsOnly"
-  # }
-
+  kind    = "functionapp"
+  os_type = "Linux"
 
   /*
   # Uses an existing app service plan
@@ -121,63 +116,31 @@ module "test" {
   */
 
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  # function_app_create_storage_account = true
-  # function_app_storage_account = {
-  #   name                = module.naming.storage_account.name_unique
-  #   resource_group_name = azurerm_resource_group.example.name
-  # }
+  function_app_create_storage_account = true
+  function_app_storage_account = {
+    name                = module.naming.storage_account.name_unique
+    resource_group_name = azurerm_resource_group.example.name
+  }
 
-  web_app_slots = {
+  deployment_slots = {
     slot1 = {
       name = "staging"
       site_config = {
-        always_on = true
+
       }
     },
     slot2 = {
       name = "development"
       site_config = {
-        always_on         = true
-        auto_heal_enabled = true
-      }
-      auto_heal_setting = {
-        setting_1 = {
-          action = {
-            action_type                    = "Recycle"
-            minimum_process_execution_time = "00:01:00"
-          }
-          trigger = {
-            # private_bytes_in_kb = 0
-            requests = {
-              count    = 100
-              interval = "00:00:30"
-            }
-            status_code = {
-              status_5000 = {
-                count             = 5000
-                interval          = "00:05:00"
-                path              = "/HealthCheck"
-                status_code_range = 500
-                sub_status        = 0
-              }
-              status_6000 = {
-                count             = 6000
-                interval          = "00:05:00"
-                path              = "/Get"
-                status_code_range = 500
-                sub_status        = 0
-              }
-            }
-          }
-        }
+
       }
     }
   }
 
-  app_service_active_slot = {
-    slot_key                = "slot2"
-    overwite_network_config = false
-  }
+  # app_service_active_slot = {
+  #   slot_key                = "slot2"
+  #   overwite_network_config = false
+  # }
 }
 ```
 
@@ -186,7 +149,7 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
 
