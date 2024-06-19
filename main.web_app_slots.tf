@@ -488,7 +488,7 @@ resource "azurerm_linux_web_app_slot" "this" {
   for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.deployment_slots != null }
 
   app_service_id                                 = azurerm_linux_web_app.this[0].id
-  name                                           = coalesce(each.value.name, each.ke)
+  name                                           = coalesce(each.value.name, each.key)
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, each.value.app_settings) : each.value.app_settings
   client_affinity_enabled                        = each.value.client_affinity_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
