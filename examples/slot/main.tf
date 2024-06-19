@@ -21,6 +21,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -47,15 +48,34 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
-}
+/*
+module "avm_res_storage_storageaccount" {
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "0.1.1"
 
-# This is the module call
+  enable_telemetry = false
+  name                          = module.naming.storage_account.name_unique
+  resource_group_name           = azurerm_resource_group.example.name
+  shared_access_key_enabled     = true
+  public_network_access_enabled = true
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = "Allow"
+  }
+}
+*/
+
+/*
+resource "azurerm_service_plan" "example" {
+  location = azurerm_resource_group.example.location
+  # This will equate to Consumption (Serverless) in portal
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Windows"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "Y1"
+}
+*/
+
 module "test" {
   source = "../../"
 
@@ -64,32 +84,55 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.app_service.name_unique}-linux"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "webapp"
+  kind    = "functionapp"
+  os_type = "Linux"
+
+  /*
+  # Uses an existing app service plan
   os_type = azurerm_service_plan.example.os_type
-
   service_plan_resource_id = azurerm_service_plan.example.id
+  */
 
-  # auth_settings_v2 = {
-  #   setting1 = {
-  #     auth_enabled     = true
-  #     default_provider = "AzureActiveDirectory"
+  # Creates a new app service plan
+  create_service_plan = true
+  new_service_plan = {
+    sku_name = "S1"
+  }
 
-  #     active_directory_v2 = {
-  #       aad1 = {
-  #         client_id            = ""
-  #         tenant_auth_endpoint = "https://login.microsoftonline.com/{}/v2.0/"
-  #       }
-  #     }
-  #     login = {
-  #       login1 = {
-  #         token_store_enabled = true
-  #         validate_nonce      = true
-  #       }
-  #     }
-  #   }
+  /* 
+  # Uses an existing storage account
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  */
+
+  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
+  function_app_create_storage_account = true
+  function_app_storage_account = {
+    name                = module.naming.storage_account.name_unique
+    resource_group_name = azurerm_resource_group.example.name
+  }
+
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+
+      }
+    },
+    slot2 = {
+      name = "development"
+      site_config = {
+
+      }
+    }
+  }
+
+  # app_service_active_slot = {
+  #   slot_key                = "slot2"
+  #   overwite_network_config = false
   # }
 }

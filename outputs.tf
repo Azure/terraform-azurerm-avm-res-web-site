@@ -24,7 +24,7 @@ output "resource_id" {
 
 output "resource_private_endpoints" {
   description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azurerm_private_endpoint resource."
-  value       = azurerm_private_endpoint.this
+  value       = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this : azurerm_private_endpoint.this_unmanaged_dns_zone_groups
 }
 
 output "resource_uri" {
@@ -40,4 +40,14 @@ output "service_plan" {
 output "storage_account" {
   description = "The storage account resource."
   value       = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0] : null
+}
+
+output "web_app_active_slot" {
+  description = "The active slot."
+  value       = var.kind == "webapp" && var.app_service_active_slot != null ? azurerm_web_app_active_slot.this[0].id : (var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_web_app.this[0].id : var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Linux" ? azurerm_linux_web_app.this[0].id : null
+}
+
+output "web_app_deployment_slots" {
+  description = "The deployment slots."
+  value       = var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_web_app_slot.this : azurerm_linux_web_app_slot.this
 }

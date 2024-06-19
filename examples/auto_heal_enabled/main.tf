@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.6"
+  required_version = ">= 1.6.1"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -84,15 +84,48 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
+  kind    = "webapp"
   os_type = "Linux"
 
   site_config = {
-    ftps_state = "FtpsOnly"
+    # auto_heal_enabled = true
+    # auto_heal_enabled = false # This will throw a module and provider error.
+    auto_heal_enabled = null # `auto_heal_setting` cannot be set if `auto_heal_enabled` is set to `null`. `null` is the default value for `auto_heal_enabled`
+
+  }
+  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+    # setting_1 = {
+    #   action = {
+    #     action_type                    = "Recycle"
+    #     minimum_process_execution_time = "00:01:00"
+    #   }
+    #   trigger = {
+    #     requests = {
+    #       count    = 100
+    #       interval = "00:00:30"
+    #     }
+    #     status_code = {
+    #       status_5000 = {
+    #         count             = 5000
+    #         interval          = "00:05:00"
+    #         path              = "/HealthCheck"
+    #         status_code_range = 500
+    #         sub_status        = 0
+    #       }
+    #       status_6000 = {
+    #         count             = 6000
+    #         interval          = "00:05:00"
+    #         path              = "/Get"
+    #         status_code_range = 500
+    #         sub_status        = 0
+    #       }
+    #     }
+    #   }
+    # }
   }
 
 
@@ -115,9 +148,9 @@ module "test" {
   */
 
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
-  }
+  # function_app_create_storage_account = true
+  # function_app_storage_account = {
+  #   name                = module.naming.storage_account.name_unique
+  #   resource_group_name = azurerm_resource_group.example.name
+  # }
 }

@@ -1,5 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
+# Default example
 
+This deploys the module utilizing app service slot capabilities.
 
 ```hcl
 terraform {
@@ -24,6 +26,7 @@ provider "azurerm" {
     }
   }
 }
+
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -51,14 +54,14 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
+/*
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
+  version = "0.1.1"
 
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry = false
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
@@ -66,7 +69,9 @@ module "avm_res_storage_storageaccount" {
     default_action = "Allow"
   }
 }
+*/
 
+/*
 resource "azurerm_service_plan" "example" {
   location = azurerm_resource_group.example.location
   # This will equate to Consumption (Serverless) in portal
@@ -75,22 +80,8 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "Y1"
 }
-
-# Use data object to reference an existing Key Vault and stored certificate
-/*
-data "azurerm_key_vault" "existing_keyvault" {
-  name                = ""
-  resource_group_name = ""
-}
- 
-data "azurerm_key_vault_secret" "stored_certificate" {
-  name         = ""
-  key_vault_id = data.azurerm_key_vault.existing_keyvault.id
-}
 */
 
-
-# This is the module call
 module "test" {
   source = "../../"
 
@@ -99,58 +90,57 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-custom-domain"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
+  os_type = "Linux"
+
+  /*
+  # Uses an existing app service plan
   os_type = azurerm_service_plan.example.os_type
-
   service_plan_resource_id = azurerm_service_plan.example.id
+  */
 
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # Creates a new app service plan
+  create_service_plan = true
+  new_service_plan = {
+    sku_name = "S1"
+  }
 
-  custom_domains = {
-    # Allows for the configuration of custom domains for the Function App
-    # If not already set, the module allows for the creation of TXT and CNAME records
-    /*
-    custom_domain_1 = {
+  /* 
+  # Uses an existing storage account
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  */
 
-      zone_resource_group_name = "<zone_resource_group_name>"
+  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
+  function_app_create_storage_account = true
+  function_app_storage_account = {
+    name                = module.naming.storage_account.name_unique
+    resource_group_name = azurerm_resource_group.example.name
+  }
 
-      create_txt_records = true
-      txt_name           = "asuid.${module.naming.function_app.name_unique}"
-      txt_zone_name      = "<zone_name>"
-      txt_records = {
-        record = {
-          value = "" # Leave empty as module will reference Function App ID after Function App creation
-        }
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+
       }
+    },
+    slot2 = {
+      name = "development"
+      site_config = {
 
-      create_cname_records = true
-      cname_name           = "${module.naming.function_app.name_unique}"
-      cname_zone_name      = "<zone_name>"
-      cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
-
-      create_certificate   = true
-      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      certificate_location = azurerm_resource_group.example.location
-      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
-
-      app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}.<root_domain>"
-      resource_group_name = azurerm_resource_group.example.name
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
+      }
     }
-*/
   }
 
-  tags = {
-    environment = "dev-tf"
-  }
-
+  # app_service_active_slot = {
+  #   slot_key                = "slot2"
+  #   overwite_network_config = false
+  # }
 }
 ```
 
@@ -178,7 +168,6 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -204,27 +193,33 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
+
+Description: ID of active slot
+
+### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
+
+Description: Full output of deployment slots created
+
 ### <a name="output_name"></a> [name](#output\_name)
 
-Description: Name for the resource.
+Description: This is the full output for the resource.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
 
-Description: This is the URI for the resource.
+Description: Full output of service plan created
+
+### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+
+Description: Full output of storage account created
 
 ## Modules
 
 The following Modules are called:
-
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
-
-Source: Azure/avm-res-storage-storageaccount/azurerm
-
-Version: 0.1.2
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
