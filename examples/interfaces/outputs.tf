@@ -1,3 +1,9 @@
+output "identity_principal_id" {
+  description = "The principal ID for the identity."
+  sensitive   = true
+  value       = module.test.identity_principal_id
+}
+
 output "name" {
   description = "Name for the resource."
   value       = module.test.name

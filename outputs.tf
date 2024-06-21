@@ -3,6 +3,12 @@ output "application_insights" {
   value       = var.enable_application_insights ? azurerm_application_insights.this[0] : null
 }
 
+output "identity_principal_id" {
+  description = "value"
+  sensitive   = true
+  value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
+}
+
 output "name" {
   description = "The name of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null

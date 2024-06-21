@@ -1917,6 +1917,10 @@ The following outputs are exported:
 
 Description: The application insights resource.
 
+### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
+
+Description: value
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.
