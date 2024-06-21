@@ -7,17 +7,13 @@ This deploys the module as a Windows Function App using some of the interfaces.
 terraform {
   required_version = "~> 1.6"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = ">=1.9.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.7.0, < 4.0.0"
+      version = "~> 3.108"
     }
     random = {
       source  = "hashicorp/random"
-      version = ">= 3.5.0, < 4.0.0"
+      version = "~> 3.6"
     }
   }
 }
@@ -88,13 +84,7 @@ resource "azurerm_log_analytics_workspace" "example" {
   sku                 = "PerGB2018"
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "EP1"
-}
+
 
 resource "azurerm_virtual_network" "example" {
   address_space       = ["192.168.0.0/24"]
@@ -126,6 +116,14 @@ resource "azurerm_user_assigned_identity" "user" {
   location            = azurerm_resource_group.example.location
   name                = module.naming.user_assigned_identity.name_unique
   resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Windows"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "S1"
 }
 
 module "test" {
@@ -164,30 +162,11 @@ module "test" {
   }
 
   managed_identities = {
-    # Identities can only be used with the Standard SKU
-
-    /*
-    system = {
-      identity_type = "SystemAssigned"
-      identity_ids = [ azurerm_user_assigned_identity.system.id ]
-    }
-    */
-
-
-    user = {
-      identity_type = "UserAssigned"
-      identity_ids  = [azurerm_user_assigned_identity.user.id]
-    }
-
-
-    /*
-    system_and_user = {
-      identity_type = "SystemAssigned, UserAssigned"
-      identity_resource_ids = [
-        azurerm_user_assigned_identity.user.id
-      ]
-    }
-    */
+    # Identities can only be used with the Standard SKU    
+    system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.user.id
+    ]
   }
 
   # lock = {
@@ -270,54 +249,14 @@ check "dns" {
 # VM to test private endpoint connectivity
 
 # This allows us to randomize the region for the resource group.
-resource "random_integer" "region_index_vm" {
-  max = length(local.azure_regions) - 1
-  min = 0
-}
+# resource "random_integer" "region_index_vm" {
+#   max = length(local.azure_regions) - 1
+#   min = 0
+# }
 
 resource "random_integer" "zone_index" {
-  max = length(module.regions.regions_by_name[local.azure_regions[random_integer.region_index_vm.result]].zones)
+  max = length(module.regions.regions_by_name[local.azure_regions[random_integer.region_index.result]].zones)
   min = 1
-}
-
-resource "random_integer" "deploy_sku" {
-  max = length(local.deploy_skus) - 1
-  min = 0
-}
-
-### this segment of code gets valid vm skus for deployment in the current subscription
-data "azurerm_subscription" "current" {}
-
-#get the full sku list (azapi doesn't currently have a good way to filter the api call)
-data "azapi_resource_list" "example" {
-  parent_id              = data.azurerm_subscription.current.id
-  type                   = "Microsoft.Compute/skus@2021-07-01"
-  response_export_values = ["*"]
-}
-
-locals {
-  #filter the region virtual machines by desired capabilities (v1/v2 support, 2 cpu, and encryption at host)
-  deploy_skus = [
-    for sku in local.location_valid_vms : sku
-    if length([
-      for capability in sku.capabilities : capability
-      if(capability.name == "HyperVGenerations" && capability.value == "V1,V2") ||
-      (capability.name == "vCPUs" && capability.value == "2") ||
-      (capability.name == "EncryptionAtHostSupported" && capability.value == "True") ||
-      (capability.name == "CpuArchitectureType" && capability.value == "x64")
-    ]) == 4
-  ]
-  #filter the location output for the current region, virtual machine resources, and filter out entries that don't include the capabilities list
-  location_valid_vms = [
-    for location in jsondecode(data.azapi_resource_list.example.output).value : location
-    if contains(location.locations, local.azure_regions[random_integer.region_index_vm.result]) && # if the sku location field matches the selected location
-    length(location.restrictions) < 1 &&                                                           # and there are no restrictions on deploying the sku (i.e. allowed for deployment)
-    location.resourceType == "virtualMachines" &&                                                  # and the sku is a virtual machine
-    !strcontains(location.name, "C") &&                                                            # no confidential vm skus
-    !strcontains(location.name, "B") &&                                                            # no B skus
-    length(try(location.capabilities, [])) > 1                                                     # avoid skus where the capabilities list isn't defined
-    # try(location.capabilities, []) != []                                                           # avoid skus where the capabilities list isn't defined
-  ]
 }
 
 resource "azurerm_network_security_group" "example" {
@@ -340,19 +279,25 @@ resource "azurerm_network_security_rule" "example" {
   source_port_range           = "*"
 }
 
-#create the virtual machine
+module "avm_res_compute_virtualmachine_sku_selector" {
+  source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
+  version = "0.15.0"
+
+  deployment_region = azurerm_resource_group.example.location
+}
+
+# Create the virtual machine
 module "avm_res_compute_virtualmachine" {
-  # source = "../../"
   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-  version = "0.4.0"
+  version = "0.15.0"
 
-  resource_group_name     = azurerm_resource_group.example.name
-  location                = azurerm_resource_group.example.location
-  name                    = "${module.naming.virtual_machine.name_unique}-tf"
-  virtualmachine_sku_size = local.deploy_skus[random_integer.deploy_sku.result].name
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.virtual_machine.name_unique}-tf"
+  sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
+  os_type             = "Windows"
 
-  virtualmachine_os_type = "Windows"
-  zone                   = random_integer.zone_index.result
+  zone = random_integer.zone_index.result
 
   generate_admin_password_or_ssh_key = false
   admin_username                     = "TestAdmin"
@@ -394,21 +339,17 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (>=1.9.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.108)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
-
-- <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
+- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.6)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azapi"></a> [azapi](#provider\_azapi) (>=1.9.0)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.108)
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.7.0, < 4.0.0)
-
-- <a name="provider_random"></a> [random](#provider\_random) (>= 3.5.0, < 4.0.0)
+- <a name="provider_random"></a> [random](#provider\_random) (~> 3.6)
 
 ## Resources
 
@@ -424,12 +365,8 @@ The following resources are used by this module:
 - [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_user_assigned_identity.user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
-- [random_integer.deploy_sku](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
-- [random_integer.region_index_vm](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_integer.zone_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
-- [azapi_resource_list.example](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_list) (data source)
-- [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -454,6 +391,10 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
+
+Description: The principal ID for the identity.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: Name for the resource.
@@ -474,7 +415,13 @@ The following Modules are called:
 
 Source: Azure/avm-res-compute-virtualmachine/azurerm
 
-Version: 0.4.0
+Version: 0.15.0
+
+### <a name="module_avm_res_compute_virtualmachine_sku_selector"></a> [avm\_res\_compute\_virtualmachine\_sku\_selector](#module\_avm\_res\_compute\_virtualmachine\_sku\_selector)
+
+Source: Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector
+
+Version: 0.15.0
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
