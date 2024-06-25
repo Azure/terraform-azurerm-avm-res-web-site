@@ -48,6 +48,12 @@ output "storage_account" {
   value       = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0] : null
 }
 
+output "system_assigned_mi_principal_id" {
+  description = "value"
+  sensitive   = true
+  value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
+}
+
 output "web_app_active_slot" {
   description = "The active slot."
   value       = var.kind == "webapp" && var.app_service_active_slot != null ? azurerm_web_app_active_slot.this[0].id : (var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_web_app.this[0].id : var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Linux" ? azurerm_linux_web_app.this[0].id : null

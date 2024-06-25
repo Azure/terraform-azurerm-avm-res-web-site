@@ -82,11 +82,43 @@ resource "azurerm_service_plan" "example" {
 }
 */
 
+resource "azurerm_virtual_network" "example" {
+  address_space       = ["192.168.0.0/24"]
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.virtual_network.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "example" {
+  address_prefixes     = ["192.168.0.0/24"]
+  name                 = module.naming.subnet.name_unique
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+}
+
+resource "azurerm_private_dns_zone" "example" {
+  name                = local.azurerm_private_dns_zone_resource_name
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = azurerm_resource_group.example.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+}
+
+# resource "azurerm_user_assigned_identity" "user" {
+#   location            = azurerm_resource_group.example.location
+#   name                = module.naming.user_assigned_identity.name_unique
+#   resource_group_name = azurerm_resource_group.example.name
+# }
+
 module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.0"
+  # version = "0.7.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -96,6 +128,16 @@ module "test" {
 
   kind    = "functionapp"
   os_type = "Linux"
+
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
 
   /*
   # Uses an existing app service plan
@@ -126,19 +168,30 @@ module "test" {
     slot1 = {
       name = "staging"
       site_config = {
-
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
       }
-    },
-    slot2 = {
-      name = "development"
-      site_config = {
-
+      # public_network_access_enabled = false 
+      private_endpoints = {
+        slot_primary = {
+          name                          = "slot-primary"
+          private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
+          subnet_resource_id            = azurerm_subnet.example.id
+          tags = {
+            environment = "staging"
+          }
+        }
       }
     }
   }
 
   # app_service_active_slot = {
-  #   slot_key                = "slot2"
+  #   slot_key                = "slot1"
   #   overwite_network_config = false
   # }
 }
@@ -167,7 +220,11 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
+- [azurerm_private_dns_zone_virtual_network_link.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->

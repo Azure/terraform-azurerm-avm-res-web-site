@@ -785,6 +785,10 @@ variable "function_app_storage_account" {
     name                = optional(string)
     resource_group_name = optional(string)
     location            = optional(string)
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
   })
   default = {
 

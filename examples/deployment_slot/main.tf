@@ -84,12 +84,12 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Windows"
+  os_type = "Linux"
 
   /*
   # Uses an existing app service plan
@@ -115,4 +115,24 @@ module "test" {
     name                = module.naming.storage_account.name_unique
     resource_group_name = azurerm_resource_group.example.name
   }
+
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+
+      }
+    },
+    slot2 = {
+      name = "development"
+      site_config = {
+
+      }
+    }
+  }
+
+  # app_service_active_slot = {
+  #   slot_key                = "slot2"
+  #   overwite_network_config = false
+  # }
 }

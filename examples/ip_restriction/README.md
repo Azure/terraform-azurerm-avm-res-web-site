@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the module as a Windows Function App using some of the interfaces.
 
 ```hcl
 terraform {
@@ -26,7 +26,6 @@ provider "azurerm" {
     }
   }
 }
-
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -90,12 +89,30 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-restricted"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Windows"
+  os_type = "Linux"
+
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+    ip_restriction = {
+      test = {
+        action      = "Allow"
+        name        = "PortalAccess"
+        priority    = 1000
+        service_tag = "AzurePortal"
+      }
+    }
+  }
 
   /*
   # Uses an existing app service plan
@@ -161,9 +178,9 @@ The following input variables are optional (have default values):
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
-Description: This variable controls whether or not telemetry is enabled for the module.  
-For more information see <https://aka.ms/avm/telemetryinfo>.  
-If it is set to false, then no telemetry will be collected.
+Description:   This variable controls whether or not telemetry is enabled for the module.  
+  For more information see <https://aka.ms/avm/telemetryinfo>.  
+  If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
@@ -173,21 +190,21 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
+
+Description: The principal ID for the identity.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
-Description: This is the full output for the resource.
+Description: Name for the resource.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
-Description: Full output of service plan created
-
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
-
-Description: Full output of storage account created
+Description: This is the URI for the resource.
 
 ## Modules
 

@@ -21,7 +21,6 @@ provider "azurerm" {
   }
 }
 
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -84,12 +83,30 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-restricted"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Windows"
+  os_type = "Linux"
+
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+    ip_restriction = {
+      test = {
+        action      = "Allow"
+        name        = "PortalAccess"
+        priority    = 1000
+        service_tag = "AzurePortal"
+      }
+    }
+  }
 
   /*
   # Uses an existing app service plan

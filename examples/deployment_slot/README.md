@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the module utilizing app service slot capabilities.
 
 ```hcl
 terraform {
@@ -90,12 +90,12 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-slots"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Windows"
+  os_type = "Linux"
 
   /*
   # Uses an existing app service plan
@@ -121,6 +121,26 @@ module "test" {
     name                = module.naming.storage_account.name_unique
     resource_group_name = azurerm_resource_group.example.name
   }
+
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+
+      }
+    },
+    slot2 = {
+      name = "development"
+      site_config = {
+
+      }
+    }
+  }
+
+  # app_service_active_slot = {
+  #   slot_key                = "slot2"
+  #   overwite_network_config = false
+  # }
 }
 ```
 
@@ -172,6 +192,14 @@ Default: `true`
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
+
+Description: ID of active slot
+
+### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
+
+Description: Full output of deployment slots created
 
 ### <a name="output_name"></a> [name](#output\_name)
 
