@@ -229,6 +229,11 @@ variable "deployment_slots" {
       value = optional(string)
     })), {})
 
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+
     logs = optional(map(object({
       application_logs = optional(map(object({
         azure_blob_storage = optional(object({
@@ -438,4 +443,11 @@ variable "deployment_slots" {
 
   ```
   DESCRIPTION
+}
+
+variable "deployment_slots_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Whether to inherit the lock from the parent resource for the deployment slots."
+
 }
