@@ -39,6 +39,7 @@ The following resources are used by this module:
 - [azurerm_linux_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) (resource)
 - [azurerm_linux_web_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app_slot) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
+- [azurerm_management_lock.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
@@ -1038,6 +1039,11 @@ map(object({
       value = optional(string)
     })), {})
 
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+
     logs = optional(map(object({
       application_logs = optional(map(object({
         azure_blob_storage = optional(object({
@@ -1242,6 +1248,14 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_deployment_slots_inherit_lock"></a> [deployment\_slots\_inherit\_lock](#input\_deployment\_slots\_inherit\_lock)
+
+Description: Whether to inherit the lock from the parent resource for the deployment slots.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
 Description:   A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -1353,6 +1367,14 @@ Description: The access key of the Storage Account to deploy the Function App in
 Type: `string`
 
 Default: `null`
+
+### <a name="input_function_app_storage_account_inherit_lock"></a> [function\_app\_storage\_account\_inherit\_lock](#input\_function\_app\_storage\_account\_inherit\_lock)
+
+Description: Should the Storage Account inherit the lock from the parent resource? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_function_app_storage_account_name"></a> [function\_app\_storage\_account\_name](#input\_function\_app\_storage\_account\_name)
 
@@ -1969,13 +1991,21 @@ The following outputs are exported:
 
 Description: The application insights resource.
 
+### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
+
+Description: The locks of the deployment slots.
+
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
-Description: value
+Description: The object principal id of the resource.
 
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.
+
+### <a name="output_private_endpoint_locks"></a> [private\_endpoint\_locks](#output\_private\_endpoint\_locks)
+
+Description: The locks of the deployment slots.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
@@ -1984,6 +2014,10 @@ Description: This is the full output for the resource.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: This is the full output for the resource.
+
+### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
+
+Description: The locks of the resources.
 
 ### <a name="output_resource_private_endpoints"></a> [resource\_private\_endpoints](#output\_resource\_private\_endpoints)
 
@@ -2000,6 +2034,10 @@ Description: The service plan resource.
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
 Description: The storage account resource.
+
+### <a name="output_storage_account_lock"></a> [storage\_account\_lock](#output\_storage\_account\_lock)
+
+Description: The locks of the resources.
 
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 

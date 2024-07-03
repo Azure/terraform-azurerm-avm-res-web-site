@@ -98,8 +98,8 @@ resource "azurerm_windows_web_app_slot" "this" {
             content {
               count      = slow_requests_with_path.value.count
               interval   = slow_requests_with_path.value.interval
-              path       = slow_requests_with_path.value.path
               time_taken = slow_requests_with_path.value.time_taken
+              path       = slow_requests_with_path.value.path
             }
           }
           dynamic "status_code" {
@@ -580,8 +580,8 @@ resource "azurerm_linux_web_app_slot" "this" {
             content {
               count      = slow_requests_with_path.value.count
               interval   = slow_requests_with_path.value.interval
-              path       = slow_requests_with_path.value.path
               time_taken = slow_requests_with_path.value.time_taken
+              path       = slow_requests_with_path.value.path
             }
           }
           dynamic "status_code" {

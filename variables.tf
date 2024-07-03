@@ -813,6 +813,12 @@ variable "function_app_storage_account_access_key" {
   sensitive   = true
 }
 
+variable "function_app_storage_account_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Should the Storage Account inherit the lock from the parent resource? Defaults to `true`."
+}
+
 variable "function_app_storage_account_name" {
   type        = string
   default     = null

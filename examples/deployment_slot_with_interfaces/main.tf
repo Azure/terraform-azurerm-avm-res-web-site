@@ -112,7 +112,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.1"
+  # version = "0.7.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -156,6 +156,10 @@ module "test" {
   function_app_storage_account = {
     name                = module.naming.storage_account.name_unique
     resource_group_name = azurerm_resource_group.example.name
+    # lock = {
+    #   name = "lock-${module.naming.storage_account.name_unique}"
+    #   kind = "CanNotDelete"
+    # }
   }
 
   deployment_slots = {
@@ -170,6 +174,9 @@ module "test" {
           }
         }
       }
+      # lock = {
+      #   kind = "CanNotDelete"
+      # }
       # public_network_access_enabled = false 
       private_endpoints = {
         slot_primary = {

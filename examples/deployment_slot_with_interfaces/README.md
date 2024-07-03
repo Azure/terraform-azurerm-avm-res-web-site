@@ -118,7 +118,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.1"
+  # version = "0.7.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -162,6 +162,10 @@ module "test" {
   function_app_storage_account = {
     name                = module.naming.storage_account.name_unique
     resource_group_name = azurerm_resource_group.example.name
+    # lock = {
+    #   name = "lock-${module.naming.storage_account.name_unique}"
+    #   kind = "CanNotDelete"
+    # }
   }
 
   deployment_slots = {
@@ -176,6 +180,9 @@ module "test" {
           }
         }
       }
+      # lock = {
+      #   kind = "CanNotDelete"
+      # }
       # public_network_access_enabled = false 
       private_endpoints = {
         slot_primary = {
@@ -254,6 +261,10 @@ The following outputs are exported:
 
 Description: ID of active slot
 
+### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
+
+Description: The locks of the deployment slots.
+
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
 Description: Full output of deployment slots created
@@ -262,9 +273,17 @@ Description: Full output of deployment slots created
 
 Description: This is the full output for the resource.
 
+### <a name="output_private_endpoint_locks"></a> [private\_endpoint\_locks](#output\_private\_endpoint\_locks)
+
+Description: The locks of the deployment slots.
+
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
+
+### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
+
+Description: The locks of the resources.
 
 ### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
 
@@ -273,6 +292,10 @@ Description: Full output of service plan created
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
 Description: Full output of storage account created
+
+### <a name="output_storage_account_lock"></a> [storage\_account\_lock](#output\_storage\_account\_lock)
+
+Description: The lock of the storage account.
 
 ## Modules
 
