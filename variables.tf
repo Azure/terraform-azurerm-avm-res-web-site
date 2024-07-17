@@ -789,6 +789,16 @@ variable "function_app_storage_account" {
       kind = string
       name = optional(string, null)
     }), null)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
   })
   default = {
 
@@ -799,6 +809,8 @@ variable "function_app_storage_account" {
   - `name` - (Optional) The name of the Storage Account.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
   - `location` - (Optional) The Azure region where the Storage Account will be deployed.
+  - `lock` - (Optional) The lock level to apply.
+  - `role_assignments` - (Optional) A map of role assignments to assign to the Storage Account.
 
   ```terraform
 

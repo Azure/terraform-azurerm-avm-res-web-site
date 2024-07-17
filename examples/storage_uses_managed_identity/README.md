@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module with a Linux Function App in its simplest form.
+This deploys the module with a Windows Function App that uses a managed identity to connect to the Storage Account.
 
 ```hcl
 terraform {
@@ -53,29 +53,28 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-# module "avm_res_storage_storageaccount" {
-#   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-#   version = "0.1.2"
+# Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
+module "avm_res_storage_storageaccount" {
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "0.1.2"
 
-#   enable_telemetry              = var.enable_telemetry
-#   name                          = module.naming.storage_account.name_unique
-#   resource_group_name           = azurerm_resource_group.example.name
-#   location                      = azurerm_resource_group.example.location
-#   shared_access_key_enabled     = true
-#   public_network_access_enabled = true
-#   network_rules = {
-#     bypass         = ["AzureServices"]
-#     default_action = "Allow"
-#   }
-# }
-
-# resource "azurerm_service_plan" "example" {
-#   location            = azurerm_resource_group.example.location
-#   name                = module.naming.app_service_plan.name_unique
-#   os_type             = "Linux"
-#   resource_group_name = azurerm_resource_group.example.name
-#   sku_name            = "Y1"
-# }
+  enable_telemetry              = var.enable_telemetry
+  name                          = module.naming.storage_account.name_unique
+  resource_group_name           = azurerm_resource_group.example.name
+  location                      = azurerm_resource_group.example.location
+  shared_access_key_enabled     = true
+  public_network_access_enabled = true
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = "Allow"
+  }
+  role_assignments = {
+    storage_blob_data_owner = {
+      role_definition_id_or_name = "Storage Blob Data Owner"
+      principal_id               = module.test.identity_principal_id
+    }
+  }
+}
 
 # This is the module call
 module "test" {
@@ -98,18 +97,13 @@ module "test" {
     sku_name = "Y1"
   }
 
-  # service_plan_resource_id = azurerm_service_plan.example.id
+  function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
+  function_app_storage_uses_managed_identity = true
 
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    location            = azurerm_resource_group.example.location
-    resource_group_name = azurerm_resource_group.example.name
-    lock                = null
+  managed_identities = {
+    system_assigned = true
   }
 
-  # function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  # function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 }
 ```
 
@@ -162,6 +156,10 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
+
+Description: This is the principal ID for the identity.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: Name for the resource.
@@ -177,6 +175,12 @@ Description: This is the URI for the resource.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.2
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

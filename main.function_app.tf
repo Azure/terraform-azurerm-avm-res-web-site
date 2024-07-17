@@ -21,7 +21,7 @@ resource "azurerm_windows_function_app" "this" {
   storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
   storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null && var.function_app_storage_account == null ? var.function_app_storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
@@ -427,7 +427,7 @@ resource "azurerm_linux_function_app" "this" {
   https_only                                     = var.https_only
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
-  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true ? var.function_app_storage_account_access_key : null
+  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
   storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
   storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
