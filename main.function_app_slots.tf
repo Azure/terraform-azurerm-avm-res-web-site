@@ -20,7 +20,7 @@ resource "azurerm_windows_function_app_slot" "this" {
   storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
   storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null && var.function_app_storage_account == null ? var.function_app_storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
@@ -420,7 +420,7 @@ resource "azurerm_linux_function_app_slot" "this" {
   storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
   storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null && var.function_app_storage_account == null ? var.function_app_storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
