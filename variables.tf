@@ -618,6 +618,8 @@ variable "create_service_plan" {
 
 variable "custom_domains" {
   type = map(object({
+    slot_as_target               = optional(bool, false)
+    app_service_slot_key         = optional(string)
     create_certificate           = optional(bool, false)
     certificate_name             = optional(string)
     certificate_location         = optional(string)
@@ -627,6 +629,7 @@ variable "custom_domains" {
     app_service_name             = optional(string)
     app_service_plan_resource_id = optional(string)
     key_vault_secret_id          = optional(string)
+    key_vault_id                 = optional(string)
     zone_resource_group_name     = optional(string)
     resource_group_name          = optional(string)
     ssl_state                    = optional(string)
@@ -650,6 +653,10 @@ variable "custom_domains" {
   }
   description = <<DESCRIPTION
   A map of custom domains to assign to the Function App.
+  - `slot_as_target` - (optional) Will this custom domain configuration be used for a App Service slot? Defaults to `false`.
+  - `app_service_slot_key` - (Optional) The key of the App Service Slot to use as the target for the custom domain.
+  - `app_service_plan_resource_id` - (Optional) The resource ID of the App Service Plan to use for the custom domain.
+  - `key_vault_secret_id` - (Optional) The ID of the Key Vault Secret to use for the custom domain.
   - `create_certificate` - (Optional) Should a certificate be created for the custom domain? Defaults to `false`.
   - `create_txt_records` - (Optional) Should TXT records be created for the custom domain? Defaults to `false`.
   - `create_cname_records` - (Optional) Should CNAME records be created for the custom domain? Defaults to `false`.

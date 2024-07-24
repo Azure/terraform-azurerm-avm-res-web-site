@@ -73,21 +73,21 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
 
 # Use data object to reference an existing Key Vault and stored certificate
-/*
+# /*
 data "azurerm_key_vault" "existing_keyvault" {
-  name                = ""
-  resource_group_name = ""
+  name                = "vault3-4-24"
+  resource_group_name = "rg-test"
 }
- 
+# /*
 data "azurerm_key_vault_secret" "stored_certificate" {
-  name         = ""
   key_vault_id = data.azurerm_key_vault.existing_keyvault.id
+  name         = "donvmccoy"
 }
-*/
+# */
 
 
 # This is the module call
@@ -111,25 +111,62 @@ module "test" {
   function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
   function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "v8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+
+  deployment_slots = {
+    qa = {
+      name = "qa"
+      site_config = {
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "v8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+    },
+    dev = {
+      name = "dev"
+      site_config = {
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "v8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+    }
+  }
+
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
     /*
-    custom_domain_1 = {
+    production = {
 
       zone_resource_group_name = "<zone_resource_group_name>"
 
       create_txt_records = true
-      txt_name           = "asuid.${module.naming.function_app.name_unique}"
+      txt_name           = "asuid.${module.naming.function_app.name_unique}-custom-domain"
       txt_zone_name      = "<zone_name>"
       txt_records = {
         record = {
-          value = "" # Leave empty as module will reference Function App ID after Function App creation
+          value = "" # Feel free to leave empty, as module will reference Function App ID after Function App creation
         }
       }
 
       create_cname_records = true
-      cname_name           = "${module.naming.function_app.name_unique}"
+      cname_name           = "${module.naming.function_app.name_unique}-custom-domain"
       cname_zone_name      = "<zone_name>"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
 
@@ -139,12 +176,41 @@ module "test" {
       pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}.<root_domain>"
+      hostname            = "${module.naming.function_app.name_unique}-custom-domain.donvmccoy.com"
       resource_group_name = azurerm_resource_group.example.name
       ssl_state           = "SniEnabled"
-      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
+      thumbprint_key      = "production" # Currently the key of the custom domain
+    },
+    qa = {
+      slot_as_target = true
+
+      zone_resource_group_name = "rg-personal-domain"
+
+      create_txt_records = true
+      txt_name           = "asuid.${module.naming.function_app.name_unique}-qa"
+      txt_zone_name      = "<zone_name>"
+      txt_records = {
+        record = {
+          value = "" # Leave empty as module will reference Function App ID after Function App creation
+        }
+      }
+
+      create_cname_records = true
+      cname_name           = "${module.naming.function_app.name_unique}-qa"
+      cname_zone_name      = "<zone_name>"
+      cname_record         = "${module.naming.function_app.name_unique}-custom-domain-qa.azurewebsites.net"
+
+      # create_certificate   = true
+      # certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
+      # certificate_location = azurerm_resource_group.example.location
+      # pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+
+      app_service_slot_key = "qa"
+      hostname = "${module.naming.function_app.name_unique}-qa.donvmccoy.com"
+      ssl_state           = "SniEnabled"
+      thumbprint_key      = "production"
     }
-*/
+    */
   }
 
   tags = {
@@ -180,6 +246,8 @@ The following resources are used by this module:
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [azurerm_key_vault.existing_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) (data source)
+- [azurerm_key_vault_secret.stored_certificate](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_secret) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
