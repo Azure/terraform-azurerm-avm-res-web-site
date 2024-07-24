@@ -8,15 +8,33 @@ output "deployment_slot_locks" {
   value       = azurerm_management_lock.slot != null ? azurerm_management_lock.slot : null
 }
 
+output "function_app_active_slot" {
+  description = "The active slot."
+  value       = var.kind == "functionapp" && var.app_service_active_slot != null ? azurerm_function_app_active_slot.this[0].id : (var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_function_app.this[0].id : var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Linux" ? azurerm_linux_function_app.this[0].id : null
+}
+
+output "function_app_deployment_slots" {
+  description = "The deployment slots."
+  value       = var.kind == "functionapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_function_app_slot.this : azurerm_linux_function_app_slot.this
+}
+
 output "identity_principal_id" {
   description = "The object principal id of the resource."
   sensitive   = true
   value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
 }
 
+output "kind" {
+  value = var.kind
+}
+
 output "name" {
   description = "The name of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
+}
+
+output "os_type" {
+  value = var.os_type
 }
 
 output "private_endpoint_locks" {

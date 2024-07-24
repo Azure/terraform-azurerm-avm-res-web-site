@@ -116,17 +116,39 @@ module "test" {
     resource_group_name = azurerm_resource_group.example.name
   }
 
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+
   deployment_slots = {
     slot1 = {
       name = "staging"
       site_config = {
-
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
       }
     },
     slot2 = {
       name = "development"
       site_config = {
-
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
       }
     }
   }

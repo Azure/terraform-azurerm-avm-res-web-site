@@ -2021,13 +2021,29 @@ Description: The application insights resource.
 
 Description: The locks of the deployment slots.
 
+### <a name="output_function_app_active_slot"></a> [function\_app\_active\_slot](#output\_function\_app\_active\_slot)
+
+Description: The active slot.
+
+### <a name="output_function_app_deployment_slots"></a> [function\_app\_deployment\_slots](#output\_function\_app\_deployment\_slots)
+
+Description: The deployment slots.
+
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
 Description: The object principal id of the resource.
 
+### <a name="output_kind"></a> [kind](#output\_kind)
+
+Description: n/a
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.
+
+### <a name="output_os_type"></a> [os\_type](#output\_os\_type)
+
+Description: n/a
 
 ### <a name="output_private_endpoint_locks"></a> [private\_endpoint\_locks](#output\_private\_endpoint\_locks)
 
