@@ -64,7 +64,8 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.1.2"
 
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry = var.enable_telemetry
+
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
   location                      = azurerm_resource_group.example.location
@@ -130,7 +131,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.3"
+  # version = "0.7.4"
 
   enable_telemetry = var.enable_telemetry
 
@@ -279,17 +280,12 @@ resource "azurerm_network_security_rule" "example" {
   source_port_range           = "*"
 }
 
-module "avm_res_compute_virtualmachine_sku_selector" {
-  source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
-  version = "0.15.0"
-
-  deployment_region = azurerm_resource_group.example.location
-}
-
 # Create the virtual machine
 module "avm_res_compute_virtualmachine" {
   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-  version = "0.15.0"
+  version = "0.15.1"
+
+  enable_telemetry = var.enable_telemetry
 
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
@@ -329,6 +325,13 @@ module "avm_res_compute_virtualmachine" {
 
   }
 
+}
+
+module "avm_res_compute_virtualmachine_sku_selector" {
+  source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
+  version = "0.15.1"
+
+  deployment_region = azurerm_resource_group.example.location
 }
 ```
 
@@ -415,13 +418,13 @@ The following Modules are called:
 
 Source: Azure/avm-res-compute-virtualmachine/azurerm
 
-Version: 0.15.0
+Version: 0.15.1
 
 ### <a name="module_avm_res_compute_virtualmachine_sku_selector"></a> [avm\_res\_compute\_virtualmachine\_sku\_selector](#module\_avm\_res\_compute\_virtualmachine\_sku\_selector)
 
 Source: Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector
 
-Version: 0.15.0
+Version: 0.15.1
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 

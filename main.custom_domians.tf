@@ -5,6 +5,7 @@ resource "azurerm_app_service_certificate" "this" {
   name                = each.value.certificate_name
   resource_group_name = each.value.resource_group_name
   app_service_plan_id = each.value.app_service_plan_resource_id
+  key_vault_id        = each.value.key_vault_id
   key_vault_secret_id = each.value.key_vault_secret_id
   password            = each.value.pfx_password
   pfx_blob            = each.value.pfx_blob
@@ -22,7 +23,7 @@ resource "azurerm_dns_cname_record" "this" {
   tags                = each.value.inherit_tags ? merge(each.value.tags, var.tags) : each.value.tags
   target_resource_id  = each.value.cname_target_resource_id
 
-  depends_on = [azurerm_windows_function_app.this, azurerm_linux_function_app.this]
+  depends_on = [azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this, azurerm_linux_function_app.this, azurerm_linux_function_app_slot.this]
 }
 
 resource "azurerm_dns_txt_record" "this" {
@@ -42,11 +43,11 @@ resource "azurerm_dns_txt_record" "this" {
     }
   }
 
-  depends_on = [azurerm_windows_function_app.this, azurerm_linux_function_app.this]
+  depends_on = [azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this, azurerm_linux_function_app.this, azurerm_linux_function_app_slot.this]
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "this" {
-  for_each = var.custom_domains
+  for_each = { for binding, domains in var.custom_domains : binding => domains if !domains.slot_as_target }
 
   app_service_name    = coalesce(each.value.app_service_name, "${var.name}-asp")
   hostname            = each.value.hostname
@@ -54,5 +55,16 @@ resource "azurerm_app_service_custom_hostname_binding" "this" {
   ssl_state           = each.value.ssl_state
   thumbprint          = azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint
 
-  depends_on = [azurerm_windows_function_app.this, azurerm_linux_function_app.this, azurerm_dns_txt_record.this, azurerm_dns_cname_record.this]
+  depends_on = [azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this, azurerm_linux_function_app.this, azurerm_linux_function_app_slot.this, azurerm_dns_txt_record.this, azurerm_dns_cname_record.this]
+}
+
+resource "azurerm_app_service_slot_custom_hostname_binding" "slot" {
+  for_each = { for binding, domains in var.custom_domains : binding => domains if domains.slot_as_target }
+
+  app_service_slot_id = var.os_type == "Windows" ? azurerm_windows_function_app_slot.this[each.value.app_service_slot_key].id : azurerm_linux_function_app_slot.this[each.value.app_service_slot_key].id
+  hostname            = each.value.hostname
+  ssl_state           = each.value.ssl_state
+  thumbprint          = azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint
+
+  depends_on = [azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this, azurerm_linux_function_app.this, azurerm_linux_function_app_slot.this, azurerm_dns_txt_record.this, azurerm_dns_cname_record.this]
 }
