@@ -73,7 +73,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 # Use data object to reference an existing Key Vault and stored certificate
-# /*
+/*
 data "azurerm_key_vault" "existing_keyvault" {
   name                = "vault3-4-24"
   resource_group_name = "rg-test"
@@ -83,7 +83,7 @@ data "azurerm_key_vault_secret" "stored_certificate" {
   key_vault_id = data.azurerm_key_vault.existing_keyvault.id
   name         = "donvmccoy"
 }
-# */
+*/
 
 
 # This is the module call
@@ -91,7 +91,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.3"
+  # version = "0.7.4"
 
   enable_telemetry = var.enable_telemetry
 

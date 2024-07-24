@@ -77,7 +77,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 # Use data object to reference an existing Key Vault and stored certificate
-# /*
+/*
 data "azurerm_key_vault" "existing_keyvault" {
   name                = "vault3-4-24"
   resource_group_name = "rg-test"
@@ -87,7 +87,7 @@ data "azurerm_key_vault_secret" "stored_certificate" {
   key_vault_id = data.azurerm_key_vault.existing_keyvault.id
   name         = "donvmccoy"
 }
-# */
+*/
 
 
 # This is the module call
@@ -95,7 +95,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.3"
+  # version = "0.7.4"
 
   enable_telemetry = var.enable_telemetry
 
@@ -246,8 +246,6 @@ The following resources are used by this module:
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
-- [azurerm_key_vault.existing_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) (data source)
-- [azurerm_key_vault_secret.stored_certificate](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_secret) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
