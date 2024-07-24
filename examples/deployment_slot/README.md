@@ -122,17 +122,39 @@ module "test" {
     resource_group_name = azurerm_resource_group.example.name
   }
 
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+
   deployment_slots = {
     slot1 = {
       name = "staging"
       site_config = {
-
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
       }
     },
     slot2 = {
       name = "development"
       site_config = {
-
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
       }
     }
   }
@@ -201,9 +223,17 @@ Description: ID of active slot
 
 Description: Full output of deployment slots created
 
+### <a name="output_kind"></a> [kind](#output\_kind)
+
+Description: n/a
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: This is the full output for the resource.
+
+### <a name="output_os_type"></a> [os\_type](#output\_os\_type)
+
+Description: n/a
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
