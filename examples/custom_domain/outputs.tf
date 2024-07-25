@@ -13,3 +13,9 @@ output "resource_uri" {
   description = "This is the URI for the resource."
   value       = module.test.resource_uri
 }
+
+output "thumbprints" {
+  description = "This is the thumbprints for the resource."
+  sensitive   = true
+  value       = module.test.thumbprints
+}

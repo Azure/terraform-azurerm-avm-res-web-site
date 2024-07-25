@@ -803,6 +803,7 @@ map(object({
     inherit_tags                 = optional(bool, true)
     tags                         = optional(map(any), {})
     thumbprint_key               = optional(string)
+    thumbprint_value             = optional(string)
     ttl                          = optional(number, 300)
     validation_type              = optional(string, "cname-delegation")
     create_cname_records         = optional(bool, false)
@@ -2035,7 +2036,7 @@ Description: The object principal id of the resource.
 
 ### <a name="output_kind"></a> [kind](#output\_kind)
 
-Description: n/a
+Description: The kind of app service.
 
 ### <a name="output_name"></a> [name](#output\_name)
 
@@ -2043,7 +2044,7 @@ Description: The name of the resource.
 
 ### <a name="output_os_type"></a> [os\_type](#output\_os\_type)
 
-Description: n/a
+Description: The operating system type of the resource.
 
 ### <a name="output_private_endpoint_locks"></a> [private\_endpoint\_locks](#output\_private\_endpoint\_locks)
 
@@ -2084,6 +2085,10 @@ Description: The locks of the resources.
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 
 Description: value
+
+### <a name="output_thumbprints"></a> [thumbprints](#output\_thumbprints)
+
+Description: The thumbprint of the certificate.
 
 ### <a name="output_web_app_active_slot"></a> [web\_app\_active\_slot](#output\_web\_app\_active\_slot)
 

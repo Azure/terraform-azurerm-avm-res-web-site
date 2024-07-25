@@ -75,13 +75,13 @@ resource "azurerm_service_plan" "example" {
 # Use data object to reference an existing Key Vault and stored certificate
 /*
 data "azurerm_key_vault" "existing_keyvault" {
-  name                = "vault3-4-24"
-  resource_group_name = "rg-test"
+  name                = "<keyvault_name>"
+  resource_group_name = "<keyvault_resource_group>"
 }
 # /*
 data "azurerm_key_vault_secret" "stored_certificate" {
   key_vault_id = data.azurerm_key_vault.existing_keyvault.id
-  name         = "donvmccoy"
+  name         = "<certificate_name>"
 }
 */
 
@@ -91,7 +91,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.7.4"
+  # version = "0.8.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -172,7 +172,7 @@ module "test" {
       pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}-custom-domain.donvmccoy.com"
+      hostname            = "${module.naming.function_app.name_unique}-custom-domain.<zone_name>"
       resource_group_name = azurerm_resource_group.example.name
       ssl_state           = "SniEnabled"
       thumbprint_key      = "production" # Currently the key of the custom domain
@@ -202,7 +202,7 @@ module "test" {
       # pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_slot_key = "qa"
-      hostname = "${module.naming.function_app.name_unique}-qa.donvmccoy.com"
+      hostname = "${module.naming.function_app.name_unique}-qa.<zone_name>"
       ssl_state           = "SniEnabled"
       thumbprint_key      = "production"
     }
