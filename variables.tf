@@ -636,6 +636,7 @@ variable "custom_domains" {
     inherit_tags                 = optional(bool, true)
     tags                         = optional(map(any), {})
     thumbprint_key               = optional(string)
+    thumbprint_value             = optional(string)
     ttl                          = optional(number, 300)
     validation_type              = optional(string, "cname-delegation")
     create_cname_records         = optional(bool, false)

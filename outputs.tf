@@ -25,7 +25,8 @@ output "identity_principal_id" {
 }
 
 output "kind" {
-  value = var.kind
+  description = "The kind of app service."
+  value       = var.kind
 }
 
 output "name" {
@@ -34,7 +35,8 @@ output "name" {
 }
 
 output "os_type" {
-  value = var.os_type
+  description = "The operating system type of the resource."
+  value       = var.os_type
 }
 
 output "private_endpoint_locks" {
@@ -90,6 +92,12 @@ output "system_assigned_mi_principal_id" {
   description = "value"
   sensitive   = true
   value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
+}
+
+output "thumbprints" {
+  description = "The thumbprint of the certificate."
+  sensitive   = true
+  value       = azurerm_app_service_certificate.this != null ? azurerm_app_service_certificate.this : null
 }
 
 output "web_app_active_slot" {

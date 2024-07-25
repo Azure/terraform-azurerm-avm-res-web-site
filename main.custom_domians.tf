@@ -53,7 +53,7 @@ resource "azurerm_app_service_custom_hostname_binding" "this" {
   hostname            = each.value.hostname
   resource_group_name = each.value.resource_group_name != null ? each.value.resource_group_name : var.resource_group_name
   ssl_state           = each.value.ssl_state
-  thumbprint          = azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint
+  thumbprint          = each.value.thumbprint_key != null ? azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint : each.value.thumbprint_value
 
   depends_on = [azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this, azurerm_linux_function_app.this, azurerm_linux_function_app_slot.this, azurerm_dns_txt_record.this, azurerm_dns_cname_record.this]
 }
@@ -64,7 +64,7 @@ resource "azurerm_app_service_slot_custom_hostname_binding" "slot" {
   app_service_slot_id = var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app_slot.this[each.value.app_service_slot_key].id : azurerm_linux_function_app_slot.this[each.value.app_service_slot_key].id) : (var.os_type == "Windows" ? azurerm_windows_web_app_slot.this[each.value.app_service_slot_key].id : azurerm_linux_web_app_slot.this[each.value.app_service_slot_key].id)
   hostname            = each.value.hostname
   ssl_state           = each.value.ssl_state
-  thumbprint          = azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint
+  thumbprint          = each.value.thumbprint_key != null ? azurerm_app_service_certificate.this[each.value.thumbprint_key].thumbprint : each.value.thumbprint_value
 
   depends_on = [
     azurerm_windows_function_app.this, azurerm_windows_function_app_slot.this,
