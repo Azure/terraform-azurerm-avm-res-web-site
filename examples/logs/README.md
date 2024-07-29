@@ -86,27 +86,87 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-linux"
+  name                = "${module.naming.app_service.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
+  kind    = "webapp"
   os_type = "Linux"
 
   create_service_plan = true
   new_service_plan = {
-    sku_name = "Y1"
+    sku_name = "S1"
+  }
+
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+
+  logs = {
+    app_service_logs = {
+      http_logs = {
+        config1 = {
+          file_system = {
+            retention_in_days = 30
+            retention_in_mb   = 35
+          }
+        }
+      }
+      application_logs = {
+        config1 = {
+          file_system_level = "Warning"
+        }
+      }
+    }
+  }
+
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+      logs = {
+        app_service_logs = {
+          http_logs = {
+            config1 = {
+              file_system = {
+                retention_in_days = 30
+                retention_in_mb   = 35
+              }
+            }
+          }
+          application_logs = {
+            config1 = {
+              file_system_level = "Warning"
+            }
+          }
+        }
+      }
+    }
   }
 
   # service_plan_resource_id = azurerm_service_plan.example.id
 
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    location            = azurerm_resource_group.example.location
-    resource_group_name = azurerm_resource_group.example.name
-    lock                = null
-  }
+  # function_app_create_storage_account = true
+  # function_app_storage_account = {
+  #   name                = module.naming.storage_account.name_unique
+  #   location            = azurerm_resource_group.example.location
+  #   resource_group_name = azurerm_resource_group.example.name
+  #   lock                = null
+  # }
 
   # function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
   # function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key

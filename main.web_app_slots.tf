@@ -430,7 +430,14 @@ resource "azurerm_windows_web_app_slot" "this" {
       failed_request_tracing  = logs.value.failed_request_tracing
 
       dynamic "application_logs" {
-        for_each = logs.value.application_logs
+        for_each = [for x in logs.value.application_logs : x if x.azure_blob_storage == null]
+
+        content {
+          file_system_level = application_logs.value.file_system_level
+        }
+      }
+      dynamic "application_logs" {
+        for_each = [for x in logs.value.application_logs : x if x.azure_blob_storage != null]
 
         content {
           file_system_level = application_logs.value.file_system_level
@@ -441,22 +448,26 @@ resource "azurerm_windows_web_app_slot" "this" {
             sas_url           = application_logs.value.azure_blob_storage.sas_url
           }
         }
-
       }
       dynamic "http_logs" {
-        for_each = logs.value.http_logs
+        for_each = [for x in logs.value.http_logs : x if x.azure_blob_storage_http != null]
 
         content {
           azure_blob_storage {
-            sas_url           = http_logs.value.azure_blob_storage.sas_url
-            retention_in_days = http_logs.value.azure_blob_storage.retention_in_days
+            sas_url           = http_logs.value.azure_blob_storage_http.sas_url
+            retention_in_days = http_logs.value.azure_blob_storage_http.retention_in_days
           }
+        }
+      }
+      dynamic "http_logs" {
+        for_each = [for x in logs.value.http_logs : x if x.file_system != null]
+
+        content {
           file_system {
             retention_in_days = http_logs.value.file_system.retention_in_days
             retention_in_mb   = http_logs.value.file_system.retention_in_mb
           }
         }
-
       }
     }
   }
@@ -912,7 +923,14 @@ resource "azurerm_linux_web_app_slot" "this" {
       failed_request_tracing  = logs.value.failed_request_tracing
 
       dynamic "application_logs" {
-        for_each = logs.value.application_logs
+        for_each = [for x in logs.value.application_logs : x if x.azure_blob_storage == null]
+
+        content {
+          file_system_level = application_logs.value.file_system_level
+        }
+      }
+      dynamic "application_logs" {
+        for_each = [for x in logs.value.application_logs : x if x.azure_blob_storage != null]
 
         content {
           file_system_level = application_logs.value.file_system_level
@@ -923,22 +941,26 @@ resource "azurerm_linux_web_app_slot" "this" {
             sas_url           = application_logs.value.azure_blob_storage.sas_url
           }
         }
-
       }
       dynamic "http_logs" {
-        for_each = logs.value.http_logs
+        for_each = [for x in logs.value.http_logs : x if x.azure_blob_storage_http != null]
 
         content {
           azure_blob_storage {
-            sas_url           = http_logs.value.azure_blob_storage.sas_url
-            retention_in_days = http_logs.value.azure_blob_storage.retention_in_days
+            sas_url           = http_logs.value.azure_blob_storage_http.sas_url
+            retention_in_days = http_logs.value.azure_blob_storage_http.retention_in_days
           }
+        }
+      }
+      dynamic "http_logs" {
+        for_each = [for x in logs.value.http_logs : x if x.file_system != null]
+
+        content {
           file_system {
             retention_in_days = http_logs.value.file_system.retention_in_days
             retention_in_mb   = http_logs.value.file_system.retention_in_mb
           }
         }
-
       }
     }
   }

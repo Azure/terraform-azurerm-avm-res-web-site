@@ -80,7 +80,7 @@ module "test" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-linux"
+  name                = "${module.naming.app_service.name_unique}-linux"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
@@ -100,20 +100,54 @@ module "test" {
         use_dotnet_isolated_runtime = true
       }
     }
-    logs = {
-      log_config = {
-        http_logs = {
+  }
+
+  logs = {
+    app_service_logs = {
+      http_logs = {
+        config1 = {
           file_system = {
             retention_in_days = 30
-            retention_in_mb = 35
+            retention_in_mb   = 35
           }
         }
-      },
-      application_log_config = {
-        set = {
+      }
+      application_logs = {
+        config1 = {
           file_system_level = "Warning"
         }
+      }
+    }
+  }
 
+  deployment_slots = {
+    slot1 = {
+      name = "staging"
+      site_config = {
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+      logs = {
+        app_service_logs = {
+          http_logs = {
+            config1 = {
+              file_system = {
+                retention_in_days = 30
+                retention_in_mb   = 35
+              }
+            }
+          }
+          application_logs = {
+            config1 = {
+              file_system_level = "Warning"
+            }
+          }
+        }
       }
     }
   }
