@@ -21,6 +21,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -41,9 +42,26 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
+# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+}
+
+module "avm_res_storage_storageaccount" {
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "0.1.2"
+
+  enable_telemetry              = var.enable_telemetry
+  name                          = module.naming.storage_account.name_unique
+  resource_group_name           = azurerm_resource_group.example.name
+  location                      = azurerm_resource_group.example.location
+  shared_access_key_enabled     = true
+  public_network_access_enabled = true
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = "Allow"
+  }
 }
 
 resource "azurerm_service_plan" "example" {
@@ -59,53 +77,19 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.0"
+  # version = "0.9.1"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.app_service.name_unique}-windows"
+  name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "webapp"
+  kind    = "functionapp"
   os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  site_config = {
-    # auto_heal_enabled = true
-  }
-
-  # auto_heal_setting = {
-  #   setting_1 = {
-  #     action = {
-  #       action_type = "Recycle"
-  #       minimum_process_execution_time = "00:01:00"
-  #     }
-  #     trigger = {
-  #       # private_bytes_in_kb = 0
-  #       requests = {
-  #         count = 100
-  #         interval = "00:00:30"
-  #       }
-  #       status_code = {
-  #         status_5000 = {
-  #           count = 5000
-  #           interval = "00:05:00"
-  #           path = "/HealthCheck"
-  #           status_code_range = 500
-  #           sub_status = 0
-  #         }
-  #         status_6000 = {
-  #           count = 6000
-  #           interval = "00:05:00"
-  #           path = "/Get"
-  #           status_code_range = 500
-  #           sub_status = 0
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
-
+  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
+  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 }

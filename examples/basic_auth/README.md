@@ -87,7 +87,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.0"
+  # version = "0.9.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -101,6 +101,26 @@ module "test" {
   site_config = {
     ftps_state = "FtpsOnly"
   }
+
+  # auth_settings_v2 = {
+  #   setting1 = {
+  #     auth_enabled     = true
+  #     default_provider = "AzureActiveDirectory"
+
+  #     active_directory_v2 = {
+  #       aad1 = {
+  #         client_id            = ""
+  #         tenant_auth_endpoint = "https://login.microsoftonline.com/{}/v2.0/"
+  #       }
+  #     }
+  #     login = {
+  #       login1 = {
+  #         token_store_enabled = true
+  #         validate_nonce      = true
+  #       }
+  #     }
+  #   }
+  # }
 
 
   /*

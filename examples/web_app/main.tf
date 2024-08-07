@@ -21,7 +21,6 @@ provider "azurerm" {
   }
 }
 
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -42,26 +41,9 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-}
-
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
-
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
 }
 
 resource "azurerm_service_plan" "example" {
@@ -69,7 +51,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
 
 # This is the module call
@@ -77,19 +59,27 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.0"
+  # version = "0.9.1"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-windows"
+  name                = "${module.naming.app_service.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
+  kind    = "webapp"
   os_type = azurerm_service_plan.example.os_type
 
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "v8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+
 }

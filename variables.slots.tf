@@ -7,6 +7,10 @@ variable "app_service_active_slot" {
   description = <<DESCRIPTION
 
   ```
+  Object that sets the active slot for the App Service.
+
+  `slot_key` - The key of the slot object to set as active. 
+  `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
 
   ```
   DESCRIPTION
@@ -448,6 +452,6 @@ variable "deployment_slots" {
 variable "deployment_slots_inherit_lock" {
   type        = bool
   default     = true
-  description = "Whether to inherit the lock from the parent resource for the deployment slots."
+  description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
 
 }
