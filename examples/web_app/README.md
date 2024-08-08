@@ -81,9 +81,8 @@ module "test" {
   site_config = {
     application_stack = {
       dotnet = {
-        dotnet_version              = "v8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
+        current_stack  = "dotnet"
+        dotnet_version = "v8.0"
       }
     }
   }
