@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module utilizing app service slot capabilities.
+This deploys the module with a Windows Function App in its simplest form.
 
 ```hcl
 terraform {
@@ -54,14 +54,14 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-/*
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+  version = "0.1.2"
 
-  enable_telemetry = false
+  enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.example.name
+  location                      = azurerm_resource_group.example.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
@@ -69,100 +69,35 @@ module "avm_res_storage_storageaccount" {
     default_action = "Allow"
   }
 }
-*/
 
-/*
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "S1"
 }
-*/
 
+# This is the module call
 module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.0"
+  # version = "0.9.1"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-slots"
+  name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Linux"
-
-  /*
-  # Uses an existing app service plan
   os_type = azurerm_service_plan.example.os_type
+
   service_plan_resource_id = azurerm_service_plan.example.id
-  */
 
-  # Creates a new app service plan
-  create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
-
-  /* 
-  # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-  */
-
-  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
-  }
-
-  site_config = {
-    application_stack = {
-      dotnet = {
-        dotnet_version              = "8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
-
-  deployment_slots = {
-    slot1 = {
-      name = "staging"
-      site_config = {
-        application_stack = {
-          dotnet = {
-            dotnet_version              = "8.0"
-            use_custom_runtime          = false
-            use_dotnet_isolated_runtime = true
-          }
-        }
-      }
-    },
-    slot2 = {
-      name = "development"
-      site_config = {
-        application_stack = {
-          dotnet = {
-            dotnet_version              = "8.0"
-            use_custom_runtime          = false
-            use_dotnet_isolated_runtime = true
-          }
-        }
-      }
-    }
-  }
-
-  # app_service_active_slot = {
-  #   slot_key                = "slot2"
-  #   overwite_network_config = false
-  # }
+  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
+  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
 }
 ```
 
@@ -190,6 +125,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -215,41 +151,27 @@ Default: `true`
 
 The following outputs are exported:
 
-### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
-
-Description: ID of active slot
-
-### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
-
-Description: Full output of deployment slots created
-
-### <a name="output_kind"></a> [kind](#output\_kind)
-
-Description: n/a
-
 ### <a name="output_name"></a> [name](#output\_name)
 
-Description: This is the full output for the resource.
-
-### <a name="output_os_type"></a> [os\_type](#output\_os\_type)
-
-Description: n/a
+Description: Name for the resource.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
-Description: Full output of service plan created
-
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
-
-Description: Full output of storage account created
+Description: This is the URI for the resource.
 
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.1.2
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

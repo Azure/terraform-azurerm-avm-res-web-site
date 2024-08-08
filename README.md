@@ -128,6 +128,10 @@ Default: `true`
 
 Description:
   ```
+  Object that sets the active slot for the App Service.
+
+  `slot_key` - The key of the slot object to set as active.
+  `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
 
 ```
 
@@ -1265,7 +1269,7 @@ Default: `{}`
 
 ### <a name="input_deployment_slots_inherit_lock"></a> [deployment\_slots\_inherit\_lock](#input\_deployment\_slots\_inherit\_lock)
 
-Description: Whether to inherit the lock from the parent resource for the deployment slots.
+Description: Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`.
 
 Type: `bool`
 
