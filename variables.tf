@@ -11,7 +11,7 @@ variable "kind" {
 
 variable "location" {
   type        = string
-  description = "Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location."
+  description = "Azure region where the resource should be deployed."
   nullable    = false
 }
 
@@ -790,9 +790,14 @@ variable "function_app_create_storage_account" {
 
 variable "function_app_storage_account" {
   type = object({
-    name                = optional(string)
-    resource_group_name = optional(string)
-    location            = optional(string)
+    name                          = optional(string)
+    resource_group_name           = optional(string)
+    location                      = optional(string)
+    account_kind                  = optional(string, "StorageV2")
+    account_tier                  = optional(string, "Standard")
+    account_replication_type      = optional(string)
+    shared_access_key_enabled     = optional(bool, true)
+    public_network_access_enabled = optional(bool, true)
     lock = optional(object({
       kind = string
       name = optional(string, null)
@@ -817,6 +822,11 @@ variable "function_app_storage_account" {
   - `name` - (Optional) The name of the Storage Account.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
   - `location` - (Optional) The Azure region where the Storage Account will be deployed.
+  - `account_kind` - (Optional) The kind of the Storage Account. Defaults to `StorageV2`.
+  - `account_tier` - (Optional) The tier of the Storage Account. Defaults to `Standard`.
+  - `account_replication_type` - (Optional) The replication type of the Storage Account.
+  - `shared_access_key_enabled` - (Optional) Should the shared access key be enabled for the Storage Account? Defaults to `true`.
+  - `public_network_access_enabled` - (Optional) Should public network access be enabled for the Storage Account? Defaults to `true`.
   - `lock` - (Optional) The lock level to apply.
   - `role_assignments` - (Optional) A map of role assignments to assign to the Storage Account.
 
@@ -935,12 +945,12 @@ variable "new_service_plan" {
     name                                = optional(string)
     resource_group_name                 = optional(string)
     location                            = optional(string)
-    sku_name                            = optional(string)
+    sku_name                            = optional(string, "P1v2")
     app_service_environment_resource_id = optional(string)
     maximum_elastic_worker_count        = optional(number)
-    worker_count                        = optional(number)
+    worker_count                        = optional(number, 3)
     per_site_scaling_enabled            = optional(bool, false)
-    zone_balancing_enabled              = optional(bool)
+    zone_balancing_enabled              = optional(bool, true)
   })
   default = {
 
@@ -951,10 +961,11 @@ variable "new_service_plan" {
   - `name` - (Optional) The name of the App Service Plan.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
   - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
-  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `B1`.
+  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `P1v2`. 
+  > Possible values include `B1`, `B2`, `B3`, `D1`, `F1`, `I1`, `I2`, `I3`, `I1v2`, `I2v2`, `I3v2`, `I4v2`, `I5v2`, `I6v2`, `P1v2`, `P2v2`, `P3v2`, `P0v3`, `P1v3`,``P2v3`, `P3v3`, `P1mv3`, `P2mv3`, `P3mv3`, `P4mv3`, `P5mv3`, `S1`, `S2`, `S3`, `SHARED`, `EP1`, `EP2`, `EP3`, `FC1`, `WS1`, `WS2`, `WS3`, and `Y1`.
   - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
-  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to this App Service Plan.
-  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan.
+  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to Elastic SKU Plan. Cannot be set unless using an Elastic SKU.
+  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan. Defaults to `3`.
   - `per_site_scaling_enabled` - (Optional) Should per site scaling be enabled for the App Service Plan? Defaults to `false`.
   - `zone_balancing_enabled` - (Optional) Should zone balancing be enabled for the App Service Plan? Changing this forces a new resource to be created.
   > **NOTE:** If this setting is set to `true` and the `worker_count` value is specified, it should be set to a multiple of the number of availability zones in the region. Please see the Azure documentation for the number of Availability Zones in your region.

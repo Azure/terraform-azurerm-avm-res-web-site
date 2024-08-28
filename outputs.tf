@@ -29,6 +29,11 @@ output "kind" {
   value       = var.kind
 }
 
+output "location" {
+  description = "The location of the resource."
+  value       = var.location
+}
+
 output "name" {
   description = "The name of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
@@ -78,6 +83,11 @@ output "service_plan" {
   value       = var.create_service_plan ? azurerm_service_plan.this[0] : null
 }
 
+output "sku_name" {
+  description = "The SKU name of the app service."
+  value       = var.create_service_plan ? azurerm_service_plan.this[0].sku_name : null
+}
+
 output "storage_account" {
   description = "The storage account resource."
   value       = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0] : null
@@ -108,4 +118,14 @@ output "web_app_active_slot" {
 output "web_app_deployment_slots" {
   description = "The deployment slots."
   value       = var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_web_app_slot.this : azurerm_linux_web_app_slot.this
+}
+
+output "worker_count" {
+  description = "The number of Workers (instances) allocated."
+  value       = var.create_service_plan ? azurerm_service_plan.this[0].worker_count : null
+}
+
+output "zone_redundant" {
+  description = "The zone redundancy of the resource."
+  value       = var.create_service_plan ? azurerm_service_plan.this[0].zone_balancing_enabled : null
 }

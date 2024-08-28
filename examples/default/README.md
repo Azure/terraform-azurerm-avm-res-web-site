@@ -86,7 +86,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -105,9 +105,6 @@ module "test" {
 
   # Creates a new app service plan
   create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
 
   /* 
   # Uses an existing storage account
@@ -118,8 +115,7 @@ module "test" {
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
   function_app_create_storage_account = true
   function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
+    name = module.naming.storage_account.name_unique
   }
 }
 ```
@@ -165,6 +161,10 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_location"></a> [location](#output\_location)
+
+Description: This is the full output for the resource.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: This is the full output for the resource.
@@ -177,9 +177,21 @@ Description: This is the full output for the resource.
 
 Description: Full output of service plan created
 
+### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+
+Description: The SKU of the app service
+
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
 Description: Full output of storage account created
+
+### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
+
+Description: The number of workers in the service plan
+
+### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
+
+Description: The zone redundancy of the app service
 
 ## Modules
 

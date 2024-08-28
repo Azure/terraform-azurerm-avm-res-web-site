@@ -80,7 +80,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -99,9 +99,6 @@ module "test" {
 
   # Creates a new app service plan
   create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
 
   /* 
   # Uses an existing storage account
@@ -112,7 +109,6 @@ module "test" {
   # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
   function_app_create_storage_account = true
   function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
+    name = module.naming.storage_account.name_unique
   }
 }
