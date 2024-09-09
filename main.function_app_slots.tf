@@ -104,7 +104,8 @@ resource "azurerm_windows_function_app_slot" "this" {
         }
       }
     }
-    dynamic "scm_ip_restriction" { # one or more scm_ip_restriction blocks 
+    dynamic "scm_ip_restriction" {
+      # one or more scm_ip_restriction blocks 
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
@@ -273,6 +274,7 @@ resource "azurerm_windows_function_app_slot" "this" {
       }
       dynamic "custom_oidc_v2" {
         for_each = auth_settings_v2.value.custom_oidc_v2
+
         content {
           client_id                     = custom_oidc_v2.value.client_id
           name                          = custom_oidc_v2.value.name
@@ -286,17 +288,16 @@ resource "azurerm_windows_function_app_slot" "this" {
           scopes                        = custom_oidc_v2.value.scopes
           token_endpoint                = custom_oidc_v2.value.token_endpoint
         }
-
       }
       dynamic "facebook_v2" {
         for_each = auth_settings_v2.value.facebook_v2
+
         content {
           app_id                  = facebook_v2.value.app_id
           app_secret_setting_name = facebook_v2.value.app_secret_setting_name
           graph_api_version       = facebook_v2.value.graph_api_version
           login_scopes            = facebook_v2.value.login_scopes
         }
-
       }
       dynamic "github_v2" {
         for_each = auth_settings_v2.value.github_v2
@@ -309,16 +310,17 @@ resource "azurerm_windows_function_app_slot" "this" {
       }
       dynamic "google_v2" {
         for_each = auth_settings_v2.value.google_v2
+
         content {
           client_id                  = google_v2.value.client_id
           client_secret_setting_name = google_v2.value.client_secret_setting_name
           allowed_audiences          = google_v2.value.allowed_audiences
           login_scopes               = google_v2.value.login_scopes
         }
-
       }
       dynamic "microsoft_v2" {
         for_each = auth_settings_v2.value.microsoft_v2
+
         content {
           client_id                  = microsoft_v2.value.client_id
           client_secret_setting_name = microsoft_v2.value.client_secret_setting_name
@@ -328,13 +330,13 @@ resource "azurerm_windows_function_app_slot" "this" {
       }
       dynamic "twitter_v2" {
         for_each = auth_settings_v2.value.twitter_v2
+
         content {
           consumer_key                 = twitter_v2.value.consumer_key
           consumer_secret_setting_name = twitter_v2.value.consumer_secret_setting_name
         }
       }
     }
-
   }
   dynamic "backup" {
     for_each = each.value.backup
@@ -368,6 +370,7 @@ resource "azurerm_windows_function_app_slot" "this" {
   }
   dynamic "identity" {
     for_each = local.managed_identities.system_assigned_user_assigned
+
     content {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
@@ -504,7 +507,8 @@ resource "azurerm_linux_function_app_slot" "this" {
         }
       }
     }
-    dynamic "scm_ip_restriction" { # one or more scm_ip_restriction blocks 
+    dynamic "scm_ip_restriction" {
+      # one or more scm_ip_restriction blocks 
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
@@ -673,6 +677,7 @@ resource "azurerm_linux_function_app_slot" "this" {
       }
       dynamic "custom_oidc_v2" {
         for_each = auth_settings_v2.value.custom_oidc_v2
+
         content {
           client_id                     = custom_oidc_v2.value.client_id
           name                          = custom_oidc_v2.value.name
@@ -686,17 +691,16 @@ resource "azurerm_linux_function_app_slot" "this" {
           scopes                        = custom_oidc_v2.value.scopes
           token_endpoint                = custom_oidc_v2.value.token_endpoint
         }
-
       }
       dynamic "facebook_v2" {
         for_each = auth_settings_v2.value.facebook_v2
+
         content {
           app_id                  = facebook_v2.value.app_id
           app_secret_setting_name = facebook_v2.value.app_secret_setting_name
           graph_api_version       = facebook_v2.value.graph_api_version
           login_scopes            = facebook_v2.value.login_scopes
         }
-
       }
       dynamic "github_v2" {
         for_each = auth_settings_v2.value.github_v2
@@ -709,16 +713,17 @@ resource "azurerm_linux_function_app_slot" "this" {
       }
       dynamic "google_v2" {
         for_each = auth_settings_v2.value.google_v2
+
         content {
           client_id                  = google_v2.value.client_id
           client_secret_setting_name = google_v2.value.client_secret_setting_name
           allowed_audiences          = google_v2.value.allowed_audiences
           login_scopes               = google_v2.value.login_scopes
         }
-
       }
       dynamic "microsoft_v2" {
         for_each = auth_settings_v2.value.microsoft_v2
+
         content {
           client_id                  = microsoft_v2.value.client_id
           client_secret_setting_name = microsoft_v2.value.client_secret_setting_name
@@ -728,13 +733,13 @@ resource "azurerm_linux_function_app_slot" "this" {
       }
       dynamic "twitter_v2" {
         for_each = auth_settings_v2.value.twitter_v2
+
         content {
           consumer_key                 = twitter_v2.value.consumer_key
           consumer_secret_setting_name = twitter_v2.value.consumer_secret_setting_name
         }
       }
     }
-
   }
   dynamic "backup" {
     for_each = each.value.backup
@@ -768,6 +773,7 @@ resource "azurerm_linux_function_app_slot" "this" {
   }
   dynamic "identity" {
     for_each = local.managed_identities.system_assigned_user_assigned
+
     content {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids

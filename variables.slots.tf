@@ -392,7 +392,7 @@ variable "deployment_slots" {
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})
@@ -406,7 +406,7 @@ variable "deployment_slots" {
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})

@@ -76,6 +76,18 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "S1"
 }
 
+# module "avm_res_web_serverfarm" {
+
+#   source  = "Azure/avm-res-web-serverfarm/azurerm"
+#   version = "0.1.0"
+
+#   name                = module.naming.app_service_plan.name_unique
+#   os_type             = "Windows"
+#   resource_group_name = azurerm_resource_group.example.name
+#   sku_name            = "S1"
+
+# }
+
 # Use data object to reference an existing Key Vault and stored certificate
 /*
 data "azurerm_key_vault" "existing_keyvault" {
@@ -95,7 +107,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 

@@ -48,7 +48,6 @@ The following resources are used by this module:
 - [azurerm_role_assignment.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.slot_pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_service_plan.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_web_app_active_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_app_active_slot) (resource)
 - [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
 - [azurerm_windows_function_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app_slot) (resource)
@@ -72,7 +71,7 @@ Type: `string`
 
 ### <a name="input_location"></a> [location](#input\_location)
 
-Description: Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location.
+Description: Azure region where the resource should be deployed.
 
 Type: `string`
 
@@ -1207,7 +1206,7 @@ map(object({
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})
@@ -1221,7 +1220,7 @@ map(object({
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})
@@ -1348,6 +1347,11 @@ Description:   A map of objects that represent a Storage Account to mount to the
   - `name` - (Optional) The name of the Storage Account.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
   - `location` - (Optional) The Azure region where the Storage Account will be deployed.
+  - `account_kind` - (Optional) The kind of the Storage Account. Defaults to `StorageV2`.
+  - `account_tier` - (Optional) The tier of the Storage Account. Defaults to `Standard`.
+  - `account_replication_type` - (Optional) The replication type of the Storage Account.
+  - `shared_access_key_enabled` - (Optional) Should the shared access key be enabled for the Storage Account? Defaults to `true`.
+  - `public_network_access_enabled` - (Optional) Should public network access be enabled for the Storage Account? Defaults to `true`.
   - `lock` - (Optional) The lock level to apply.
   - `role_assignments` - (Optional) A map of role assignments to assign to the Storage Account.
 
@@ -1359,9 +1363,14 @@ Type:
 
 ```hcl
 object({
-    name                = optional(string)
-    resource_group_name = optional(string)
-    location            = optional(string)
+    name                          = optional(string)
+    resource_group_name           = optional(string)
+    location                      = optional(string)
+    account_kind                  = optional(string, "StorageV2")
+    account_tier                  = optional(string, "Standard")
+    account_replication_type      = optional(string)
+    shared_access_key_enabled     = optional(bool, true)
+    public_network_access_enabled = optional(bool, true)
     lock = optional(object({
       kind = string
       name = optional(string, null)
@@ -1509,10 +1518,11 @@ Description:   A map of objects that represent a new App Service Plan to create 
   - `name` - (Optional) The name of the App Service Plan.
   - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
   - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
-  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `B1`.
+  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `P1v2`.
+  > Possible values include `B1`, `B2`, `B3`, `D1`, `F1`, `I1`, `I2`, `I3`, `I1v2`, `I2v2`, `I3v2`, `I4v2`, `I5v2`, `I6v2`, `P1v2`, `P2v2`, `P3v2`, `P0v3`, `P1v3`,`P2v3`, `P3v3`, `P1mv3`, `P2mv3`, `P3mv3`, `P4mv3`, `P5mv3`, `S1`, `S2`, `S3`, `SHARED`, `EP1`, `EP2`, `EP3`, `FC1`, `WS1`, `WS2`, `WS3`, and `Y1`.
   - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
-  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to this App Service Plan.
-  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan.
+  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to Elastic SKU Plan. Cannot be set unless using an Elastic SKU.
+  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan. Defaults to `3`.
   - `per_site_scaling_enabled` - (Optional) Should per site scaling be enabled for the App Service Plan? Defaults to `false`.
   - `zone_balancing_enabled` - (Optional) Should zone balancing be enabled for the App Service Plan? Changing this forces a new resource to be created.
   > **NOTE:** If this setting is set to `true` and the `worker_count` value is specified, it should be set to a multiple of the number of availability zones in the region. Please see the Azure documentation for the number of Availability Zones in your region.
@@ -1524,12 +1534,26 @@ object({
     name                                = optional(string)
     resource_group_name                 = optional(string)
     location                            = optional(string)
-    sku_name                            = optional(string)
+    sku_name                            = optional(string, "P1v2")
     app_service_environment_resource_id = optional(string)
     maximum_elastic_worker_count        = optional(number)
-    worker_count                        = optional(number)
+    worker_count                        = optional(number, 3)
     per_site_scaling_enabled            = optional(bool, false)
-    zone_balancing_enabled              = optional(bool)
+    zone_balancing_enabled              = optional(bool, true)
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
   })
 ```
 
@@ -1837,7 +1861,7 @@ object({
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
@@ -1851,7 +1875,7 @@ object({
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
@@ -2032,6 +2056,10 @@ Description: The object principal id of the resource.
 
 Description: The kind of app service.
 
+### <a name="output_location"></a> [location](#output\_location)
+
+Description: The location of the resource.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.
@@ -2064,9 +2092,13 @@ Description: A map of private endpoints. The map key is the supplied input to va
 
 Description: The default hostname of the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
 
-Description: The service plan resource.
+Description: The resource id of the service plan.
+
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
+
+Description: The name of the created service plan.
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
@@ -2100,7 +2132,13 @@ The following Modules are called:
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.1.2
+Version: 0.2.4
+
+### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
+
+Source: Azure/avm-res-web-serverfarm/azurerm
+
+Version: 0.1.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

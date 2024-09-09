@@ -56,7 +56,7 @@ resource "azurerm_resource_group" "example" {
 # Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
+  version = "0.2.4"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
@@ -81,21 +81,18 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-linux"
+  name                = "${module.naming.function_app.name_unique}-windows"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
   kind    = "functionapp"
-  os_type = "Linux"
+  os_type = "Windows"
 
   create_service_plan = true
-  new_service_plan = {
-    sku_name = "Y1"
-  }
 
   function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
   function_app_storage_uses_managed_identity = true
@@ -172,7 +169,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.1.2
+Version: 0.2.4
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

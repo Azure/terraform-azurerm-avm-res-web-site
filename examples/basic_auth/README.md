@@ -87,7 +87,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -198,10 +198,6 @@ Description: This is the full output for the resource.
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
-
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
-
-Description: Full output of service plan created
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 

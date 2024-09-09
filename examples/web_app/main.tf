@@ -46,20 +46,12 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
-}
-
 # This is the module call
 module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -68,9 +60,9 @@ module "test" {
   location            = azurerm_resource_group.example.location
 
   kind    = "webapp"
-  os_type = azurerm_service_plan.example.os_type
+  os_type = "Windows"
 
-  service_plan_resource_id = azurerm_service_plan.example.id
+  create_service_plan = true
 
   site_config = {
     application_stack = {

@@ -35,11 +35,6 @@ output "resource_lock" {
   value       = module.test.resource_lock
 }
 
-output "service_plan" {
-  description = "Full output of service plan created"
-  value       = module.test.service_plan
-}
-
 output "storage_account" {
   description = "Full output of storage account created"
   sensitive   = true

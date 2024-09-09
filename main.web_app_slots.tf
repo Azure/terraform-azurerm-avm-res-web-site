@@ -148,7 +148,8 @@ resource "azurerm_windows_web_app_slot" "this" {
         }
       }
     }
-    dynamic "scm_ip_restriction" { # one or more scm_ip_restriction blocks 
+    dynamic "scm_ip_restriction" {
+      # one or more scm_ip_restriction blocks 
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
@@ -331,7 +332,6 @@ resource "azurerm_windows_web_app_slot" "this" {
           scopes                        = custom_oidc_v2.value.scopes
           token_endpoint                = custom_oidc_v2.value.token_endpoint
         }
-
       }
       dynamic "facebook_v2" {
         for_each = auth_settings_v2.value.facebook_v2
@@ -342,7 +342,6 @@ resource "azurerm_windows_web_app_slot" "this" {
           graph_api_version       = facebook_v2.value.graph_api_version
           login_scopes            = facebook_v2.value.login_scopes
         }
-
       }
       dynamic "github_v2" {
         for_each = auth_settings_v2.value.github_v2
@@ -362,7 +361,6 @@ resource "azurerm_windows_web_app_slot" "this" {
           allowed_audiences          = google_v2.value.allowed_audiences
           login_scopes               = google_v2.value.login_scopes
         }
-
       }
       dynamic "microsoft_v2" {
         for_each = auth_settings_v2.value.microsoft_v2
@@ -641,7 +639,8 @@ resource "azurerm_linux_web_app_slot" "this" {
         }
       }
     }
-    dynamic "scm_ip_restriction" { # one or more scm_ip_restriction blocks 
+    dynamic "scm_ip_restriction" {
+      # one or more scm_ip_restriction blocks 
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
@@ -824,7 +823,6 @@ resource "azurerm_linux_web_app_slot" "this" {
           scopes                        = custom_oidc_v2.value.scopes
           token_endpoint                = custom_oidc_v2.value.token_endpoint
         }
-
       }
       dynamic "facebook_v2" {
         for_each = auth_settings_v2.value.facebook_v2
@@ -835,7 +833,6 @@ resource "azurerm_linux_web_app_slot" "this" {
           graph_api_version       = facebook_v2.value.graph_api_version
           login_scopes            = facebook_v2.value.login_scopes
         }
-
       }
       dynamic "github_v2" {
         for_each = auth_settings_v2.value.github_v2
@@ -855,7 +852,6 @@ resource "azurerm_linux_web_app_slot" "this" {
           allowed_audiences          = google_v2.value.allowed_audiences
           login_scopes               = google_v2.value.login_scopes
         }
-
       }
       dynamic "microsoft_v2" {
         for_each = auth_settings_v2.value.microsoft_v2

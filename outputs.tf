@@ -29,6 +29,11 @@ output "kind" {
   value       = var.kind
 }
 
+output "location" {
+  description = "The location of the resource."
+  value       = var.location
+}
+
 output "name" {
   description = "The name of the resource."
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
@@ -73,9 +78,14 @@ output "resource_uri" {
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname)) : null
 }
 
-output "service_plan" {
-  description = "The service plan resource."
-  value       = var.create_service_plan ? azurerm_service_plan.this[0] : null
+output "service_plan_id" {
+  description = "The resource id of the service plan."
+  value       = var.create_service_plan ? module.avm_res_web_serverfarm[0].resource_id : null
+}
+
+output "service_plan_name" {
+  description = "The name of the created service plan."
+  value       = var.create_service_plan ? module.avm_res_web_serverfarm[0].name : null
 }
 
 output "storage_account" {

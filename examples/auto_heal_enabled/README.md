@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module utilizing auto heal settings.
+This deploys the module as a Linux Web App utilizing auto heal settings.
 
 ```hcl
 terraform {
@@ -54,39 +54,11 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
-/*
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
-
-  enable_telemetry = false
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
-}
-*/
-
-/*
-resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
-}
-*/
-
 module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.1"
+  # version = "0.9.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -134,31 +106,8 @@ module "test" {
     # }
   }
 
-
-  /*
-  # Uses an existing app service plan
-  os_type = azurerm_service_plan.example.os_type
-  service_plan_resource_id = azurerm_service_plan.example.id
-  */
-
   # Creates a new app service plan
   create_service_plan = true
-  new_service_plan = {
-    sku_name = "S1"
-  }
-
-  /* 
-  # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-  */
-
-  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  # function_app_create_storage_account = true
-  # function_app_storage_account = {
-  #   name                = module.naming.storage_account.name_unique
-  #   resource_group_name = azurerm_resource_group.example.name
-  # }
 }
 ```
 
@@ -218,10 +167,6 @@ Description: This is the full output for the resource.
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
-
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
-
-Description: Full output of service plan created
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
