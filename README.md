@@ -48,7 +48,6 @@ The following resources are used by this module:
 - [azurerm_role_assignment.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.slot_pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_service_plan.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_web_app_active_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_app_active_slot) (resource)
 - [azurerm_windows_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) (resource)
 - [azurerm_windows_function_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app_slot) (resource)
@@ -1207,7 +1206,7 @@ map(object({
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})
@@ -1221,7 +1220,7 @@ map(object({
         virtual_network_subnet_id = optional(string)
         headers = optional(map(object({
           x_azure_fdid      = optional(list(string))
-          x_fd_health_probe = optional(number)
+          x_fd_health_probe = optional(list(string), ["1"])
           x_forwarded_for   = optional(list(string))
           x_forwarded_host  = optional(list(string))
         })), {})
@@ -1541,6 +1540,20 @@ object({
     worker_count                        = optional(number, 3)
     per_site_scaling_enabled            = optional(bool, false)
     zone_balancing_enabled              = optional(bool, true)
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
   })
 ```
 
@@ -1848,7 +1861,7 @@ object({
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
@@ -1862,7 +1875,7 @@ object({
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
@@ -2079,13 +2092,13 @@ Description: A map of private endpoints. The map key is the supplied input to va
 
 Description: The default hostname of the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
 
-Description: The service plan resource.
+Description: The resource id of the service plan.
 
-### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
 
-Description: The SKU name of the app service.
+Description: The name of the created service plan.
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
@@ -2111,14 +2124,6 @@ Description: The active slot.
 
 Description: The deployment slots.
 
-### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
-
-Description: The number of Workers (instances) allocated.
-
-### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
-
-Description: The zone redundancy of the resource.
-
 ## Modules
 
 The following Modules are called:
@@ -2128,6 +2133,12 @@ The following Modules are called:
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
 Version: 0.2.4
+
+### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
+
+Source: Azure/avm-res-web-serverfarm/azurerm
+
+Version: 0.1.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

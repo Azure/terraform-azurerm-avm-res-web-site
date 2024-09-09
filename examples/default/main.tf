@@ -51,7 +51,7 @@ resource "azurerm_resource_group" "example" {
 /*
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+  version = "0.2.4"
 
   enable_telemetry = false
   name                          = module.naming.storage_account.name_unique
@@ -72,7 +72,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "P1v2"
 }
 */
 

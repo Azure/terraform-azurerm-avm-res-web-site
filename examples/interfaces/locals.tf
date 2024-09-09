@@ -1,11 +1,11 @@
 locals {
   azure_regions = [
     "eastus",
-    # "eastus2",
-    # "centralus",
-    # "southcentralus",
-    # "westus2",
-    # "westus3"
+    "eastus2",
+    "centralus",
+    "southcentralus",
+    "westus2",
+    "westus3"
   ]
   azurerm_private_dns_zone_resource_name = "privatelink.${local.reformatted_subdomain}"
   default_host_name                      = module.test.resource_uri

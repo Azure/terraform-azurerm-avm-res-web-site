@@ -57,7 +57,7 @@ resource "azurerm_resource_group" "example" {
 /*
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+  version = "0.2.4"
 
   enable_telemetry = false
   name                          = module.naming.storage_account.name_unique
@@ -78,7 +78,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
+  sku_name            = "P1v2"
 }
 */
 
@@ -169,29 +169,25 @@ Description: This is the full output for the resource.
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource"></a> [resource](#output\_resource)
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: This is the full output for the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
+
+Description: The ID of the app service
+
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
 
 Description: Full output of service plan created
 
-### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
 
-Description: The SKU of the app service
+Description: The ID of the storage account
 
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
 
 Description: Full output of storage account created
-
-### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
-
-Description: The number of workers in the service plan
-
-### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
-
-Description: The zone redundancy of the app service
 
 ## Modules
 

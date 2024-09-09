@@ -951,6 +951,20 @@ variable "new_service_plan" {
     worker_count                        = optional(number, 3)
     per_site_scaling_enabled            = optional(bool, false)
     zone_balancing_enabled              = optional(bool, true)
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
   })
   default = {
 
@@ -1162,7 +1176,7 @@ variable "site_config" {
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
@@ -1176,7 +1190,7 @@ variable "site_config" {
       virtual_network_subnet_id = optional(string)
       headers = optional(map(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(number)
+        x_fd_health_probe = optional(list(string), ["1"])
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
