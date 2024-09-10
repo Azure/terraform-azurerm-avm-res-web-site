@@ -124,7 +124,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
+  sku_name            = var.sku_for_testing
 }
 
 module "test" {
@@ -381,6 +381,14 @@ Description:   This variable controls whether or not telemetry is enabled for th
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"S1"`
 
 ## Outputs
 

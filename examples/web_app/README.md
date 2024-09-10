@@ -70,6 +70,7 @@ module "test" {
 
   create_service_plan = true
   new_service_plan = {
+    sku_name               = var.sku_for_testing
     zone_balancing_enabled = var.redundancy_for_testing
   }
 
@@ -129,6 +130,14 @@ Description: n/a
 Type: `string`
 
 Default: `"false"`
+
+### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"S1"`
 
 ## Outputs
 

@@ -12,3 +12,8 @@ variable "redundancy_for_testing" {
   type    = string
   default = "false"
 }
+
+variable "sku_for_testing" {
+  type    = string
+  default = "S1"
+}

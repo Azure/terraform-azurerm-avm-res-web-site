@@ -64,6 +64,7 @@ module "test" {
 
   create_service_plan = true
   new_service_plan = {
+    sku_name               = var.sku_for_testing
     zone_balancing_enabled = var.redundancy_for_testing
   }
 
