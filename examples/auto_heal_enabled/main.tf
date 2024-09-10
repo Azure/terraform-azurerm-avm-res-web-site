@@ -102,4 +102,7 @@ module "test" {
 
   # Creates a new app service plan
   create_service_plan = true
+  new_service_plan = {
+    zone_balancing_enabled = var.redundancy_for_testing
+  }
 }

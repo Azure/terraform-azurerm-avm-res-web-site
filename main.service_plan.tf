@@ -27,7 +27,7 @@ module "avm_res_web_serverfarm" {
   name                         = coalesce(var.new_service_plan.name, "${var.name}-asp")
   os_type                      = var.os_type
   resource_group_name          = coalesce(var.new_service_plan.resource_group_name, var.resource_group_name)
-  sku_name                     = var.new_service_plan.sku_name
+  sku_name                     = var.kind == "webapp" ? var.new_service_plan.sku_name : coalesce(var.new_service_plan.sku_name, "EP1")
   app_service_environment_id   = var.new_service_plan.app_service_environment_resource_id
   maximum_elastic_worker_count = var.new_service_plan.maximum_elastic_worker_count
   per_site_scaling_enabled     = var.new_service_plan.per_site_scaling_enabled

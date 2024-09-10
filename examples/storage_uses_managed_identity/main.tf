@@ -87,6 +87,9 @@ module "test" {
   os_type = "Windows"
 
   create_service_plan = true
+  new_service_plan = {
+    zone_balancing_enabled = var.redundancy_for_testing
+  }
 
   function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
   function_app_storage_uses_managed_identity = true

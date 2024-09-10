@@ -63,6 +63,9 @@ module "test" {
   os_type = "Windows"
 
   create_service_plan = true
+  new_service_plan = {
+    zone_balancing_enabled = var.redundancy_for_testing
+  }
 
   site_config = {
     application_stack = {
