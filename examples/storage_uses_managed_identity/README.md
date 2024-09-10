@@ -93,6 +93,9 @@ module "test" {
   os_type = "Windows"
 
   create_service_plan = true
+  new_service_plan = {
+    zone_balancing_enabled = var.redundancy_for_testing
+  }
 
   function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
   function_app_storage_uses_managed_identity = true
@@ -140,6 +143,14 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_redundancy_for_testing"></a> [redundancy\_for\_testing](#input\_redundancy\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"false"`
 
 ## Outputs
 

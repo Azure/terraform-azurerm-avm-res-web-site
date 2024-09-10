@@ -9,6 +9,6 @@ variable "enable_telemetry" {
 }
 
 variable "redundancy_for_testing" {
-  type = string
+  type    = string
   default = "false"
 }

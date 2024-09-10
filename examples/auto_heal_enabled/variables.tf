@@ -9,6 +9,6 @@ DESCRIPTION
 }
 
 variable "redundancy_for_testing" {
-  type = string
+  type    = string
   default = "false"
 }

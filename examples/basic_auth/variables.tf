@@ -8,8 +8,7 @@ If it is set to false, then no telemetry will be collected.
 DESCRIPTION
 }
 
-
 variable "redundancy_for_testing" {
-  type = string
+  type    = string
   default = "false"
 }

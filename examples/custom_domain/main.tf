@@ -70,7 +70,6 @@ resource "azurerm_service_plan" "example" {
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
-  zone_balancing_enabled = var.redundancy_for_testing
 }
 
 # module "avm_res_web_serverfarm" {

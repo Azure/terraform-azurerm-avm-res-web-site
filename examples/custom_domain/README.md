@@ -73,7 +73,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
+  sku_name            = "P1v2"
 }
 
 # module "avm_res_web_serverfarm" {
