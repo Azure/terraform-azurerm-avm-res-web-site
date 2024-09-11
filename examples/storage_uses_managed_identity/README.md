@@ -159,7 +159,7 @@ Description: n/a
 
 Type: `string`
 
-Default: `"S1"`
+Default: `"F1"`
 
 ## Outputs
 

@@ -10,5 +10,5 @@ DESCRIPTION
 
 variable "sku_for_testing" {
   type    = string
-  default = "S1"
+  default = "F1"
 }
