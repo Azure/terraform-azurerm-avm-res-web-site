@@ -2092,6 +2092,10 @@ Description: A map of private endpoints. The map key is the supplied input to va
 
 Description: The default hostname of the resource.
 
+### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
+
+Description: The service plan resource.
+
 ### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
 
 Description: The resource id of the service plan.
@@ -2138,7 +2142,7 @@ Version: 0.2.4
 
 Source: Azure/avm-res-web-serverfarm/azurerm
 
-Version: 0.1.0
+Version: 0.2.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

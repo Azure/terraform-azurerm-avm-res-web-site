@@ -78,6 +78,11 @@ output "resource_uri" {
   value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname)) : null
 }
 
+output "service_plan" {
+  description = "The service plan resource."
+  value       = var.create_service_plan ? module.avm_res_web_serverfarm[0].resource : null
+}
+
 output "service_plan_id" {
   description = "The resource id of the service plan."
   value       = var.create_service_plan ? module.avm_res_web_serverfarm[0].resource_id : null

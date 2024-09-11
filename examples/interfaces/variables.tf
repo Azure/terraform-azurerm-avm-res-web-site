@@ -10,5 +10,5 @@ variable "enable_telemetry" {
 
 variable "sku_for_testing" {
   type    = string
-  default = "F1"
+  default = "S1"
 }
