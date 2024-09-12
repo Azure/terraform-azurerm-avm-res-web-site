@@ -2,29 +2,6 @@
 
 
 ```hcl
-terraform {
-  required_version = "~> 1.6"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = ">= 3.7.0, < 4.0.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.5.0, < 4.0.0"
-    }
-  }
-}
-
-# tflint-ignore: terraform_module_provider_declaration, terraform_output_separate, terraform_variable_separate
-provider "azurerm" {
-  features {
-    resource_group {
-      prevent_deletion_if_contains_resources = false
-    }
-  }
-}
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -73,7 +50,7 @@ resource "azurerm_service_plan" "example" {
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
+  sku_name            = var.sku_for_testing
 }
 
 # module "avm_res_web_serverfarm" {
@@ -107,7 +84,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.2"
+  # version = "0.10.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -269,6 +246,14 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"S1"`
 
 ## Outputs
 

@@ -4,29 +4,6 @@
 This deploys the module with a Windows Function App that uses a managed identity to connect to the Storage Account.
 
 ```hcl
-terraform {
-  required_version = "~> 1.6"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = ">= 3.7.0, < 4.0.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.5.0, < 4.0.0"
-    }
-  }
-}
-
-# tflint-ignore: terraform_module_provider_declaration, terraform_output_separate, terraform_variable_separate
-provider "azurerm" {
-  features {
-    resource_group {
-      prevent_deletion_if_contains_resources = false
-    }
-  }
-}
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -81,7 +58,7 @@ module "test" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.9.2"
+  # version = "0.10.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -93,6 +70,10 @@ module "test" {
   os_type = "Windows"
 
   create_service_plan = true
+  new_service_plan = {
+    sku_name               = var.sku_for_testing
+    zone_balancing_enabled = var.redundancy_for_testing
+  }
 
   function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
   function_app_storage_uses_managed_identity = true
@@ -140,6 +121,22 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_redundancy_for_testing"></a> [redundancy\_for\_testing](#input\_redundancy\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"false"`
+
+### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"S1"`
 
 ## Outputs
 
