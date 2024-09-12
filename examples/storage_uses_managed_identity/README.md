@@ -24,21 +24,43 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
-resource "azurerm_resource_group" "example" {
+module "avm_res_resources_resourcegroup" {
+  source  = "Azure/avm_res_resources_resourcegroup/azurerm"
+  version = "0.1.0"
+
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
+module "avm_res_web_serverfarm" {
+  source  = "Azure/avm_res_web_serverfarm/azurerm"
+  version = "0.2.0"
+
+  enable_telemetry = var.enable_telemetry
+
+  name                = module.naming.app_service_plan.name_unique
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
+  os_type             = "Windows"
+
+  # Remove before publishing to registry
+  zone_balancing_enabled = false
+
+  tags = {
+    module  = "Azure/avm_res_web_serverfarm/azurerm"
+    version = "0.2.0"
+  }
+}
+
 # Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
 module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  source  = "Azure/avm_res_storage_storageaccount/azurerm"
   version = "0.2.4"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
+  resource_group_name           = module.avm_res_resources_resourcegroup.name
+  location                      = module.avm_res_resources_resourcegroup.resource.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
@@ -48,35 +70,33 @@ module "avm_res_storage_storageaccount" {
   role_assignments = {
     storage_blob_data_owner = {
       role_definition_id_or_name = "Storage Blob Data Owner"
-      principal_id               = module.test.identity_principal_id
+      principal_id               = module.avm_res_web_site.identity_principal_id
     }
   }
+
+  # Remove before publishing to registry
+  account_replication_type = "LRS"
 }
 
 # This is the module call
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.11.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-windows"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.function_app.name_unique}-mi"
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
 
-  kind    = "functionapp"
-  os_type = "Windows"
+  kind                     = "functionapp"
+  os_type                  = "Windows"
+  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
 
-  create_service_plan = true
-  new_service_plan = {
-    sku_name               = var.sku_for_testing
-    zone_balancing_enabled = var.redundancy_for_testing
-  }
-
-  function_app_storage_account_name          = module.avm_res_storage_storageaccount.name
-  function_app_storage_uses_managed_identity = true
+  storage_account_name          = module.avm_res_storage_storageaccount.name
+  storage_uses_managed_identity = true
 
   managed_identities = {
     system_assigned = true
@@ -90,7 +110,7 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
 
@@ -100,7 +120,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -122,51 +141,85 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_redundancy_for_testing"></a> [redundancy\_for\_testing](#input\_redundancy\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"false"`
-
-### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"S1"`
-
 ## Outputs
 
 The following outputs are exported:
 
-### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
-
-Description: This is the principal ID for the identity.
-
-### <a name="output_name"></a> [name](#output\_name)
-
-Description: Name for the resource.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
+### <a name="output_location"></a> [location](#output\_location)
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+### <a name="output_name"></a> [name](#output\_name)
 
-Description: This is the URI for the resource.
+Description: This is the full output for the resource.
+
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
+
+Description: This is the full output for the resource.
+
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
+
+Description: The ID of the app service
+
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
+
+Description: Full output of service plan created
+
+### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+
+Description: The number of workers
+
+### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
+
+Description: The ID of the storage account
+
+### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
+
+Description: The kind of storage account
+
+### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
+
+Description: Full output of storage account created
+
+### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
+
+Description: The kind of storage account
+
+### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
+
+Description: The number of workers
+
+### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
+
+Description: The number of workers
 
 ## Modules
 
 The following Modules are called:
 
+### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
+
+Source: Azure/avm_res_resources_resourcegroup/azurerm
+
+Version: 0.1.0
+
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
-Source: Azure/avm-res-storage-storageaccount/azurerm
+Source: Azure/avm_res_storage_storageaccount/azurerm
 
 Version: 0.2.4
+
+### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
+
+Source: Azure/avm_res_web_serverfarm/azurerm
+
+Version: 0.2.0
+
+### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
+
+Source: ../../
+
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -179,12 +232,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

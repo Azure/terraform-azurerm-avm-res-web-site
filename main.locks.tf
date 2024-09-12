@@ -31,22 +31,24 @@ resource "azurerm_management_lock" "pe" {
   ]
 }
 
-resource "azurerm_management_lock" "storage_account" {
-  count = (var.lock != null && (var.all_child_resources_inherit_lock || var.function_app_storage_account_inherit_lock)) || var.function_app_storage_account.lock != null ? 1 : 0
+# Module to no longer support the creation/management of Storage Accounts
 
-  lock_level = ((var.all_child_resources_inherit_lock || var.function_app_storage_account_inherit_lock) && var.lock != null) ? var.lock.kind : var.function_app_storage_account.lock.kind
-  name       = coalesce(var.function_app_storage_account.lock.name, "lock-${var.name}")
-  scope      = module.avm_res_storage_storageaccount[0].resource_id
-  notes      = var.function_app_storage_account.lock.kind == "CanNotDelete" ? "Cannot delete the storage account or its child resources." : "Cannot delete or modify the storage account or its child resources."
+# resource "azurerm_management_lock" "storage_account" {
+#   count = (var.lock != null && (var.all_child_resources_inherit_lock || var.function_app_storage_account_inherit_lock)) || var.function_app_storage_account.lock != null ? 1 : 0
 
-  depends_on = [
-    azurerm_linux_function_app.this,
-    azurerm_windows_function_app.this,
-    azurerm_private_endpoint.this,
-    azurerm_role_assignment.this,
-    azurerm_monitor_diagnostic_setting.this
-  ]
-}
+#   lock_level = ((var.all_child_resources_inherit_lock || var.function_app_storage_account_inherit_lock) && var.lock != null) ? var.lock.kind : var.function_app_storage_account.lock.kind
+#   name       = coalesce(var.function_app_storage_account.lock.name, "lock-${var.name}")
+#   scope      = var.
+#   notes      = var.function_app_storage_account.lock.kind == "CanNotDelete" ? "Cannot delete the storage account or its child resources." : "Cannot delete or modify the storage account or its child resources."
+
+#   depends_on = [
+#     azurerm_linux_function_app.this,
+#     azurerm_windows_function_app.this,
+#     azurerm_private_endpoint.this,
+#     azurerm_role_assignment.this,
+#     azurerm_monitor_diagnostic_setting.this
+#   ]
+# }
 
 resource "azurerm_management_lock" "slot" {
   for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if(((var.all_child_resources_inherit_lock || var.deployment_slots_inherit_lock) && var.lock != null) || (slot_values.lock != null)) }
