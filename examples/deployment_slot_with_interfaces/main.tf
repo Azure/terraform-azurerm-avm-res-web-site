@@ -66,9 +66,6 @@ module "avm_res_web_serverfarm" {
   resource_group_name = module.avm_res_resources_resourcegroup.name
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Linux"
-
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
 }
 
 module "avm_res_storage_storageaccount" {
@@ -85,10 +82,6 @@ module "avm_res_storage_storageaccount" {
     bypass         = ["AzureServices"]
     default_action = "Allow"
   }
-
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
-
 }
 
 module "avm_res_web_site" {

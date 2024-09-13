@@ -42,9 +42,6 @@ module "avm_res_web_serverfarm" {
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Linux"
 
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
-
   tags = {
     module  = "Azure/avm_res_web_serverfarm/azurerm"
     version = "0.2.0"
@@ -65,9 +62,6 @@ module "avm_res_storage_storageaccount" {
     bypass         = ["AzureServices"]
     default_action = "Allow"
   }
-
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
 
   tags = {
     module  = "Azure/avm_res_storage_storageaccount/azurerm"

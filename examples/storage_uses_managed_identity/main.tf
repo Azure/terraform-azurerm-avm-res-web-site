@@ -37,9 +37,6 @@ module "avm_res_web_serverfarm" {
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
 
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
-
   tags = {
     module  = "Azure/avm_res_web_serverfarm/azurerm"
     version = "0.2.0"
@@ -67,9 +64,6 @@ module "avm_res_storage_storageaccount" {
       principal_id               = module.avm_res_web_site.identity_principal_id
     }
   }
-
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
 }
 
 # This is the module call

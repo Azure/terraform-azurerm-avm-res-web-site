@@ -52,9 +52,6 @@ module "avm_res_storage_storageaccount" {
     default_action = "Allow"
   }
 
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
-
   tags = {
     module  = "Azure/avm_res_storage_storageaccount/azurerm"
     version = "0.2.4"
@@ -112,9 +109,6 @@ module "avm_res_web_serverfarm" {
   resource_group_name = module.avm_res_resources_resourcegroup.name
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
-
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
 
   tags = {
     module  = "Azure/avm_res_web_serverfarm/azurerm"

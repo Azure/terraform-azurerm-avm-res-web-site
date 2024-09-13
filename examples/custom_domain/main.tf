@@ -43,10 +43,6 @@ module "avm_res_storage_storageaccount" {
     bypass         = ["AzureServices"]
     default_action = "Allow"
   }
-
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
-
 }
 
 module "avm_res_web_serverfarm" {
@@ -59,9 +55,6 @@ module "avm_res_web_serverfarm" {
   resource_group_name = module.avm_res_resources_resourcegroup.name
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
-
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
 }
 
 # Use data object to reference an existing Key Vault and stored certificate

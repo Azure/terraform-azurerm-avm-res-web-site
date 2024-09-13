@@ -37,9 +37,6 @@ module "avm_res_web_serverfarm" {
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Linux"
 
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
-
 }
 
 module "avm_res_web_site" {
