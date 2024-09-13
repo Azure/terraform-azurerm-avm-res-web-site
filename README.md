@@ -168,6 +168,36 @@ Default: `{}`
 Description:   
   The Application Insights settings to assign to the Function App.
 
+  -`application_type`: The type of Application Insights to create. Valid values are `ios`, `java`, `MobileCenter`, `Node.JS`, `other`, `phone`, `store`, and `web`. Defaults to `web`.
+  -`inherit_tags`: Should the Application Insights inherit tags from the parent resource? Defaults to `false`.
+  -`location`: The location of the Application Insights.
+  -`name`: The name of the Application Insights.
+  -`resource_group_name`: The name of the Resource Group where the Application Insights will be deployed.
+  -`tags`: A map of tags to assign to the Application Insights.
+  -`workspace_resource_id`: The resource ID of the Log Analytics Workspace to use for the Application Insights.
+  -`daily_data_cap_in_gb`: The daily data cap in GB for the Application Insights.
+  -`daily_data_cap_notifications_disabled`: Should the daily data cap notifications be disabled for the Application Insights?
+  -`retention_in_days`: The retention period in days for the Application Insights. Defaults to `90`.
+  -`sampling_percentage`: The sampling percentage for the Application Insights. Defaults to `100`.
+  -`disable_ip_masking`: Should the IP masking be disabled for the Application Insights? Defaults to `false`.
+  -`local_authentication_disabled`: Should the local authentication be disabled for the Application Insights? Defaults to `false`.
+  -`internet_ingestion_enabled`: Should the internet ingestion be enabled for the Application Insights? Defaults to `true`.
+  -`internet_query_enabled`: Should the internet query be enabled for the Application Insights? Defaults to `true`.
+  -`force_customer_storage_for_profiler`: Should the customer storage be forced for the profiler for the Application Insights? Defaults to `false`.
+
+  ```terraform
+  application_insights = {
+    name                  = module.naming.application_insights.name_unique
+    resource_group_name   = module.avm_res_resources_resourcegroup.name
+    location              = module.avm_res_resources_resourcegroup.resource.location
+    application_type      = "web"
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    tags = {
+      environment = "dev-tf"
+    }
+  }
+```
+
 Type:
 
 ```hcl
@@ -550,7 +580,39 @@ Description:
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
-
+  site_config = {
+    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
+  }
+  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+    setting_1 = {
+      action = {
+        action_type                    = "Recycle"
+        minimum_process_execution_time = "00:01:00"
+      }
+      trigger = {
+        requests = {
+          count    = 100
+          interval = "00:00:30"
+        }
+        status_code = {
+          status_5000 = {
+            count             = 5000
+            interval          = "00:05:00"
+            path              = "/HealthCheck"
+            status_code_range = 500
+            sub_status        = 0
+          }
+          status_6000 = {
+            count             = 6000
+            interval          = "00:05:00"
+            path              = "/Get"
+            status_code_range = 500
+            sub_status        = 0
+          }
+        }
+      }
+    }
+  }
 ```
 
 Type:
