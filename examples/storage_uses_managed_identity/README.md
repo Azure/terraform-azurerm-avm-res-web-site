@@ -25,7 +25,7 @@ module "naming" {
 }
 
 module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm_res_resources_resourcegroup/azurerm"
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
   version = "0.1.0"
 
   location = local.azure_regions[random_integer.region_index.result]
@@ -33,7 +33,7 @@ module "avm_res_resources_resourcegroup" {
 }
 
 module "avm_res_web_serverfarm" {
-  source  = "Azure/avm_res_web_serverfarm/azurerm"
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
   version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry
@@ -43,18 +43,15 @@ module "avm_res_web_serverfarm" {
   location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
 
-  # Remove before publishing to registry
-  zone_balancing_enabled = false
-
   tags = {
-    module  = "Azure/avm_res_web_serverfarm/azurerm"
+    module  = "Azure/avm-res-web-serverfarm/azurerm"
     version = "0.2.0"
   }
 }
 
 # Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
 module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm_res_storage_storageaccount/azurerm"
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.2.4"
 
   enable_telemetry              = var.enable_telemetry
@@ -73,9 +70,6 @@ module "avm_res_storage_storageaccount" {
       principal_id               = module.avm_res_web_site.identity_principal_id
     }
   }
-
-  # Remove before publishing to registry
-  account_replication_type = "LRS"
 }
 
 # This is the module call
@@ -199,19 +193,19 @@ The following Modules are called:
 
 ### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
 
-Source: Azure/avm_res_resources_resourcegroup/azurerm
+Source: Azure/avm-res-resources-resourcegroup/azurerm
 
 Version: 0.1.0
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
-Source: Azure/avm_res_storage_storageaccount/azurerm
+Source: Azure/avm-res-storage-storageaccount/azurerm
 
 Version: 0.2.4
 
 ### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
 
-Source: Azure/avm_res_web_serverfarm/azurerm
+Source: Azure/avm-res-web-serverfarm/azurerm
 
 Version: 0.2.0
 
