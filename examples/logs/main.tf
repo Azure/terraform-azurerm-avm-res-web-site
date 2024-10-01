@@ -19,19 +19,19 @@ module "naming" {
 }
 
 module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm_res_resources_resourcegroup/azurerm"
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
   version = "0.1.0"
 
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
   tags = {
-    module  = "Azure/avm_res_resources_resourcegroup/azurerm"
+    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
     version = "0.1.0"
   }
 }
 
 module "avm_res_web_serverfarm" {
-  source  = "Azure/avm_res_web_serverfarm/azurerm"
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
   version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry
@@ -42,7 +42,7 @@ module "avm_res_web_serverfarm" {
   os_type             = "Linux"
 
   tags = {
-    module  = "Azure/avm_res_web_serverfarm/azurerm"
+    module  = "Azure/avm-res-web-serverfarm/azurerm"
     version = "0.2.0"
   }
 }

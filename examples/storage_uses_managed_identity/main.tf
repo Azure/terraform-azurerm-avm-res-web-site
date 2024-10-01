@@ -19,7 +19,7 @@ module "naming" {
 }
 
 module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm_res_resources_resourcegroup/azurerm"
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
   version = "0.1.0"
 
   location = local.azure_regions[random_integer.region_index.result]
@@ -27,7 +27,7 @@ module "avm_res_resources_resourcegroup" {
 }
 
 module "avm_res_web_serverfarm" {
-  source  = "Azure/avm_res_web_serverfarm/azurerm"
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
   version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry
@@ -38,14 +38,14 @@ module "avm_res_web_serverfarm" {
   os_type             = "Windows"
 
   tags = {
-    module  = "Azure/avm_res_web_serverfarm/azurerm"
+    module  = "Azure/avm-res-web-serverfarm/azurerm"
     version = "0.2.0"
   }
 }
 
 # Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
 module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm_res_storage_storageaccount/azurerm"
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.2.4"
 
   enable_telemetry              = var.enable_telemetry
