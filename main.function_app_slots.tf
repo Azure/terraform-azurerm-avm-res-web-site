@@ -39,6 +39,7 @@ resource "azurerm_windows_function_app_slot" "this" {
     health_check_eviction_time_in_min      = each.value.site_config.health_check_eviction_time_in_min
     health_check_path                      = each.value.site_config.health_check_path
     http2_enabled                          = each.value.site_config.http2_enabled
+    ip_restriction_default_action          = var.site_config.ip_restriction_default_action
     load_balancing_mode                    = each.value.site_config.load_balancing_mode
     managed_pipeline_mode                  = each.value.site_config.managed_pipeline_mode
     minimum_tls_version                    = each.value.site_config.minimum_tls_version
@@ -46,6 +47,7 @@ resource "azurerm_windows_function_app_slot" "this" {
     remote_debugging_enabled               = each.value.site_config.remote_debugging_enabled
     remote_debugging_version               = each.value.site_config.remote_debugging_version
     runtime_scale_monitoring_enabled       = each.value.site_config.runtime_scale_monitoring_enabled
+    scm_ip_restriction_default_action      = var.site_config.scm_ip_restriction_default_action
     scm_minimum_tls_version                = each.value.site_config.scm_minimum_tls_version
     scm_use_main_ip_restriction            = each.value.site_config.scm_use_main_ip_restriction
     use_32_bit_worker                      = each.value.site_config.use_32_bit_worker
@@ -442,6 +444,7 @@ resource "azurerm_linux_function_app_slot" "this" {
     health_check_eviction_time_in_min      = each.value.site_config.health_check_eviction_time_in_min
     health_check_path                      = each.value.site_config.health_check_path
     http2_enabled                          = each.value.site_config.http2_enabled
+    ip_restriction_default_action          = var.site_config.ip_restriction_default_action
     load_balancing_mode                    = each.value.site_config.load_balancing_mode
     managed_pipeline_mode                  = each.value.site_config.managed_pipeline_mode
     minimum_tls_version                    = each.value.site_config.minimum_tls_version
@@ -449,6 +452,7 @@ resource "azurerm_linux_function_app_slot" "this" {
     remote_debugging_enabled               = each.value.site_config.remote_debugging_enabled
     remote_debugging_version               = each.value.site_config.remote_debugging_version
     runtime_scale_monitoring_enabled       = each.value.site_config.runtime_scale_monitoring_enabled
+    scm_ip_restriction_default_action      = var.site_config.scm_ip_restriction_default_action
     scm_minimum_tls_version                = each.value.site_config.scm_minimum_tls_version
     scm_use_main_ip_restriction            = each.value.site_config.scm_use_main_ip_restriction
     use_32_bit_worker                      = each.value.site_config.use_32_bit_worker
