@@ -18,34 +18,51 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
-resource "azurerm_resource_group" "example" {
+module "avm_res_resources_resourcegroup" {
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
+  version = "0.1.0"
+
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  tags = {
+    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
+    version = "0.1.0"
+  }
 }
 
-# This is the module call
-module "test" {
-  source = "../../"
-
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+module "avm_res_web_serverfarm" {
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
+  version = "0.2.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.app_service.name_unique}-linux"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  name                = module.naming.app_service_plan.name_unique
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
+  os_type             = "Linux"
 
-  kind    = "webapp"
-  os_type = "Linux"
-
-  create_service_plan = true
-  new_service_plan = {
-    sku_name               = var.sku_for_testing
-    zone_balancing_enabled = var.redundancy_for_testing
+  tags = {
+    module  = "Azure/avm-res-web-serverfarm/azurerm"
+    version = "0.2.0"
   }
+}
 
+# This is the module call
+module "avm_res_web_site" {
+  source = "../../"
+
+  # source             = "Azure/avm-res-web-site/azurerm"
+  # version = "0.11.0"
+
+  enable_telemetry = var.enable_telemetry
+
+  name                = "${module.naming.app_service.name_unique}-logs"
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
+
+  kind                     = "webapp"
+  os_type                  = module.avm_res_web_serverfarm.resource.os_type
+  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
 
   site_config = {
     application_stack = {

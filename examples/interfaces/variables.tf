@@ -7,8 +7,3 @@ variable "enable_telemetry" {
   If it is set to false, then no telemetry will be collected.
   DESCRIPTION
 }
-
-variable "sku_for_testing" {
-  type    = string
-  default = "S1"
-}
