@@ -16,11 +16,11 @@ resource "azurerm_windows_function_app_slot" "this" {
   https_only                                     = each.value.https_only
   key_vault_reference_identity_id                = each.value.key_vault_reference_identity_id
   public_network_access_enabled                  = each.value.public_network_access_enabled
-  service_plan_id                                = each.value.service_plan_id != null ? each.value.service_plan_id : null
-  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
-  storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
+  service_plan_id                                = each.value.service_plan_id
+  storage_account_access_key                     = var.storage_account_access_key != null && var.storage_uses_managed_identity != true ? var.storage_account_access_key : null
+  storage_account_name                           = var.storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
@@ -39,6 +39,7 @@ resource "azurerm_windows_function_app_slot" "this" {
     health_check_eviction_time_in_min      = each.value.site_config.health_check_eviction_time_in_min
     health_check_path                      = each.value.site_config.health_check_path
     http2_enabled                          = each.value.site_config.http2_enabled
+    ip_restriction_default_action          = var.site_config.ip_restriction_default_action
     load_balancing_mode                    = each.value.site_config.load_balancing_mode
     managed_pipeline_mode                  = each.value.site_config.managed_pipeline_mode
     minimum_tls_version                    = each.value.site_config.minimum_tls_version
@@ -46,6 +47,7 @@ resource "azurerm_windows_function_app_slot" "this" {
     remote_debugging_enabled               = each.value.site_config.remote_debugging_enabled
     remote_debugging_version               = each.value.site_config.remote_debugging_version
     runtime_scale_monitoring_enabled       = each.value.site_config.runtime_scale_monitoring_enabled
+    scm_ip_restriction_default_action      = var.site_config.scm_ip_restriction_default_action
     scm_minimum_tls_version                = each.value.site_config.scm_minimum_tls_version
     scm_use_main_ip_restriction            = each.value.site_config.scm_use_main_ip_restriction
     use_32_bit_worker                      = each.value.site_config.use_32_bit_worker
@@ -419,11 +421,11 @@ resource "azurerm_linux_function_app_slot" "this" {
   https_only                                     = each.value.https_only
   key_vault_reference_identity_id                = each.value.key_vault_reference_identity_id
   public_network_access_enabled                  = each.value.public_network_access_enabled
-  service_plan_id                                = each.value.service_plan_id != null ? each.value.service_plan_id : null
-  storage_account_access_key                     = var.function_app_storage_account_access_key != null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account != true ? var.function_app_storage_account_access_key : var.function_app_storage_account_access_key == null && var.function_app_storage_uses_managed_identity != true && var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].resource.primary_access_key : null
-  storage_account_name                           = var.function_app_create_storage_account ? module.avm_res_storage_storageaccount[0].name : var.function_app_storage_account_name
+  service_plan_id                                = each.value.service_plan_id
+  storage_account_access_key                     = var.storage_account_access_key != null && var.storage_uses_managed_identity != true ? var.storage_account_access_key : null
+  storage_account_name                           = var.storage_account_name
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
-  storage_uses_managed_identity                  = var.function_app_storage_uses_managed_identity == true && var.function_app_storage_account_access_key == null ? var.function_app_storage_uses_managed_identity : null
+  storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
@@ -442,6 +444,7 @@ resource "azurerm_linux_function_app_slot" "this" {
     health_check_eviction_time_in_min      = each.value.site_config.health_check_eviction_time_in_min
     health_check_path                      = each.value.site_config.health_check_path
     http2_enabled                          = each.value.site_config.http2_enabled
+    ip_restriction_default_action          = var.site_config.ip_restriction_default_action
     load_balancing_mode                    = each.value.site_config.load_balancing_mode
     managed_pipeline_mode                  = each.value.site_config.managed_pipeline_mode
     minimum_tls_version                    = each.value.site_config.minimum_tls_version
@@ -449,6 +452,7 @@ resource "azurerm_linux_function_app_slot" "this" {
     remote_debugging_enabled               = each.value.site_config.remote_debugging_enabled
     remote_debugging_version               = each.value.site_config.remote_debugging_version
     runtime_scale_monitoring_enabled       = each.value.site_config.runtime_scale_monitoring_enabled
+    scm_ip_restriction_default_action      = var.site_config.scm_ip_restriction_default_action
     scm_minimum_tls_version                = each.value.site_config.scm_minimum_tls_version
     scm_use_main_ip_restriction            = each.value.site_config.scm_use_main_ip_restriction
     use_32_bit_worker                      = each.value.site_config.use_32_bit_worker

@@ -4,7 +4,7 @@ resource "azurerm_windows_web_app" "this" {
   location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? module.avm_res_web_serverfarm[0].resource_id : var.service_plan_resource_id
+  service_plan_id                                = var.service_plan_resource_id
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
@@ -25,7 +25,7 @@ resource "azurerm_windows_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled # No longer supported in azurerm 4.x
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -52,8 +52,8 @@ resource "azurerm_windows_web_app" "this" {
 
       content {
         current_stack                = application_stack.value.current_stack
-        docker_container_name        = application_stack.value.docker_container_name
-        docker_container_tag         = application_stack.value.docker_container_tag
+        docker_container_name        = application_stack.value.docker_container_name # No longer supported in azurerm 4.x
+        docker_container_tag         = application_stack.value.docker_container_tag  # No longer supported in azurerm 4.x
         docker_image_name            = application_stack.value.docker_image_name
         docker_registry_password     = application_stack.value.docker_registry_password
         docker_registry_url          = application_stack.value.docker_registry_url
@@ -90,7 +90,7 @@ resource "azurerm_windows_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path
+              path       = slow_requests.value.path # No longer supported in azurerm 4.x
             }
           }
           dynamic "slow_request_with_path" {
@@ -529,7 +529,7 @@ resource "azurerm_linux_web_app" "this" {
   location                                       = var.location
   name                                           = var.name
   resource_group_name                            = var.resource_group_name
-  service_plan_id                                = (var.create_service_plan == true && var.service_plan_resource_id == null) ? module.avm_res_web_serverfarm[0].resource_id : var.service_plan_resource_id
+  service_plan_id                                = var.service_plan_resource_id
   app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.this[0].connection_string }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
   client_affinity_enabled                        = var.client_affinity_enabled
   client_certificate_enabled                     = var.client_certificate_enabled
@@ -550,7 +550,7 @@ resource "azurerm_linux_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled # No longer supported in azurerm 4.x
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -611,7 +611,7 @@ resource "azurerm_linux_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path
+              path       = slow_requests.value.path # No longer supported in azurerm 4.x
             }
           }
           dynamic "slow_request_with_path" {
