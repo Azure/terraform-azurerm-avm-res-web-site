@@ -31,98 +31,119 @@ module "naming" {
 #   name = "Contributor"
 # }
 
-# This is required for resource modules
-resource "azurerm_resource_group" "example" {
+module "avm_res_resources_resourcegroup" {
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
+  version = "0.1.0"
+
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  tags = {
+    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
+    version = "0.1.0"
+  }
 }
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
+  version = "0.2.4"
 
-  enable_telemetry = var.enable_telemetry
-
+  enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
+  resource_group_name           = module.avm_res_resources_resourcegroup.name
+  location                      = module.avm_res_resources_resourcegroup.resource.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
     bypass         = ["AzureServices"]
     default_action = "Allow"
   }
+
+  tags = {
+    module  = "Azure/avm-res-storage-storageaccount/azurerm"
+    version = "0.2.4"
+  }
+
 }
 
 resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.example.location
+  location            = module.avm_res_resources_resourcegroup.resource.location
   name                = "law-test-001"
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
   retention_in_days   = 30
   sku                 = "PerGB2018"
 }
 
-
-
 resource "azurerm_virtual_network" "example" {
   address_space       = ["192.168.0.0/24"]
-  location            = azurerm_resource_group.example.location
+  location            = module.avm_res_resources_resourcegroup.resource.location
   name                = module.naming.virtual_network.name_unique
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
 }
 
 resource "azurerm_subnet" "example" {
   address_prefixes     = ["192.168.0.0/24"]
   name                 = module.naming.subnet.name_unique
-  resource_group_name  = azurerm_resource_group.example.name
+  resource_group_name  = module.avm_res_resources_resourcegroup.name
   virtual_network_name = azurerm_virtual_network.example.name
 }
 
 resource "azurerm_private_dns_zone" "example" {
   name                = local.azurerm_private_dns_zone_resource_name
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "example" {
   name                  = "${azurerm_virtual_network.example.name}-link"
   private_dns_zone_name = azurerm_private_dns_zone.example.name
-  resource_group_name   = azurerm_resource_group.example.name
+  resource_group_name   = module.avm_res_resources_resourcegroup.name
   virtual_network_id    = azurerm_virtual_network.example.id
 }
 
 resource "azurerm_user_assigned_identity" "user" {
-  location            = azurerm_resource_group.example.location
+  location            = module.avm_res_resources_resourcegroup.resource.location
   name                = module.naming.user_assigned_identity.name_unique
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
+module "avm_res_web_serverfarm" {
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
+  version = "0.2.0"
+
+  enable_telemetry = var.enable_telemetry
+
   name                = module.naming.app_service_plan.name_unique
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = var.sku_for_testing
+
+  tags = {
+    module  = "Azure/avm-res-web-serverfarm/azurerm"
+    version = "0.2.0"
+  }
 }
 
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.11.0"
 
   enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-interfaces"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
 
-  kind    = "functionapp"
-  os_type = azurerm_service_plan.example.os_type
+  kind = "functionapp"
 
-  service_plan_resource_id = azurerm_service_plan.example.id
+  # Uses an existing app service plan
+  os_type                  = module.avm_res_web_serverfarm.resource.os_type
+  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
 
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # Uses an existing storage account
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # storage_uses_managed_identity = true
 
   public_network_access_enabled = false
 
@@ -130,8 +151,8 @@ module "test" {
 
   application_insights = {
     name                  = module.naming.application_insights.name_unique
-    resource_group_name   = azurerm_resource_group.example.name
-    location              = azurerm_resource_group.example.location
+    resource_group_name   = module.avm_res_resources_resourcegroup.name
+    location              = module.avm_res_resources_resourcegroup.resource.location
     application_type      = "web"
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
     tags = {
@@ -215,10 +236,10 @@ check "dns" {
   data "azurerm_private_dns_a_record" "assertion" {
     name                = local.split_subdomain[0]
     zone_name           = azurerm_private_dns_zone.example.name
-    resource_group_name = azurerm_resource_group.example.name
+    resource_group_name = module.avm_res_resources_resourcegroup.name
   }
   assert {
-    condition     = one(data.azurerm_private_dns_a_record.assertion.records) == one(module.test.resource_private_endpoints["primary"].private_service_connection).private_ip_address
+    condition     = one(data.azurerm_private_dns_a_record.assertion.records) == one(module.avm-res-web-site.resource_private_endpoints["primary"].private_service_connection).private_ip_address
     error_message = "The private DNS A record for the private endpoint is not correct."
   }
 }
@@ -238,9 +259,9 @@ resource "random_integer" "zone_index" {
 }
 
 resource "azurerm_network_security_group" "example" {
-  location            = azurerm_resource_group.example.location
+  location            = module.avm_res_resources_resourcegroup.resource.location
   name                = module.naming.network_security_group.name_unique
-  resource_group_name = azurerm_resource_group.example.name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
 }
 
 resource "azurerm_network_security_rule" "example" {
@@ -250,8 +271,7 @@ resource "azurerm_network_security_rule" "example" {
   network_security_group_name = azurerm_network_security_group.example.name
   priority                    = 100
   protocol                    = "Tcp"
-  resource_group_name         = azurerm_resource_group.example.name
-  destination_address_prefix  = "*"
+  resource_group_name         = module.avm_res_resources_resourcegroup.name
   destination_port_range      = "3389"
   source_address_prefix       = "*"
   source_port_range           = "*"
@@ -264,8 +284,8 @@ module "avm_res_compute_virtualmachine" {
 
   enable_telemetry = var.enable_telemetry
 
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
   name                = "${module.naming.virtual_machine.name_unique}-tf"
   sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
   os_type             = "Windows"
@@ -308,7 +328,7 @@ module "avm_res_compute_virtualmachine_sku_selector" {
   source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
   version = "0.15.1"
 
-  deployment_region = azurerm_resource_group.example.location
+  deployment_region = module.avm_res_resources_resourcegroup.resource.location
 }
 ```
 
@@ -317,7 +337,7 @@ module "avm_res_compute_virtualmachine_sku_selector" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.108)
 
@@ -332,8 +352,6 @@ The following resources are used by this module:
 - [azurerm_network_security_rule.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) (resource)
 - [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
 - [azurerm_private_dns_zone_virtual_network_link.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_user_assigned_identity.user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
@@ -358,14 +376,6 @@ Description:   This variable controls whether or not telemetry is enabled for th
 Type: `bool`
 
 Default: `true`
-
-### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"S1"`
 
 ## Outputs
 
@@ -403,11 +413,29 @@ Source: Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector
 
 Version: 0.15.1
 
+### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
+
+Source: Azure/avm-res-resources-resourcegroup/azurerm
+
+Version: 0.1.0
+
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.1.2
+Version: 0.2.4
+
+### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
+
+Source: Azure/avm-res-web-serverfarm/azurerm
+
+Version: 0.2.0
+
+### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
+
+Source: ../../
+
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -420,12 +448,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

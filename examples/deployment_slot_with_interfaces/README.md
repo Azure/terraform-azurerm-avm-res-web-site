@@ -24,20 +24,64 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
-resource "azurerm_resource_group" "example" {
+module "avm_res_resources_resourcegroup" {
+  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
+  version = "0.1.0"
+
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  tags = {
+    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
+    version = "0.1.0"
+  }
 }
 
-/*
+resource "azurerm_virtual_network" "example" {
+  address_space       = ["192.168.0.0/24"]
+  location            = module.avm_res_resources_resourcegroup.resource.location
+  name                = module.naming.virtual_network.name_unique
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+}
+
+resource "azurerm_subnet" "example" {
+  address_prefixes     = ["192.168.0.0/24"]
+  name                 = module.naming.subnet.name_unique
+  resource_group_name  = module.avm_res_resources_resourcegroup.name
+  virtual_network_name = azurerm_virtual_network.example.name
+}
+
+resource "azurerm_private_dns_zone" "example" {
+  name                = local.azurerm_private_dns_zone_resource_name
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = module.avm_res_resources_resourcegroup.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+}
+
+module "avm_res_web_serverfarm" {
+  source  = "Azure/avm-res-web-serverfarm/azurerm"
+  version = "0.2.0"
+
+  enable_telemetry = var.enable_telemetry
+
+  name                = module.naming.app_service_plan.name_unique
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
+  os_type             = "Linux"
+}
+
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.1"
+  version = "0.2.4"
 
-  enable_telemetry = false
+  enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
+  resource_group_name           = module.avm_res_resources_resourcegroup.name
+  location                      = module.avm_res_resources_resourcegroup.resource.location
   shared_access_key_enabled     = true
   public_network_access_enabled = true
   network_rules = {
@@ -45,65 +89,29 @@ module "avm_res_storage_storageaccount" {
     default_action = "Allow"
   }
 }
-*/
 
-/*
-resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "Y1"
-}
-*/
-
-resource "azurerm_virtual_network" "example" {
-  address_space       = ["192.168.0.0/24"]
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.virtual_network.name_unique
-  resource_group_name = azurerm_resource_group.example.name
-}
-
-resource "azurerm_subnet" "example" {
-  address_prefixes     = ["192.168.0.0/24"]
-  name                 = module.naming.subnet.name_unique
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
-}
-
-resource "azurerm_private_dns_zone" "example" {
-  name                = local.azurerm_private_dns_zone_resource_name
-  resource_group_name = azurerm_resource_group.example.name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "example" {
-  name                  = "${azurerm_virtual_network.example.name}-link"
-  private_dns_zone_name = azurerm_private_dns_zone.example.name
-  resource_group_name   = azurerm_resource_group.example.name
-  virtual_network_id    = azurerm_virtual_network.example.id
-}
-
-# resource "azurerm_user_assigned_identity" "user" {
-#   location            = azurerm_resource_group.example.location
-#   name                = module.naming.user_assigned_identity.name_unique
-#   resource_group_name = azurerm_resource_group.example.name
-# }
-
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.11.0"
 
   enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-slots"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  resource_group_name = module.avm_res_resources_resourcegroup.name
+  location            = module.avm_res_resources_resourcegroup.resource.location
 
-  kind    = "functionapp"
-  os_type = "Linux"
+  kind = "functionapp"
+
+  # Uses an existing app service plan
+  os_type                  = module.avm_res_web_serverfarm.resource.os_type
+  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
+
+  # Uses an existing storage account
+  storage_account_name       = module.avm_res_storage_storageaccount.name
+  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # storage_uses_managed_identity = true
 
   site_config = {
     application_stack = {
@@ -113,36 +121,6 @@ module "test" {
         use_dotnet_isolated_runtime = true
       }
     }
-  }
-
-  /*
-  # Uses an existing app service plan
-  os_type = azurerm_service_plan.example.os_type
-  service_plan_resource_id = azurerm_service_plan.example.id
-  */
-
-  # Creates a new app service plan
-  create_service_plan = true
-  new_service_plan = {
-    sku_name               = var.sku_for_testing
-    zone_balancing_enabled = var.redundancy_for_testing
-  }
-
-  /* 
-  # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
-  */
-
-  # Uses the avm-res-storage-storageaccount module to create a new storage account within root module
-  function_app_create_storage_account = true
-  function_app_storage_account = {
-    name                = module.naming.storage_account.name_unique
-    resource_group_name = azurerm_resource_group.example.name
-    # lock = {
-    #   name = "lock-${module.naming.storage_account.name_unique}"
-    #   kind = "CanNotDelete"
-    # }
   }
 
   deployment_slots = {
@@ -160,7 +138,7 @@ module "test" {
       # lock = {
       #   kind = "CanNotDelete"
       # }
-      # public_network_access_enabled = false 
+      public_network_access_enabled = false
       private_endpoints = {
         slot_primary = {
           name                          = "slot-primary"
@@ -174,11 +152,9 @@ module "test" {
     }
   }
 
-  # app_service_active_slot = {
-  #   slot_key                = "slot1"
-  #   overwite_network_config = false
-  # }
 }
+
+
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -186,7 +162,7 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
 
@@ -198,7 +174,6 @@ The following resources are used by this module:
 
 - [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
 - [azurerm_private_dns_zone_virtual_network_link.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
@@ -222,65 +197,85 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_redundancy_for_testing"></a> [redundancy\_for\_testing](#input\_redundancy\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"false"`
-
-### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"S1"`
-
 ## Outputs
 
 The following outputs are exported:
 
-### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
+### <a name="output_location"></a> [location](#output\_location)
 
-Description: ID of active slot
-
-### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
-
-Description: The locks of the deployment slots.
-
-### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
-
-Description: Full output of deployment slots created
+Description: This is the full output for the resource.
 
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: This is the full output for the resource.
 
-### <a name="output_private_endpoint_locks"></a> [private\_endpoint\_locks](#output\_private\_endpoint\_locks)
-
-Description: The locks of the deployment slots.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
 
-Description: The locks of the resources.
+Description: The ID of the app service
 
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
+
+Description: Full output of service plan created
+
+### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+
+Description: The number of workers
+
+### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
+
+Description: The ID of the storage account
+
+### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
+
+Description: The kind of storage account
+
+### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
 
 Description: Full output of storage account created
 
-### <a name="output_storage_account_lock"></a> [storage\_account\_lock](#output\_storage\_account\_lock)
+### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
 
-Description: The lock of the storage account.
+Description: The kind of storage account
+
+### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
+
+Description: The number of workers
+
+### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
+
+Description: The number of workers
 
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
+
+Source: Azure/avm-res-resources-resourcegroup/azurerm
+
+Version: 0.1.0
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: 0.2.4
+
+### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
+
+Source: Azure/avm-res-web-serverfarm/azurerm
+
+Version: 0.2.0
+
+### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
+
+Source: ../../
+
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -293,12 +288,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
