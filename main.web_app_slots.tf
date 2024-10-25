@@ -24,7 +24,11 @@ resource "azurerm_windows_web_app_slot" "this" {
     api_definition_url                            = each.value.site_config.api_definition_url
     api_management_api_id                         = each.value.site_config.api_management_api_id
     app_command_line                              = each.value.site_config.app_command_line
-    auto_heal_enabled                             = each.value.site_config.auto_heal_enabled != true ? null : each.value.site_config.auto_heal_enabled # No longer supported in azureRM 4.x
+
+    # No longer supported in azurerm 4.x
+    # Targeting January 2025 for removal
+    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+
     container_registry_managed_identity_client_id = each.value.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = each.value.site_config.container_registry_use_managed_identity
     default_documents                             = each.value.site_config.default_documents
@@ -51,8 +55,12 @@ resource "azurerm_windows_web_app_slot" "this" {
 
       content {
         current_stack                = application_stack.value.current_stack
-        docker_container_name        = application_stack.value.docker_container_name # No longer supported in azureRM 4.x
-        docker_container_tag         = application_stack.value.docker_container_tag  # No longer supported in azureRM 4.x
+        
+        # No longer supported in azurerm 4.x
+        # docker_container_name        = application_stack.value.docker_container_name 
+        # No longer supported in azurerm 4.x
+        # docker_container_tag         = application_stack.value.docker_container_tag 
+
         docker_image_name            = application_stack.value.docker_image_name
         docker_registry_password     = application_stack.value.docker_registry_password
         docker_registry_url          = application_stack.value.docker_registry_url
@@ -89,7 +97,12 @@ resource "azurerm_windows_web_app_slot" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path # No longer supported in azureRM 4.x
+              
+              # No longer supported in azurerm 4.x
+              # Targeting January 2025 for removal
+              # If you need to use this feature, please use `slow_request_with_path`
+              # path       = slow_requests.value.path 
+              
             }
           }
           dynamic "slow_request_with_path" {
@@ -519,7 +532,11 @@ resource "azurerm_linux_web_app_slot" "this" {
     api_definition_url                            = each.value.site_config.api_definition_url
     api_management_api_id                         = each.value.site_config.api_management_api_id
     app_command_line                              = each.value.site_config.app_command_line
-    auto_heal_enabled                             = each.value.site_config.auto_heal_enabled != true ? null : each.value.site_config.auto_heal_enabled # No longer supported in azureRM 4.x
+
+    # No longer supported in azurerm 4.x
+    # Targeting January 2025 for removal
+    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+
     container_registry_managed_identity_client_id = each.value.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = each.value.site_config.container_registry_use_managed_identity
     default_documents                             = each.value.site_config.default_documents
@@ -580,7 +597,12 @@ resource "azurerm_linux_web_app_slot" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path # No longer supported in azureRM 4.x
+              
+              # No longer supported in azurerm 4.x
+              # Targeting January 2025 for removal
+              # If you need to use this feature, please use `slow_request_with_path`
+              # path       = slow_requests.value.path 
+
             }
           }
           dynamic "slow_request_with_path" {

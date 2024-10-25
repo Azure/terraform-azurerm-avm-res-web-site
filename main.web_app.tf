@@ -25,7 +25,11 @@ resource "azurerm_windows_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled # No longer supported in azurerm 4.x
+    
+    # No longer supported in azurerm 4.x
+    # Targeting January 2025 for removal
+    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -52,8 +56,10 @@ resource "azurerm_windows_web_app" "this" {
 
       content {
         current_stack                = application_stack.value.current_stack
-        docker_container_name        = application_stack.value.docker_container_name # No longer supported in azurerm 4.x
-        docker_container_tag         = application_stack.value.docker_container_tag  # No longer supported in azurerm 4.x
+        # No longer supported in azurerm 4.x
+        # docker_container_name        = application_stack.value.docker_container_name 
+        # No longer supported in azurerm 4.x
+        # docker_container_tag         = application_stack.value.docker_container_tag  
         docker_image_name            = application_stack.value.docker_image_name
         docker_registry_password     = application_stack.value.docker_registry_password
         docker_registry_url          = application_stack.value.docker_registry_url
@@ -90,7 +96,11 @@ resource "azurerm_windows_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path # No longer supported in azurerm 4.x
+              
+              # No longer supported in azurerm 4.x
+              # Targeting January 2025 for removal
+              # If you need to use this feature, please use `slow_request_with_path`
+              # path       = slow_requests.value.path 
             }
           }
           dynamic "slow_request_with_path" {
@@ -550,7 +560,11 @@ resource "azurerm_linux_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled # No longer supported in azurerm 4.x
+
+    # No longer supported in azurerm 4.x
+    # Targeting January 2025 for removal
+    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
+
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -611,7 +625,11 @@ resource "azurerm_linux_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path # No longer supported in azurerm 4.x
+
+              # No longer supported in azurerm 4.x
+              # Targeting January 2025 for removal
+              # If you need to use this feature, please use `slow_request_with_path`
+              # path       = slow_requests.value.path 
             }
           }
           dynamic "slow_request_with_path" {
