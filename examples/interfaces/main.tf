@@ -249,56 +249,92 @@ resource "azurerm_network_security_rule" "example" {
   source_port_range           = "*"
 }
 
-# Create the virtual machine
-module "avm_res_compute_virtualmachine" {
-  source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-  version = "0.15.1"
+resource "azurerm_network_interface" "example" {
+  name                = "example-nic"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 
-  enable_telemetry = var.enable_telemetry
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.example.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
 
+resource "azurerm_windows_virtual_machine" "example" {
+  name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  name                = "${module.naming.virtual_machine.name_unique}-tf"
-  sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
-  os_type             = "Windows"
+  size                = "Standard_F2"
+  admin_username      = "adminuser"
+  admin_password      = "P@$$w0rd1234!"
+  network_interface_ids = [
+    azurerm_network_interface.example.id,
+  ]
 
-  zone = random_integer.zone_index.result
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
 
-  generate_admin_password_or_ssh_key = false
-  admin_username                     = "TestAdmin"
-  admin_password                     = "P@ssw0rd1234!"
-
-  source_image_reference = {
+  source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2016-Datacenter"
     version   = "latest"
   }
-
-  network_interfaces = {
-    network_interface_1 = {
-      name = "nic-${module.naming.network_interface.name_unique}-tf"
-      ip_configurations = {
-        ip_configuration_1 = {
-          name                          = "${module.naming.network_interface.name_unique}-ipconfig1-public"
-          private_ip_subnet_resource_id = azurerm_subnet.example.id
-          create_public_ip_address      = true
-          public_ip_address_name        = "pip-${module.naming.virtual_machine.name_unique}-tf"
-          is_primary_ipconfiguration    = true
-        }
-      }
-    }
-  }
-
-  tags = {
-
-  }
-
 }
 
-module "avm_res_compute_virtualmachine_sku_selector" {
-  source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
-  version = "0.15.1"
+# Create the virtual machine
+# module "avm_res_compute_virtualmachine" {
+#   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
+#   version = "0.15.1"
 
-  deployment_region = azurerm_resource_group.example.location
-}
+#   enable_telemetry = var.enable_telemetry
+
+#   resource_group_name = azurerm_resource_group.example.name
+#   location            = azurerm_resource_group.example.location
+#   name                = "${module.naming.virtual_machine.name_unique}-tf"
+#   sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
+#   os_type             = "Windows"
+
+#   zone = random_integer.zone_index.result
+
+#   generate_admin_password_or_ssh_key = false
+#   admin_username                     = "TestAdmin"
+#   admin_password                     = "P@ssw0rd1234!"
+
+#   source_image_reference = {
+#     publisher = "MicrosoftWindowsServer"
+#     offer     = "WindowsServer"
+#     sku       = "2019-Datacenter"
+#     version   = "latest"
+#   }
+
+#   network_interfaces = {
+#     network_interface_1 = {
+#       name = "nic-${module.naming.network_interface.name_unique}-tf"
+#       ip_configurations = {
+#         ip_configuration_1 = {
+#           name                          = "${module.naming.network_interface.name_unique}-ipconfig1-public"
+#           private_ip_subnet_resource_id = azurerm_subnet.example.id
+#           create_public_ip_address      = true
+#           public_ip_address_name        = "pip-${module.naming.virtual_machine.name_unique}-tf"
+#           is_primary_ipconfiguration    = true
+#         }
+#       }
+#     }
+#   }
+
+#   tags = {
+
+#   }
+
+# }
+
+# module "avm_res_compute_virtualmachine_sku_selector" {
+#   source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
+#   version = "0.15.1"
+
+#   deployment_region = azurerm_resource_group.example.location
+# }
