@@ -30,23 +30,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-default"
-  }
-}
-
-resource "azurerm_resource_group" "example" {
-  location = local.azure_regions[random_integer.region_index.result]
-  name     = module.naming.resource_group.name_unique
-}
-
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
-  tags = {
-    app = "${module.naming.function_app.name_unique}-default"
+    app = "${module.naming.function_app.name_unique}-mi"
   }
 }
 
@@ -78,7 +62,7 @@ module "avm_res_web_site" {
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-default"
+  name                = "${module.naming.function_app.name_unique}-mi"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
