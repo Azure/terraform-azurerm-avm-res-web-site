@@ -24,52 +24,55 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
-  version = "0.1.0"
-
+resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
-module "avm_res_web_serverfarm" {
-  source  = "Azure/avm-res-web-serverfarm/azurerm"
-  version = "0.2.0"
-
-  enable_telemetry = var.enable_telemetry
-
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
-
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
   tags = {
-    module  = "Azure/avm-res-web-serverfarm/azurerm"
-    version = "0.2.0"
+    app = "${module.naming.function_app.name_unique}-default"
   }
 }
 
-# Deploying Storage Account outside of root module to avoid circular dependency for role assignment + managed identity
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.2.4"
+resource "azurerm_resource_group" "example" {
+  location = local.azure_regions[random_integer.region_index.result]
+  name     = module.naming.resource_group.name_unique
+}
 
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = module.avm_res_resources_resourcegroup.name
-  location                      = module.avm_res_resources_resourcegroup.resource.location
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Windows"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-default"
+  }
+}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+
+  network_rules {
     default_action = "Allow"
+    bypass         = ["AzureServices"]
   }
-  role_assignments = {
-    storage_blob_data_owner = {
-      role_definition_id_or_name = "Storage Blob Data Owner"
-      principal_id               = module.avm_res_web_site.identity_principal_id
-    }
-  }
+}
+
+resource "azurerm_role_assignment" "example" {
+  principal_id         = module.avm_res_web_site.identity_principal_id
+  scope                = azurerm_storage_account.example.id
+  role_definition_name = "Storage Blob Data Owner"
 }
 
 # This is the module call
@@ -77,19 +80,22 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.11.0"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-mi"
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
+  name                = "${module.naming.function_app.name_unique}-default"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
 
-  kind                     = "functionapp"
-  os_type                  = "Windows"
-  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
+  kind = "functionapp"
 
-  storage_account_name          = module.avm_res_storage_storageaccount.name
+  # Uses an existing app service plan
+  os_type                  = azurerm_service_plan.example.os_type
+  service_plan_resource_id = azurerm_service_plan.example.id
+
+  # Uses an existing storage account
+  storage_account_name          = azurerm_storage_account.example.name
   storage_uses_managed_identity = true
 
   managed_identities = {
@@ -106,7 +112,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -114,6 +120,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_role_assignment.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -190,24 +200,6 @@ Description: The number of workers
 ## Modules
 
 The following Modules are called:
-
-### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
-
-Source: Azure/avm-res-resources-resourcegroup/azurerm
-
-Version: 0.1.0
-
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
-
-Source: Azure/avm-res-storage-storageaccount/azurerm
-
-Version: 0.2.4
-
-### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
-
-Source: Azure/avm-res-web-serverfarm/azurerm
-
-Version: 0.2.0
 
 ### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
 

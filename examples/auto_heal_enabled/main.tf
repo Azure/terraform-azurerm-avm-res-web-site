@@ -24,12 +24,12 @@ resource "azurerm_resource_group" "example" {
 }
 
 resource "azurerm_service_plan" "example" {
-  name                = module.naming.app_service_plan.name_unique
-  resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  os_type = "Linux"
-  sku_name                     = "P1v2"
-  tags                         = {
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Linux"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
+  tags = {
     app = "${module.naming.function_app.name_unique}-default"
   }
 }
@@ -38,7 +38,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.11.0"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -52,7 +52,7 @@ module "avm_res_web_site" {
   service_plan_resource_id = azurerm_service_plan.example.id
 
   site_config = {
-    
+
   }
   auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
     setting_1 = {

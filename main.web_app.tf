@@ -25,11 +25,6 @@ resource "azurerm_windows_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-    
-    # No longer supported in azurerm 4.x
-    # Targeting January 2025 for removal
-    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
-
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -55,7 +50,7 @@ resource "azurerm_windows_web_app" "this" {
       for_each = var.site_config.application_stack
 
       content {
-        current_stack                = application_stack.value.current_stack
+        current_stack = application_stack.value.current_stack
         # No longer supported in azurerm 4.x
         # docker_container_name        = application_stack.value.docker_container_name 
         # No longer supported in azurerm 4.x
@@ -96,11 +91,6 @@ resource "azurerm_windows_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              
-              # No longer supported in azurerm 4.x
-              # Targeting January 2025 for removal
-              # If you need to use this feature, please use `slow_request_with_path`
-              # path       = slow_requests.value.path 
             }
           }
           dynamic "slow_request_with_path" {
@@ -560,11 +550,6 @@ resource "azurerm_linux_web_app" "this" {
     api_definition_url                            = var.site_config.api_definition_url
     api_management_api_id                         = var.site_config.api_management_api_id
     app_command_line                              = var.site_config.app_command_line
-
-    # No longer supported in azurerm 4.x
-    # Targeting January 2025 for removal
-    # auto_heal_enabled                             = var.site_config.auto_heal_enabled != true ? null : var.site_config.auto_heal_enabled
-
     container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
     default_documents                             = var.site_config.default_documents
@@ -625,11 +610,6 @@ resource "azurerm_linux_web_app" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-
-              # No longer supported in azurerm 4.x
-              # Targeting January 2025 for removal
-              # If you need to use this feature, please use `slow_request_with_path`
-              # path       = slow_requests.value.path 
             }
           }
           dynamic "slow_request_with_path" {

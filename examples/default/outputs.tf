@@ -41,7 +41,7 @@ output "storage_account_kind" {
 
 output "storage_account_name" {
   description = "Full output of storage account created"
-  value       =azurerm_storage_account.example.name
+  value       = azurerm_storage_account.example.name
 }
 
 output "storage_account_replication_type" {
