@@ -255,59 +255,94 @@ resource "azurerm_network_security_rule" "example" {
   source_port_range           = "*"
 }
 
-# Create the virtual machine
-module "avm_res_compute_virtualmachine" {
-  source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-  version = "0.15.1"
-
-  enable_telemetry = var.enable_telemetry
-
-  resource_group_name = azurerm_resource_group.example.name
+resource "azurerm_network_interface" "example" {
   location            = azurerm_resource_group.example.location
-  name                = "${module.naming.virtual_machine.name_unique}-tf"
-  sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
-  os_type             = "Windows"
+  name                = "example-nic"
+  resource_group_name = azurerm_resource_group.example.name
 
-  zone = random_integer.zone_index.result
+  ip_configuration {
+    name                          = "internal"
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.example.id
+  }
+}
 
-  generate_admin_password_or_ssh_key = false
-  admin_username                     = "TestAdmin"
-  admin_password                     = "P@ssw0rd1234!"
+resource "azurerm_windows_virtual_machine" "example" {
+  admin_password = "P@$$w0rd1234!"
+  admin_username = "adminuser"
+  location       = azurerm_resource_group.example.location
+  name           = "example-machine"
+  network_interface_ids = [
+    azurerm_network_interface.example.id,
+  ]
+  resource_group_name = azurerm_resource_group.example.name
+  size                = "Standard_F2"
 
-  source_image_reference = {
-    publisher = "MicrosoftWindowsServer"
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+  source_image_reference {
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    publisher = "MicrosoftWindowsServer"
+    sku       = "2016-Datacenter"
     version   = "latest"
   }
-
-  network_interfaces = {
-    network_interface_1 = {
-      name = "nic-${module.naming.network_interface.name_unique}-tf"
-      ip_configurations = {
-        ip_configuration_1 = {
-          name                          = "${module.naming.network_interface.name_unique}-ipconfig1-public"
-          private_ip_subnet_resource_id = azurerm_subnet.example.id
-          create_public_ip_address      = true
-          public_ip_address_name        = "pip-${module.naming.virtual_machine.name_unique}-tf"
-          is_primary_ipconfiguration    = true
-        }
-      }
-    }
-  }
-
-  tags = {
-
-  }
-
 }
 
-module "avm_res_compute_virtualmachine_sku_selector" {
-  source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
-  version = "0.15.1"
+# Create the virtual machine
+# module "avm_res_compute_virtualmachine" {
+#   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
+#   version = "0.15.1"
 
-  deployment_region = azurerm_resource_group.example.location
-}
+#   enable_telemetry = var.enable_telemetry
+
+#   resource_group_name = azurerm_resource_group.example.name
+#   location            = azurerm_resource_group.example.location
+#   name                = "${module.naming.virtual_machine.name_unique}-tf"
+#   sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
+#   os_type             = "Windows"
+
+#   zone = random_integer.zone_index.result
+
+#   generate_admin_password_or_ssh_key = false
+#   admin_username                     = "TestAdmin"
+#   admin_password                     = "P@ssw0rd1234!"
+
+#   source_image_reference = {
+#     publisher = "MicrosoftWindowsServer"
+#     offer     = "WindowsServer"
+#     sku       = "2019-Datacenter"
+#     version   = "latest"
+#   }
+
+#   network_interfaces = {
+#     network_interface_1 = {
+#       name = "nic-${module.naming.network_interface.name_unique}-tf"
+#       ip_configurations = {
+#         ip_configuration_1 = {
+#           name                          = "${module.naming.network_interface.name_unique}-ipconfig1-public"
+#           private_ip_subnet_resource_id = azurerm_subnet.example.id
+#           create_public_ip_address      = true
+#           public_ip_address_name        = "pip-${module.naming.virtual_machine.name_unique}-tf"
+#           is_primary_ipconfiguration    = true
+#         }
+#       }
+#     }
+#   }
+
+#   tags = {
+
+#   }
+
+# }
+
+# module "avm_res_compute_virtualmachine_sku_selector" {
+#   source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
+#   version = "0.15.1"
+
+#   deployment_region = azurerm_resource_group.example.location
+# }
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -326,6 +361,7 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
+- [azurerm_network_interface.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) (resource)
 - [azurerm_network_security_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_network_security_rule.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) (resource)
 - [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
@@ -336,6 +372,7 @@ The following resources are used by this module:
 - [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_user_assigned_identity.user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
+- [azurerm_windows_virtual_machine.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_virtual_machine) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_integer.zone_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
@@ -417,18 +454,6 @@ Description: The number of workers
 ## Modules
 
 The following Modules are called:
-
-### <a name="module_avm_res_compute_virtualmachine"></a> [avm\_res\_compute\_virtualmachine](#module\_avm\_res\_compute\_virtualmachine)
-
-Source: Azure/avm-res-compute-virtualmachine/azurerm
-
-Version: 0.15.1
-
-### <a name="module_avm_res_compute_virtualmachine_sku_selector"></a> [avm\_res\_compute\_virtualmachine\_sku\_selector](#module\_avm\_res\_compute\_virtualmachine\_sku\_selector)
-
-Source: Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector
-
-Version: 0.15.1
 
 ### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
 
