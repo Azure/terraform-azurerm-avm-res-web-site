@@ -122,6 +122,8 @@ module "avm_res_web_site" {
     }
   }
 
+  /*
+
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
@@ -186,6 +188,8 @@ module "avm_res_web_site" {
     }
 
   }
+
+  */
 
   tags = {
     environment = "dev-tf"
