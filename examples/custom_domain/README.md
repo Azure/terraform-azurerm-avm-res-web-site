@@ -22,43 +22,33 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
-  version = "0.1.0"
-
+resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-  tags = {
-    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
-    version = "0.1.0"
-  }
-}
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.2.4"
-
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = module.avm_res_resources_resourcegroup.name
-  location                      = module.avm_res_resources_resourcegroup.resource.location
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
 }
 
-module "avm_res_web_serverfarm" {
-  source  = "Azure/avm-res-web-serverfarm/azurerm"
-  version = "0.2.0"
-
-  enable_telemetry = var.enable_telemetry
-
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-custom-domain"
+  }
+}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
+  }
 }
 
 # Use data object to reference an existing Key Vault and stored certificate
@@ -80,23 +70,23 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.11.0"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-custom-domain"
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
+  name                = "${module.naming.function_app.name_unique}-default"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
 
   kind = "functionapp"
 
   # Uses an existing app service plan
-  os_type                  = module.avm_res_web_serverfarm.resource.os_type
-  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
+  os_type                  = azurerm_service_plan.example.os_type
+  service_plan_resource_id = azurerm_service_plan.example.id
 
   # Uses an existing storage account
-  storage_account_name       = module.avm_res_storage_storageaccount.name
-  storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
   # storage_uses_managed_identity = true
 
   site_config = {
@@ -136,10 +126,12 @@ module "avm_res_web_site" {
     }
   }
 
+  /*
+
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
-    /*
+
     production = {
 
       zone_resource_group_name = "<zone_resource_group_name>"
@@ -160,12 +152,12 @@ module "avm_res_web_site" {
 
       create_certificate   = true
       certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      certificate_location = module.avm_res_resources_resourcegroup.resource.location
+      certificate_location = azurerm_resource_group.example.location
       pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
       hostname            = "${module.naming.function_app.name_unique}-custom-domain.<zone_name>"
-      resource_group_name = module.avm_res_resources_resourcegroup.name
+      resource_group_name = azurerm_resource_group.example.name
       ssl_state           = "SniEnabled"
       thumbprint_key      = "production" # Currently the key of the custom domain
     },
@@ -188,18 +180,20 @@ module "avm_res_web_site" {
       cname_zone_name      = "<zone_name>"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain-qa.azurewebsites.net"
 
-      # create_certificate   = true
-      # certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      # certificate_location = module.avm_res_resources_resourcegroup.resource.location
-      # pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+      create_certificate   = true
+      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_slot_key = "qa"
-      hostname = "${module.naming.function_app.name_unique}-qa.<zone_name>"
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "production"
+      hostname             = "${module.naming.function_app.name_unique}-qa.<zone_name>"
+      ssl_state            = "SniEnabled"
+      thumbprint_key       = "production"
     }
-    */
+
   }
+
+  */
 
   tags = {
     environment = "dev-tf"
@@ -215,7 +209,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -223,6 +217,9 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -299,24 +296,6 @@ Description: The number of workers
 ## Modules
 
 The following Modules are called:
-
-### <a name="module_avm_res_resources_resourcegroup"></a> [avm\_res\_resources\_resourcegroup](#module\_avm\_res\_resources\_resourcegroup)
-
-Source: Azure/avm-res-resources-resourcegroup/azurerm
-
-Version: 0.1.0
-
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
-
-Source: Azure/avm-res-storage-storageaccount/azurerm
-
-Version: 0.2.4
-
-### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
-
-Source: Azure/avm-res-web-serverfarm/azurerm
-
-Version: 0.2.0
 
 ### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
 

@@ -18,32 +18,19 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-module "avm_res_resources_resourcegroup" {
-  source  = "Azure/avm-res-resources-resourcegroup/azurerm"
-  version = "0.1.0"
-
+resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-  tags = {
-    module  = "Azure/avm-res-resources-resourcegroup/azurerm"
-    version = "0.1.0"
-  }
 }
 
-module "avm_res_web_serverfarm" {
-  source  = "Azure/avm-res-web-serverfarm/azurerm"
-  version = "0.2.0"
-
-  enable_telemetry = var.enable_telemetry
-
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
   os_type             = "Windows"
-
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
   tags = {
-    module  = "Azure/avm-res-web-serverfarm/azurerm"
-    version = "0.2.0"
+    app = "${module.naming.function_app.name_unique}-webapp"
   }
 }
 
@@ -51,23 +38,23 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.11.0"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
   name                = "${module.naming.function_app.name_unique}-webapp"
-  resource_group_name = module.avm_res_resources_resourcegroup.name
-  location            = module.avm_res_resources_resourcegroup.resource.location
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
 
   kind = "webapp"
 
   # Uses an existing app service plan
-  os_type                  = module.avm_res_web_serverfarm.resource.os_type
-  service_plan_resource_id = module.avm_res_web_serverfarm.resource_id
+  os_type                  = azurerm_service_plan.example.os_type
+  service_plan_resource_id = azurerm_service_plan.example.id
 
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.11.0"
+    version = "0.12.0"
   }
 
 }

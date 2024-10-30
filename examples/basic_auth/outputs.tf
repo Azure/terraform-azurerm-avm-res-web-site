@@ -16,45 +16,45 @@ output "resource_id" {
 
 output "service_plan_id" {
   description = "The ID of the app service"
-  value       = module.avm_res_web_serverfarm.resource_id
+  value       = azurerm_service_plan.example.id
 }
 
 output "service_plan_name" {
   description = "Full output of service plan created"
-  value       = module.avm_res_web_serverfarm.name
+  value       = azurerm_service_plan.example.name
 }
 
 output "sku_name" {
   description = "The number of workers"
-  value       = module.avm_res_web_serverfarm.resource.sku_name
+  value       = azurerm_service_plan.example.sku_name
 }
 
 output "storage_account_id" {
   description = "The ID of the storage account"
-  value       = module.avm_res_storage_storageaccount.resource_id
+  value       = azurerm_storage_account.example.id
 }
 
 output "storage_account_kind" {
   description = "The kind of storage account"
-  value       = module.avm_res_storage_storageaccount.resource.account_kind
+  value       = azurerm_storage_account.example.account_kind
 }
 
 output "storage_account_name" {
   description = "Full output of storage account created"
-  value       = module.avm_res_storage_storageaccount.name
+  value       = azurerm_storage_account.example.name
 }
 
 output "storage_account_replication_type" {
   description = "The kind of storage account"
-  value       = module.avm_res_storage_storageaccount.resource.account_replication_type
+  value       = azurerm_storage_account.example.account_replication_type
 }
 
 output "worker_count" {
   description = "The number of workers"
-  value       = module.avm_res_web_serverfarm.resource.worker_count
+  value       = azurerm_service_plan.example.worker_count
 }
 
 output "zone_redundant" {
   description = "The number of workers"
-  value       = module.avm_res_web_serverfarm.resource.zone_balancing_enabled
+  value       = azurerm_service_plan.example.zone_balancing_enabled
 }
