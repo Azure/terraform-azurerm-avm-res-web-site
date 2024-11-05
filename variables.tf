@@ -905,8 +905,7 @@ variable "logs" {
   }
   description = <<DESCRIPTION
 
-A map of logs to create on the Function App.
-
+  A map of logs to create on the Function App.
 
   DESCRIPTION
   nullable    = false
@@ -1028,38 +1027,38 @@ DESCRIPTION
 
 variable "site_config" {
   type = object({
-    always_on                                     = optional(bool, false) # when running in a Consumption or Premium Plan, `always_on` feature should be turned off. Please turn it off before upgrading the service plan from standard to premium.
-    api_definition_url                            = optional(string)      # (Optional) The URL of the OpenAPI (Swagger) definition that provides schema for the function's HTTP endpoints.
-    api_management_api_id                         = optional(string)      # (Optional) The API Management API identifier.
-    app_command_line                              = optional(string)      # (Optional) The command line to launch the application.
-    auto_heal_enabled                             = optional(bool)        # (Optional) Should auto-heal be enabled for the Function App?
-    app_scale_limit                               = optional(number)      # (Optional) The maximum number of workers that the Function App can scale out to.
-    application_insights_connection_string        = optional(string)      # (Optional) The connection string of the Application Insights resource to send telemetry to.
-    application_insights_key                      = optional(string)      # (Optional) The instrumentation key of the Application Insights resource to send telemetry to.
+    always_on                                     = optional(bool, false)
+    api_definition_url                            = optional(string)
+    api_management_api_id                         = optional(string)
+    app_command_line                              = optional(string)
+    auto_heal_enabled                             = optional(bool)
+    app_scale_limit                               = optional(number)
+    application_insights_connection_string        = optional(string)
+    application_insights_key                      = optional(string)
     container_registry_managed_identity_client_id = optional(string)
     container_registry_use_managed_identity       = optional(bool)
-    default_documents                             = optional(list(string))            #(Optional) Specifies a list of Default Documents for the Windows Function App.
-    elastic_instance_minimum                      = optional(number)                  #(Optional) The number of minimum instances for this Windows Function App. Only affects apps on Elastic Premium plans.
-    ftps_state                                    = optional(string, "Disabled")      #(Optional) State of FTP / FTPS service for this Windows Function App. Possible values include: AllAllowed, FtpsOnly and Disabled. Defaults to Disabled.
-    health_check_eviction_time_in_min             = optional(number)                  #(Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between 2 and 10. Only valid in conjunction with health_check_path.
-    health_check_path                             = optional(string)                  #(Optional) The path to be checked for this Windows Function App health.
-    http2_enabled                                 = optional(bool, false)             #(Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to false.
-    ip_restriction_default_action                 = optional(string, "Allow")         #(Optional) The default action for IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
-    load_balancing_mode                           = optional(string, "LeastRequests") #(Optional) The Site load balancing mode. Possible values include: WeightedRoundRobin, LeastRequests, LeastResponseTime, WeightedTotalTraffic, RequestHash, PerSiteRoundRobin. Defaults to LeastRequests if omitted.
-    local_mysql_enabled                           = optional(bool, false)             #(Optional) Should local MySQL be enabled. Defaults to false.
-    managed_pipeline_mode                         = optional(string, "Integrated")    #(Optional) Managed pipeline mode. Possible values include: Integrated, Classic. Defaults to Integrated.
-    minimum_tls_version                           = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
-    pre_warmed_instance_count                     = optional(number)                  #(Optional) The number of pre-warmed instances for this Windows Function App. Only affects apps on an Elastic Premium plan.
-    remote_debugging_enabled                      = optional(bool, false)             #(Optional) Should Remote Debugging be enabled. Defaults to false.
-    remote_debugging_version                      = optional(string)                  #(Optional) The Remote Debugging Version. Possible values include VS2017, VS2019, and VS2022.
-    runtime_scale_monitoring_enabled              = optional(bool)                    #(Optional) Should runtime scale monitoring be enabled.
-    scm_ip_restriction_default_action             = optional(string, "Allow")         #(Optional) The default action for SCM IP restrictions. Possible values include: Allow and Deny. Defaults to Allow.
-    scm_minimum_tls_version                       = optional(string, "1.2")           #(Optional) Configures the minimum version of TLS required for SSL requests to Kudu. Possible values include: 1.0, 1.1, and 1.2. Defaults to 1.2.
-    scm_use_main_ip_restriction                   = optional(bool, false)             #(Optional) Should the SCM use the same IP restrictions as the main site. Defaults to false.
-    use_32_bit_worker                             = optional(bool, false)             #(Optional) Should the 32-bit worker process be used. Defaults to false.
-    vnet_route_all_enabled                        = optional(bool, false)             #(Optional) Should all traffic be routed to the virtual network. Defaults to false.
-    websockets_enabled                            = optional(bool, false)             #(Optional) Should Websockets be enabled. Defaults to false.
-    worker_count                                  = optional(number)                  #(Optional) The number of workers for this Windows Function App. Only affects apps on an Elastic Premium plan.
+    default_documents                             = optional(list(string))
+    elastic_instance_minimum                      = optional(number)
+    ftps_state                                    = optional(string, "Disabled")
+    health_check_eviction_time_in_min             = optional(number)
+    health_check_path                             = optional(string)
+    http2_enabled                                 = optional(bool, false)
+    ip_restriction_default_action                 = optional(string, "Allow")
+    load_balancing_mode                           = optional(string, "LeastRequests")
+    local_mysql_enabled                           = optional(bool, false)
+    managed_pipeline_mode                         = optional(string, "Integrated")
+    minimum_tls_version                           = optional(string, "1.2")
+    pre_warmed_instance_count                     = optional(number)
+    remote_debugging_enabled                      = optional(bool, false)
+    remote_debugging_version                      = optional(string)
+    runtime_scale_monitoring_enabled              = optional(bool)
+    scm_ip_restriction_default_action             = optional(string, "Allow")
+    scm_minimum_tls_version                       = optional(string, "1.2")
+    scm_use_main_ip_restriction                   = optional(bool, false)
+    use_32_bit_worker                             = optional(bool, false)
+    vnet_route_all_enabled                        = optional(bool, false)
+    websockets_enabled                            = optional(bool, false)
+    worker_count                                  = optional(number)
     app_service_logs = optional(map(object({
       disk_quota_mb         = optional(number, 35)
       retention_period_days = optional(number)
@@ -1097,7 +1096,7 @@ variable "site_config" {
     cors = optional(map(object({
       allowed_origins     = optional(list(string))
       support_credentials = optional(bool, false)
-    })), {}) #(Optional) A cors block as defined above.
+    })), {})
     ip_restriction = optional(map(object({
       action                    = optional(string, "Allow")
       ip_address                = optional(string)
@@ -1111,7 +1110,7 @@ variable "site_config" {
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
-    })), {}) #(Optional) One or more ip_restriction blocks as defined above.
+    })), {})
     scm_ip_restriction = optional(map(object({
       action                    = optional(string, "Allow")
       ip_address                = optional(string)
@@ -1125,7 +1124,7 @@ variable "site_config" {
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
       })), {})
-    })), {}) #(Optional) One or more scm_ip_restriction blocks as defined above.
+    })), {})
     virtual_application = optional(map(object({
       physical_path   = optional(string, "site\\wwwroot")
       preload_enabled = optional(bool, false)
@@ -1141,7 +1140,7 @@ variable "site_config" {
           preload_enabled = false
           virtual_path    = "/"
         }
-    }) #(Optional) One or more virtual_application blocks as defined above.
+    })
   })
   default     = {}
   description = <<DESCRIPTION
@@ -1163,12 +1162,12 @@ variable "site_config" {
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
  - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
- - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+ - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
  - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
  - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
  - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
- - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+ - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
  - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
  - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
  - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
@@ -1335,7 +1334,6 @@ variable "storage_uses_managed_identity" {
   description = "Should the Storage Account use a Managed Identity? Conflicts with `storage_account_access_key`."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "tags" {
   type        = map(string)
   default     = null
