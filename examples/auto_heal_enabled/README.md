@@ -24,69 +24,71 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
-module "test" {
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Linux"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-default"
+  }
+}
+
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-slots"
+  name                = "${module.naming.function_app.name_unique}-auto-heal"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "webapp"
-  os_type = "Linux"
+  kind = "webapp"
+
+  os_type                  = azurerm_service_plan.example.os_type
+  service_plan_resource_id = azurerm_service_plan.example.id
 
   site_config = {
-    # auto_heal_enabled = true
-    # auto_heal_enabled = false # This will throw a module and provider error.
-    auto_heal_enabled = null # `auto_heal_setting` cannot be set if `auto_heal_enabled` is set to `null`. `null` is the default value for `auto_heal_enabled`
 
   }
   auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
-    # setting_1 = {
-    #   action = {
-    #     action_type                    = "Recycle"
-    #     minimum_process_execution_time = "00:01:00"
-    #   }
-    #   trigger = {
-    #     requests = {
-    #       count    = 100
-    #       interval = "00:00:30"
-    #     }
-    #     status_code = {
-    #       status_5000 = {
-    #         count             = 5000
-    #         interval          = "00:05:00"
-    #         path              = "/HealthCheck"
-    #         status_code_range = 500
-    #         sub_status        = 0
-    #       }
-    #       status_6000 = {
-    #         count             = 6000
-    #         interval          = "00:05:00"
-    #         path              = "/Get"
-    #         status_code_range = 500
-    #         sub_status        = 0
-    #       }
-    #     }
-    #   }
-    # }
-  }
-
-  # Creates a new app service plan
-  create_service_plan = true
-  new_service_plan = {
-    sku_name               = var.sku_for_testing
-    zone_balancing_enabled = var.redundancy_for_testing
+    setting_1 = {
+      action = {
+        action_type                    = "Recycle"
+        minimum_process_execution_time = "00:01:00"
+      }
+      trigger = {
+        requests = {
+          count    = 100
+          interval = "00:00:30"
+        }
+        status_code = {
+          status_5000 = {
+            count             = 5000
+            interval          = "00:05:00"
+            path              = "/HealthCheck"
+            status_code_range = 500
+            sub_status        = 0
+          }
+          status_6000 = {
+            count             = 6000
+            interval          = "00:05:00"
+            path              = "/Get"
+            status_code_range = 500
+            sub_status        = 0
+          }
+        }
+      }
+    }
   }
 }
 ```
@@ -96,9 +98,9 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.6.1)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -107,6 +109,7 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -128,22 +131,6 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_redundancy_for_testing"></a> [redundancy\_for\_testing](#input\_redundancy\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"false"`
-
-### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"S1"`
-
 ## Outputs
 
 The following outputs are exported:
@@ -156,21 +143,47 @@ Description: ID of active slot
 
 Description: Full output of deployment slots created
 
+### <a name="output_location"></a> [location](#output\_location)
+
+Description: This is the full output for the resource.
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource"></a> [resource](#output\_resource)
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: This is the full output for the resource.
 
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
 
-Description: Full output of storage account created
+Description: The ID of the app service
+
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
+
+Description: Full output of service plan created
+
+### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+
+Description: The number of workers
+
+### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
+
+Description: The number of workers
+
+### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
+
+Description: The number of workers
 
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
+
+Source: ../../
+
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -183,12 +196,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

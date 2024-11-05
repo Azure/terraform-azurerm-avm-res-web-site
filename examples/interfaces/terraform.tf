@@ -1,13 +1,13 @@
 terraform {
-  required_version = "~> 1.6"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.108"
+      version = "~> 4.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.6"
+      version = ">= 3.5.0, < 4.0.0"
     }
   }
 }
@@ -19,4 +19,7 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
+
+  subscription_id = "<subscription-id>"
+
 }

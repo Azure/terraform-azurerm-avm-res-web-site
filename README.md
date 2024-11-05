@@ -10,9 +10,9 @@ This is the module to deploy function apps in Azure.
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
@@ -35,7 +35,6 @@ The following resources are used by this module:
 - [azurerm_linux_web_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app_slot) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
-- [azurerm_management_lock.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
 - [azurerm_private_endpoint.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
@@ -83,13 +82,19 @@ Type: `string`
 
 ### <a name="input_os_type"></a> [os\_type](#input\_os\_type)
 
-Description: The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in.
+Description: The operating system that should be the same type of the App Service Plan to deploy the App Service in.
 
 Type: `string`
 
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
-Description: The name of the Resource Group where the Function App will be deployed.
+Description: The name of the Resource Group where the App Service will be deployed.
+
+Type: `string`
+
+### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
+
+Description: The resource ID of the App Service Plan to deploy the App Service in in.
 
 Type: `string`
 
@@ -162,6 +167,36 @@ Default: `{}`
 
 Description:   
   The Application Insights settings to assign to the Function App.
+
+  -`application_type`: The type of Application Insights to create. Valid values are `ios`, `java`, `MobileCenter`, `Node.JS`, `other`, `phone`, `store`, and `web`. Defaults to `web`.
+  -`inherit_tags`: Should the Application Insights inherit tags from the parent resource? Defaults to `false`.
+  -`location`: The location of the Application Insights.
+  -`name`: The name of the Application Insights.
+  -`resource_group_name`: The name of the Resource Group where the Application Insights will be deployed.
+  -`tags`: A map of tags to assign to the Application Insights.
+  -`workspace_resource_id`: The resource ID of the Log Analytics Workspace to use for the Application Insights.
+  -`daily_data_cap_in_gb`: The daily data cap in GB for the Application Insights.
+  -`daily_data_cap_notifications_disabled`: Should the daily data cap notifications be disabled for the Application Insights?
+  -`retention_in_days`: The retention period in days for the Application Insights. Defaults to `90`.
+  -`sampling_percentage`: The sampling percentage for the Application Insights. Defaults to `100`.
+  -`disable_ip_masking`: Should the IP masking be disabled for the Application Insights? Defaults to `false`.
+  -`local_authentication_disabled`: Should the local authentication be disabled for the Application Insights? Defaults to `false`.
+  -`internet_ingestion_enabled`: Should the internet ingestion be enabled for the Application Insights? Defaults to `true`.
+  -`internet_query_enabled`: Should the internet query be enabled for the Application Insights? Defaults to `true`.
+  -`force_customer_storage_for_profiler`: Should the customer storage be forced for the profiler for the Application Insights? Defaults to `false`.
+
+  ```terraform
+  application_insights = {
+    name                  = module.naming.application_insights.name_unique
+    resource_group_name   = module.avm_res_resources_resourcegroup.name
+    location              = module.avm_res_resources_resourcegroup.resource.location
+    application_type      = "web"
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    tags = {
+      environment = "dev-tf"
+    }
+  }
+```
 
 Type:
 
@@ -545,7 +580,39 @@ Description:
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
-
+  site_config = {
+    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
+  }
+  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+    setting_1 = {
+      action = {
+        action_type                    = "Recycle"
+        minimum_process_execution_time = "00:01:00"
+      }
+      trigger = {
+        requests = {
+          count    = 100
+          interval = "00:00:30"
+        }
+        status_code = {
+          status_5000 = {
+            count             = 5000
+            interval          = "00:05:00"
+            path              = "/HealthCheck"
+            status_code_range = 500
+            sub_status        = 0
+          }
+          status_6000 = {
+            count             = 6000
+            interval          = "00:05:00"
+            path              = "/Get"
+            status_code_range = 500
+            sub_status        = 0
+          }
+        }
+      }
+    }
+  }
 ```
 
 Type:
@@ -712,14 +779,6 @@ Default: `{}`
 ### <a name="input_content_share_force_disabled"></a> [content\_share\_force\_disabled](#input\_content\_share\_force\_disabled)
 
 Description: Should content share be force disabled for the Function App?
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_create_service_plan"></a> [create\_service\_plan](#input\_create\_service\_plan)
-
-Description: Should the module create a new App Service Plan for the Function App?
 
 Type: `bool`
 
@@ -1332,96 +1391,6 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_function_app_create_storage_account"></a> [function\_app\_create\_storage\_account](#input\_function\_app\_create\_storage\_account)
-
-Description: Should a Storage Account be created for the Function App?
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_function_app_storage_account"></a> [function\_app\_storage\_account](#input\_function\_app\_storage\_account)
-
-Description:   A map of objects that represent a Storage Account to mount to the Function App.
-
-  - `name` - (Optional) The name of the Storage Account.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
-  - `location` - (Optional) The Azure region where the Storage Account will be deployed.
-  - `account_kind` - (Optional) The kind of the Storage Account. Defaults to `StorageV2`.
-  - `account_tier` - (Optional) The tier of the Storage Account. Defaults to `Standard`.
-  - `account_replication_type` - (Optional) The replication type of the Storage Account.
-  - `shared_access_key_enabled` - (Optional) Should the shared access key be enabled for the Storage Account? Defaults to `true`.
-  - `public_network_access_enabled` - (Optional) Should public network access be enabled for the Storage Account? Defaults to `true`.
-  - `lock` - (Optional) The lock level to apply.
-  - `role_assignments` - (Optional) A map of role assignments to assign to the Storage Account.
-
-  ```terraform
-
-```
-
-Type:
-
-```hcl
-object({
-    name                          = optional(string)
-    resource_group_name           = optional(string)
-    location                      = optional(string)
-    account_kind                  = optional(string, "StorageV2")
-    account_tier                  = optional(string, "Standard")
-    account_replication_type      = optional(string)
-    shared_access_key_enabled     = optional(bool, true)
-    public_network_access_enabled = optional(bool, true)
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-      principal_type                         = optional(string, null)
-    })), {})
-  })
-```
-
-Default: `{}`
-
-### <a name="input_function_app_storage_account_access_key"></a> [function\_app\_storage\_account\_access\_key](#input\_function\_app\_storage\_account\_access\_key)
-
-Description: The access key of the Storage Account to deploy the Function App in.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_function_app_storage_account_inherit_lock"></a> [function\_app\_storage\_account\_inherit\_lock](#input\_function\_app\_storage\_account\_inherit\_lock)
-
-Description: Should the Storage Account inherit the lock from the parent resource? Defaults to `true`.
-
-Type: `bool`
-
-Default: `true`
-
-### <a name="input_function_app_storage_account_name"></a> [function\_app\_storage\_account\_name](#input\_function\_app\_storage\_account\_name)
-
-Description: The name of the Storage Account to deploy the Function App in.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_function_app_storage_uses_managed_identity"></a> [function\_app\_storage\_uses\_managed\_identity](#input\_function\_app\_storage\_uses\_managed\_identity)
-
-Description: Should the Storage Account use a Managed Identity?
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
 Description: The version of the Azure Functions runtime to use. Defaults to `~4`.
@@ -1506,54 +1475,6 @@ Type:
 object({
     system_assigned            = optional(bool, false)
     user_assigned_resource_ids = optional(set(string), [])
-  })
-```
-
-Default: `{}`
-
-### <a name="input_new_service_plan"></a> [new\_service\_plan](#input\_new\_service\_plan)
-
-Description:   A map of objects that represent a new App Service Plan to create for the Function App.
-
-  - `name` - (Optional) The name of the App Service Plan.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
-  - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
-  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `P1v2`.
-  > Possible values include `B1`, `B2`, `B3`, `D1`, `F1`, `I1`, `I2`, `I3`, `I1v2`, `I2v2`, `I3v2`, `I4v2`, `I5v2`, `I6v2`, `P1v2`, `P2v2`, `P3v2`, `P0v3`, `P1v3`,`P2v3`, `P3v3`, `P1mv3`, `P2mv3`, `P3mv3`, `P4mv3`, `P5mv3`, `S1`, `S2`, `S3`, `SHARED`, `EP1`, `EP2`, `EP3`, `FC1`, `WS1`, `WS2`, `WS3`, and `Y1`.
-  - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
-  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to Elastic SKU Plan. Cannot be set unless using an Elastic SKU.
-  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan. Defaults to `3`.
-  - `per_site_scaling_enabled` - (Optional) Should per site scaling be enabled for the App Service Plan? Defaults to `false`.
-  - `zone_balancing_enabled` - (Optional) Should zone balancing be enabled for the App Service Plan? Changing this forces a new resource to be created.
-  > **NOTE:** If this setting is set to `true` and the `worker_count` value is specified, it should be set to a multiple of the number of availability zones in the region. Please see the Azure documentation for the number of Availability Zones in your region.
-
-Type:
-
-```hcl
-object({
-    name                                = optional(string)
-    resource_group_name                 = optional(string)
-    location                            = optional(string)
-    sku_name                            = optional(string, "P1v2")
-    app_service_environment_resource_id = optional(string)
-    maximum_elastic_worker_count        = optional(number)
-    worker_count                        = optional(number, 3)
-    per_site_scaling_enabled            = optional(bool, false)
-    zone_balancing_enabled              = optional(bool, true)
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-      principal_type                         = optional(string, null)
-    })), {})
   })
 ```
 
@@ -1672,14 +1593,6 @@ map(object({
 ```
 
 Default: `{}`
-
-### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
-
-Description: The resource ID of the App Service Plan to deploy the Function App in.
-
-Type: `string`
-
-Default: `null`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
@@ -1927,6 +1840,22 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
+
+Description: The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
+
+Description: The name of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
 
 Description: The ID of the secret in the key vault to use for the Storage Account access key.
@@ -1975,6 +1904,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
+
+Description: Should the Storage Account use a Managed Identity? Conflicts with `storage_account_access_key`.
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
@@ -2092,26 +2029,6 @@ Description: A map of private endpoints. The map key is the supplied input to va
 
 Description: The default hostname of the resource.
 
-### <a name="output_service_plan"></a> [service\_plan](#output\_service\_plan)
-
-Description: The service plan resource.
-
-### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
-
-Description: The resource id of the service plan.
-
-### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
-
-Description: The name of the created service plan.
-
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
-
-Description: The storage account resource.
-
-### <a name="output_storage_account_lock"></a> [storage\_account\_lock](#output\_storage\_account\_lock)
-
-Description: The locks of the resources.
-
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 
 Description: value
@@ -2130,19 +2047,7 @@ Description: The deployment slots.
 
 ## Modules
 
-The following Modules are called:
-
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
-
-Source: Azure/avm-res-storage-storageaccount/azurerm
-
-Version: 0.2.4
-
-### <a name="module_avm_res_web_serverfarm"></a> [avm\_res\_web\_serverfarm](#module\_avm\_res\_web\_serverfarm)
-
-Source: Azure/avm-res-web-serverfarm/azurerm
-
-Version: 0.2.0
+No modules.
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

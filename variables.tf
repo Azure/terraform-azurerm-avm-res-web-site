@@ -22,7 +22,7 @@ variable "name" {
 
 variable "os_type" {
   type        = string
-  description = "The operating system that should be the same type of the App Service Plan to deploy the Function/Web App in."
+  description = "The operating system that should be the same type of the App Service Plan to deploy the App Service in."
 
   validation {
     error_message = "The value must be on of: `Linux` or `Windows`"
@@ -32,7 +32,12 @@ variable "os_type" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of the Resource Group where the Function App will be deployed."
+  description = "The name of the Resource Group where the App Service will be deployed."
+}
+
+variable "service_plan_resource_id" {
+  type        = string
+  description = "The resource ID of the App Service Plan to deploy the App Service in in."
 }
 
 variable "all_child_resources_inherit_lock" {
@@ -98,6 +103,36 @@ variable "application_insights" {
   description = <<DESCRIPTION
 
   The Application Insights settings to assign to the Function App.
+
+  -`application_type`: The type of Application Insights to create. Valid values are `ios`, `java`, `MobileCenter`, `Node.JS`, `other`, `phone`, `store`, and `web`. Defaults to `web`.
+  -`inherit_tags`: Should the Application Insights inherit tags from the parent resource? Defaults to `false`.
+  -`location`: The location of the Application Insights.
+  -`name`: The name of the Application Insights.
+  -`resource_group_name`: The name of the Resource Group where the Application Insights will be deployed.
+  -`tags`: A map of tags to assign to the Application Insights.
+  -`workspace_resource_id`: The resource ID of the Log Analytics Workspace to use for the Application Insights.
+  -`daily_data_cap_in_gb`: The daily data cap in GB for the Application Insights.
+  -`daily_data_cap_notifications_disabled`: Should the daily data cap notifications be disabled for the Application Insights?
+  -`retention_in_days`: The retention period in days for the Application Insights. Defaults to `90`.
+  -`sampling_percentage`: The sampling percentage for the Application Insights. Defaults to `100`.
+  -`disable_ip_masking`: Should the IP masking be disabled for the Application Insights? Defaults to `false`.
+  -`local_authentication_disabled`: Should the local authentication be disabled for the Application Insights? Defaults to `false`.
+  -`internet_ingestion_enabled`: Should the internet ingestion be enabled for the Application Insights? Defaults to `true`.
+  -`internet_query_enabled`: Should the internet query be enabled for the Application Insights? Defaults to `true`.
+  -`force_customer_storage_for_profiler`: Should the customer storage be forced for the profiler for the Application Insights? Defaults to `false`.
+
+  ```terraform
+  application_insights = {
+    name                  = module.naming.application_insights.name_unique
+    resource_group_name   = module.avm_res_resources_resourcegroup.name
+    location              = module.avm_res_resources_resourcegroup.resource.location
+    application_type      = "web"
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    tags = {
+      environment = "dev-tf"
+    }
+  }
+  ```
 
   DESCRIPTION
 }
@@ -496,6 +531,40 @@ variable "auto_heal_setting" {
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
+  site_config = {
+    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
+  }
+  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+    setting_1 = {
+      action = {
+        action_type                    = "Recycle"
+        minimum_process_execution_time = "00:01:00"
+      }
+      trigger = {
+        requests = {
+          count    = 100
+          interval = "00:00:30"
+        }
+        status_code = {
+          status_5000 = {
+            count             = 5000
+            interval          = "00:05:00"
+            path              = "/HealthCheck"
+            status_code_range = 500
+            sub_status        = 0
+          }
+          status_6000 = {
+            count             = 6000
+            interval          = "00:05:00"
+            path              = "/Get"
+            status_code_range = 500
+            sub_status        = 0
+          }
+        }
+      }
+    }
+  }
+  ```
 
   DESCRIPTION
   nullable    = false
@@ -608,12 +677,6 @@ variable "content_share_force_disabled" {
   type        = bool
   default     = false
   description = "Should content share be force disabled for the Function App?"
-}
-
-variable "create_service_plan" {
-  type        = bool
-  default     = false
-  description = "Should the module create a new App Service Plan for the Function App?"
 }
 
 variable "custom_domains" {
@@ -781,86 +844,6 @@ variable "ftp_publish_basic_authentication_enabled" {
   description = "Should basic authentication be enabled for FTP publish?"
 }
 
-variable "function_app_create_storage_account" {
-  # Currently defaulting to false; defaulting to true will introduce a BREAKING CHANGE
-  type        = bool
-  default     = false
-  description = "Should a Storage Account be created for the Function App?"
-}
-
-variable "function_app_storage_account" {
-  type = object({
-    name                          = optional(string)
-    resource_group_name           = optional(string)
-    location                      = optional(string)
-    account_kind                  = optional(string, "StorageV2")
-    account_tier                  = optional(string, "Standard")
-    account_replication_type      = optional(string)
-    shared_access_key_enabled     = optional(bool, true)
-    public_network_access_enabled = optional(bool, true)
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-      principal_type                         = optional(string, null)
-    })), {})
-  })
-  default = {
-
-  }
-  description = <<DESCRIPTION
-  A map of objects that represent a Storage Account to mount to the Function App.
-
-  - `name` - (Optional) The name of the Storage Account.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the Storage Account in.
-  - `location` - (Optional) The Azure region where the Storage Account will be deployed.
-  - `account_kind` - (Optional) The kind of the Storage Account. Defaults to `StorageV2`.
-  - `account_tier` - (Optional) The tier of the Storage Account. Defaults to `Standard`.
-  - `account_replication_type` - (Optional) The replication type of the Storage Account.
-  - `shared_access_key_enabled` - (Optional) Should the shared access key be enabled for the Storage Account? Defaults to `true`.
-  - `public_network_access_enabled` - (Optional) Should public network access be enabled for the Storage Account? Defaults to `true`.
-  - `lock` - (Optional) The lock level to apply.
-  - `role_assignments` - (Optional) A map of role assignments to assign to the Storage Account.
-
-  ```terraform
-
-  ```
-  DESCRIPTION
-}
-
-variable "function_app_storage_account_access_key" {
-  type        = string
-  default     = null
-  description = "The access key of the Storage Account to deploy the Function App in."
-  sensitive   = true
-}
-
-variable "function_app_storage_account_inherit_lock" {
-  type        = bool
-  default     = true
-  description = "Should the Storage Account inherit the lock from the parent resource? Defaults to `true`."
-}
-
-variable "function_app_storage_account_name" {
-  type        = string
-  default     = null
-  description = "The name of the Storage Account to deploy the Function App in."
-}
-
-variable "function_app_storage_uses_managed_identity" {
-  type        = bool
-  default     = false
-  description = "Should the Storage Account use a Managed Identity?"
-}
-
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
@@ -938,52 +921,6 @@ variable "managed_identities" {
   default     = {}
   description = "Managed identities to be created for the resource."
   nullable    = false
-}
-
-variable "new_service_plan" {
-  type = object({
-    name                                = optional(string)
-    resource_group_name                 = optional(string)
-    location                            = optional(string)
-    sku_name                            = optional(string, "P1v2")
-    app_service_environment_resource_id = optional(string)
-    maximum_elastic_worker_count        = optional(number)
-    worker_count                        = optional(number, 3)
-    per_site_scaling_enabled            = optional(bool, false)
-    zone_balancing_enabled              = optional(bool, true)
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-      principal_type                         = optional(string, null)
-    })), {})
-  })
-  default = {
-
-  }
-  description = <<DESCRIPTION
-  A map of objects that represent a new App Service Plan to create for the Function App.
-
-  - `name` - (Optional) The name of the App Service Plan.
-  - `resource_group_name` - (Optional) The name of the resource group to deploy the App Service Plan in.
-  - `location` - (Optional) The Azure region where the App Service Plan will be deployed. Defaults to the location of the resource group.
-  - `sku_name` - (Optional) The SKU name of the App Service Plan. Defaults to `P1v2`. 
-  > Possible values include `B1`, `B2`, `B3`, `D1`, `F1`, `I1`, `I2`, `I3`, `I1v2`, `I2v2`, `I3v2`, `I4v2`, `I5v2`, `I6v2`, `P1v2`, `P2v2`, `P3v2`, `P0v3`, `P1v3`,``P2v3`, `P3v3`, `P1mv3`, `P2mv3`, `P3mv3`, `P4mv3`, `P5mv3`, `S1`, `S2`, `S3`, `SHARED`, `EP1`, `EP2`, `EP3`, `FC1`, `WS1`, `WS2`, `WS3`, and `Y1`.
-  - `app_service_environment_resource_id` - (Optional) The resource ID of the App Service Environment to deploy the App Service Plan in.
-  - `maximum_elastic_worker_count` - (Optional) The maximum number of workers that can be allocated to Elastic SKU Plan. Cannot be set unless using an Elastic SKU.
-  - `worker_count` - (Optional) The number of workers to allocate to this App Service Plan. Defaults to `3`.
-  - `per_site_scaling_enabled` - (Optional) Should per site scaling be enabled for the App Service Plan? Defaults to `false`.
-  - `zone_balancing_enabled` - (Optional) Should zone balancing be enabled for the App Service Plan? Changing this forces a new resource to be created.
-  > **NOTE:** If this setting is set to `true` and the `worker_count` value is specified, it should be set to a multiple of the number of availability zones in the region. Please see the Azure documentation for the number of Availability Zones in your region.
-  DESCRIPTION
 }
 
 variable "private_endpoints" {
@@ -1087,12 +1024,6 @@ A map of role assignments to create on this resource. The map key is deliberatel
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
-}
-
-variable "service_plan_resource_id" {
-  type        = string
-  default     = null
-  description = "The resource ID of the App Service Plan to deploy the Function App in."
 }
 
 variable "site_config" {
@@ -1340,6 +1271,19 @@ variable "sticky_settings" {
   DESCRIPTION
 }
 
+variable "storage_account_access_key" {
+  type        = string
+  default     = null
+  description = "The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity`."
+  sensitive   = true
+}
+
+variable "storage_account_name" {
+  type        = string
+  default     = null
+  description = "The name of the Storage Account to deploy the Function App in."
+}
+
 variable "storage_key_vault_secret_id" {
   type        = string
   default     = null
@@ -1383,6 +1327,12 @@ variable "storage_shares_to_mount" {
   }
   ```
   DESCRIPTION
+}
+
+variable "storage_uses_managed_identity" {
+  type        = bool
+  default     = false
+  description = "Should the Storage Account use a Managed Identity? Conflicts with `storage_account_access_key`."
 }
 
 # tflint-ignore: terraform_unused_declarations

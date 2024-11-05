@@ -1,47 +1,60 @@
-output "active_slot" {
-  description = "ID of active slot"
-  value       = module.test.web_app_active_slot
-}
-
-output "deployment_slot_locks" {
-  description = "The locks of the deployment slots."
-  value       = module.test.deployment_slot_locks
-}
-
-output "deployment_slots" {
-  description = "Full output of deployment slots created"
-  sensitive   = true
-  value       = module.test.web_app_deployment_slots
+output "location" {
+  description = "This is the full output for the resource."
+  value       = module.avm_res_web_site.location
 }
 
 output "name" {
   description = "This is the full output for the resource."
-  value       = module.test.name
+  value       = module.avm_res_web_site.name
 }
 
-output "private_endpoint_locks" {
-  description = "The locks of the deployment slots."
-  value       = module.test.private_endpoint_locks
-}
-
-output "resource" {
+output "resource_id" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = module.test.resource
+  value       = module.avm_res_web_site.resource_id
 }
 
-output "resource_lock" {
-  description = "The locks of the resources."
-  value       = module.test.resource_lock
+output "service_plan_id" {
+  description = "The ID of the app service"
+  value       = azurerm_service_plan.example.id
 }
 
-output "storage_account" {
+output "service_plan_name" {
+  description = "Full output of service plan created"
+  value       = azurerm_service_plan.example.name
+}
+
+output "sku_name" {
+  description = "The number of workers"
+  value       = azurerm_service_plan.example.sku_name
+}
+
+output "storage_account_id" {
+  description = "The ID of the storage account"
+  value       = azurerm_storage_account.example.id
+}
+
+output "storage_account_kind" {
+  description = "The kind of storage account"
+  value       = azurerm_storage_account.example.account_kind
+}
+
+output "storage_account_name" {
   description = "Full output of storage account created"
-  sensitive   = true
-  value       = module.test.storage_account
+  value       = azurerm_storage_account.example.name
 }
 
-output "storage_account_lock" {
-  description = "The lock of the storage account."
-  value       = module.test.storage_account_lock
+output "storage_account_replication_type" {
+  description = "The kind of storage account"
+  value       = azurerm_storage_account.example.account_replication_type
+}
+
+output "worker_count" {
+  description = "The number of workers"
+  value       = azurerm_service_plan.example.worker_count
+}
+
+output "zone_redundant" {
+  description = "The number of workers"
+  value       = azurerm_service_plan.example.zone_balancing_enabled
 }

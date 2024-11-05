@@ -18,48 +18,34 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
-
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
-}
-
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = var.sku_for_testing
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-custom-domain"
+  }
 }
 
-# module "avm_res_web_serverfarm" {
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
 
-#   source  = "Azure/avm-res-web-serverfarm/azurerm"
-#   version = "0.1.0"
-
-#   name                = module.naming.app_service_plan.name_unique
-#   os_type             = "Windows"
-#   resource_group_name = azurerm_resource_group.example.name
-#   sku_name            = "S1"
-
-# }
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
+  }
+}
 
 # Use data object to reference an existing Key Vault and stored certificate
 /*
@@ -76,25 +62,28 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 
 
 # This is the module call
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-custom-domain"
+  name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
-  os_type = azurerm_service_plan.example.os_type
+  kind = "functionapp"
 
+  # Uses an existing app service plan
+  os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # Uses an existing storage account
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # storage_uses_managed_identity = true
 
   site_config = {
     application_stack = {
@@ -133,10 +122,12 @@ module "test" {
     }
   }
 
+  /*
+
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
-    /*
+
     production = {
 
       zone_resource_group_name = "<zone_resource_group_name>"
@@ -185,18 +176,20 @@ module "test" {
       cname_zone_name      = "<zone_name>"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain-qa.azurewebsites.net"
 
-      # create_certificate   = true
-      # certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      # certificate_location = azurerm_resource_group.example.location
-      # pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+      create_certificate   = true
+      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_slot_key = "qa"
-      hostname = "${module.naming.function_app.name_unique}-qa.<zone_name>"
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "production"
+      hostname             = "${module.naming.function_app.name_unique}-qa.<zone_name>"
+      ssl_state            = "SniEnabled"
+      thumbprint_key       = "production"
     }
-    */
+
   }
+
+  */
 
   tags = {
     environment = "dev-tf"

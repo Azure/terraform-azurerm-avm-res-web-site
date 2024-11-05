@@ -13,7 +13,7 @@ resource "azurerm_windows_web_app_slot" "this" {
   https_only                                     = each.value.https_only
   key_vault_reference_identity_id                = each.value.key_vault_reference_identity_id
   public_network_access_enabled                  = each.value.public_network_access_enabled
-  service_plan_id                                = each.value.service_plan_id != null ? each.value.service_plan_id : null
+  service_plan_id                                = each.value.service_plan_id
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
@@ -24,7 +24,6 @@ resource "azurerm_windows_web_app_slot" "this" {
     api_definition_url                            = each.value.site_config.api_definition_url
     api_management_api_id                         = each.value.site_config.api_management_api_id
     app_command_line                              = each.value.site_config.app_command_line
-    auto_heal_enabled                             = each.value.site_config.auto_heal_enabled != true ? null : each.value.site_config.auto_heal_enabled
     container_registry_managed_identity_client_id = each.value.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = each.value.site_config.container_registry_use_managed_identity
     default_documents                             = each.value.site_config.default_documents
@@ -51,8 +50,6 @@ resource "azurerm_windows_web_app_slot" "this" {
 
       content {
         current_stack                = application_stack.value.current_stack
-        docker_container_name        = application_stack.value.docker_container_name
-        docker_container_tag         = application_stack.value.docker_container_tag
         docker_image_name            = application_stack.value.docker_image_name
         docker_registry_password     = application_stack.value.docker_registry_password
         docker_registry_url          = application_stack.value.docker_registry_url
@@ -89,7 +86,6 @@ resource "azurerm_windows_web_app_slot" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path
             }
           }
           dynamic "slow_request_with_path" {
@@ -508,7 +504,7 @@ resource "azurerm_linux_web_app_slot" "this" {
   https_only                                     = each.value.https_only
   key_vault_reference_identity_id                = each.value.key_vault_reference_identity_id
   public_network_access_enabled                  = each.value.public_network_access_enabled
-  service_plan_id                                = each.value.service_plan_id != null ? each.value.service_plan_id : null
+  service_plan_id                                = each.value.service_plan_id
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
@@ -519,7 +515,6 @@ resource "azurerm_linux_web_app_slot" "this" {
     api_definition_url                            = each.value.site_config.api_definition_url
     api_management_api_id                         = each.value.site_config.api_management_api_id
     app_command_line                              = each.value.site_config.app_command_line
-    auto_heal_enabled                             = each.value.site_config.auto_heal_enabled != true ? null : each.value.site_config.auto_heal_enabled
     container_registry_managed_identity_client_id = each.value.site_config.container_registry_managed_identity_client_id
     container_registry_use_managed_identity       = each.value.site_config.container_registry_use_managed_identity
     default_documents                             = each.value.site_config.default_documents
@@ -580,7 +575,6 @@ resource "azurerm_linux_web_app_slot" "this" {
               count      = slow_requests.value.count
               interval   = slow_requests.value.interval
               time_taken = slow_requests.value.time_taken
-              path       = slow_requests.value.path
             }
           }
           dynamic "slow_request_with_path" {

@@ -1,3 +1,6 @@
+# Module to no longer support the creation/management of Storage Account
+
+/*
 module "avm_res_storage_storageaccount" {
   count = var.function_app_create_storage_account ? 1 : 0
 
@@ -20,3 +23,4 @@ module "avm_res_storage_storageaccount" {
   }
   tags = var.tags
 }
+*/

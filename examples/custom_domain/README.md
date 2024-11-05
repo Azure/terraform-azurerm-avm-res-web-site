@@ -22,48 +22,34 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.1.2"
-
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.storage_account.name_unique
-  resource_group_name           = azurerm_resource_group.example.name
-  location                      = azurerm_resource_group.example.location
-  shared_access_key_enabled     = true
-  public_network_access_enabled = true
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = "Allow"
-  }
-}
-
 resource "azurerm_service_plan" "example" {
-  location = azurerm_resource_group.example.location
-  # This will equate to Consumption (Serverless) in portal
+  location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
   os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = var.sku_for_testing
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-custom-domain"
+  }
 }
 
-# module "avm_res_web_serverfarm" {
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
 
-#   source  = "Azure/avm-res-web-serverfarm/azurerm"
-#   version = "0.1.0"
-
-#   name                = module.naming.app_service_plan.name_unique
-#   os_type             = "Windows"
-#   resource_group_name = azurerm_resource_group.example.name
-#   sku_name            = "S1"
-
-# }
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
+  }
+}
 
 # Use data object to reference an existing Key Vault and stored certificate
 /*
@@ -80,25 +66,28 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 
 
 # This is the module call
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-custom-domain"
+  name                = "${module.naming.function_app.name_unique}-default"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "functionapp"
-  os_type = azurerm_service_plan.example.os_type
+  kind = "functionapp"
 
+  # Uses an existing app service plan
+  os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
 
-  function_app_storage_account_name       = module.avm_res_storage_storageaccount.name
-  function_app_storage_account_access_key = module.avm_res_storage_storageaccount.resource.primary_access_key
+  # Uses an existing storage account
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # storage_uses_managed_identity = true
 
   site_config = {
     application_stack = {
@@ -137,10 +126,12 @@ module "test" {
     }
   }
 
+  /*
+
   custom_domains = {
     # Allows for the configuration of custom domains for the Function App
     # If not already set, the module allows for the creation of TXT and CNAME records
-    /*
+
     production = {
 
       zone_resource_group_name = "<zone_resource_group_name>"
@@ -189,18 +180,20 @@ module "test" {
       cname_zone_name      = "<zone_name>"
       cname_record         = "${module.naming.function_app.name_unique}-custom-domain-qa.azurewebsites.net"
 
-      # create_certificate   = true
-      # certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      # certificate_location = azurerm_resource_group.example.location
-      # pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
+      create_certificate   = true
+      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
+      certificate_location = azurerm_resource_group.example.location
+      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
 
       app_service_slot_key = "qa"
-      hostname = "${module.naming.function_app.name_unique}-qa.<zone_name>"
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "production"
+      hostname             = "${module.naming.function_app.name_unique}-qa.<zone_name>"
+      ssl_state            = "SniEnabled"
+      thumbprint_key       = "production"
     }
-    */
+
   }
+
+  */
 
   tags = {
     environment = "dev-tf"
@@ -214,9 +207,9 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.7.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -226,6 +219,7 @@ The following resources are used by this module:
 
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -247,43 +241,67 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_sku_for_testing"></a> [sku\_for\_testing](#input\_sku\_for\_testing)
-
-Description: n/a
-
-Type: `string`
-
-Default: `"S1"`
-
 ## Outputs
 
 The following outputs are exported:
 
-### <a name="output_name"></a> [name](#output\_name)
-
-Description: Name for the resource.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
+### <a name="output_location"></a> [location](#output\_location)
 
 Description: This is the full output for the resource.
 
-### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
+### <a name="output_name"></a> [name](#output\_name)
 
-Description: This is the URI for the resource.
+Description: This is the full output for the resource.
 
-### <a name="output_thumbprints"></a> [thumbprints](#output\_thumbprints)
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
-Description: This is the thumbprints for the resource.
+Description: This is the full output for the resource.
+
+### <a name="output_service_plan_id"></a> [service\_plan\_id](#output\_service\_plan\_id)
+
+Description: The ID of the app service
+
+### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
+
+Description: Full output of service plan created
+
+### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
+
+Description: The number of workers
+
+### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
+
+Description: The ID of the storage account
+
+### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
+
+Description: The kind of storage account
+
+### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
+
+Description: Full output of storage account created
+
+### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
+
+Description: The kind of storage account
+
+### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
+
+Description: The number of workers
+
+### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
+
+Description: The number of workers
 
 ## Modules
 
 The following Modules are called:
 
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+### <a name="module_avm_res_web_site"></a> [avm\_res\_web\_site](#module\_avm\_res\_web\_site)
 
-Source: Azure/avm-res-storage-storageaccount/azurerm
+Source: ../../
 
-Version: 0.1.2
+Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -296,12 +314,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

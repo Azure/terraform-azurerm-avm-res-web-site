@@ -18,34 +18,40 @@ module "naming" {
   version = ">= 0.3.0"
 }
 
-# This is required for resource modules
 resource "azurerm_resource_group" "example" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_service_plan" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.app_service_plan.name_unique
+  os_type             = "Windows"
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "P1v2"
+  tags = {
+    app = "${module.naming.function_app.name_unique}-logs"
+  }
+}
+
 # This is the module call
-module "test" {
+module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.10.1"
+  # version = "0.12.0"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.app_service.name_unique}-linux"
+  name                = "${module.naming.function_app.name_unique}-logs"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind    = "webapp"
-  os_type = "Linux"
+  kind = "webapp"
 
-  create_service_plan = true
-  new_service_plan = {
-    sku_name               = var.sku_for_testing
-    zone_balancing_enabled = var.redundancy_for_testing
-  }
-
+  # Uses an existing app service plan
+  os_type                  = azurerm_service_plan.example.os_type
+  service_plan_resource_id = azurerm_service_plan.example.id
 
   site_config = {
     application_stack = {

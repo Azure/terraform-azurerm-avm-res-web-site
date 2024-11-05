@@ -121,6 +121,7 @@ resource "azurerm_private_endpoint" "slot_this_unmanaged_dns_zone_groups" {
   custom_network_interface_name = each.value.pe_value.network_interface_name
   tags                          = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.pe_value.tags) : each.value.pe_value.tags
 
+
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.pe_value.private_service_connection_name != null ? each.value.pe_value.private_service_connection_name : "pse-${var.name}"
