@@ -30,7 +30,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-default"
+    app = "${module.naming.function_app.name_unique}-basic-auth"
   }
 }
 
@@ -73,24 +73,29 @@ module "avm_res_web_site" {
     ftps_state = "FtpsOnly"
   }
 
-  # auth_settings_v2 = {
-  #   setting1 = {
-  #     auth_enabled     = true
-  #     default_provider = "AzureActiveDirectory"
+  # May require additional configuration for the authentication settings by use of App Registration
 
-  #     active_directory_v2 = {
-  #       aad1 = {
-  #         client_id            = ""
-  #         tenant_auth_endpoint = "https://login.microsoftonline.com/{}/v2.0/"
-  #       }
-  #     }
-  #     login = {
-  #       login1 = {
-  #         token_store_enabled = true
-  #         validate_nonce      = true
-  #       }
-  #     }
-  #   }
-  # }
+  /*
+
+  auth_settings_v2 = {
+    setting1 = {
+      auth_enabled     = true
+      default_provider = "AzureActiveDirectory"
+
+      active_directory_v2 = {
+        aad1 = {
+          client_id            = "<>"
+          tenant_auth_endpoint = "https://login.microsoftonline.com/{}/v2.0/"
+        }
+      }
+      login = {
+        login1 = {
+          token_store_enabled = true
+        }
+      }
+    }
+  }
+
+  */
 
 }

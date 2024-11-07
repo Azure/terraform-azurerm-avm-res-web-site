@@ -440,16 +440,23 @@ Description: A map of authentication settings (V2) to assign to the Function App
 - `consumer_secret_setting_name` - (Required) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in.
 
 ```terraform
-auth_settings_v2 = {
-  example = {
-    auth_enabled = true
-    active_directory_v2 = {
-      client_id                  = "00000000-0000-0000-0000-000000000000"
-      client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
-      login_scopes               = ["00000000-0000-0000-0000-000000000000"]
+  auth_settings_v2 = {
+    setting1 = {
+      auth_enabled     = true
+      default_provider = "AzureActiveDirectory"
+      active_directory_v2 = {
+        aad1 = {
+          client_id            = "<client-id>"
+          tenant_auth_endpoint = "https://login.microsoftonline.com/{tenant-guid}/v2.0/"
+        }
+      }
+      login = {
+        login1 = {
+          token_store_enabled = true
+        }
+      }
     }
   }
-}
 ```
 
 Type:
@@ -520,7 +527,7 @@ map(object({
       allowed_audiences          = optional(list(string))
       login_scopes               = optional(list(string))
     })), {})
-    login = map(object({
+    login = optional(map(object({
       allowed_external_redirect_urls    = optional(list(string))
       cookie_expiration_convention      = optional(string, "FixedTime")
       cookie_expiration_time            = optional(string, "00:00:00")
@@ -532,7 +539,12 @@ map(object({
       token_store_path                  = optional(string)
       token_store_sas_setting_name      = optional(string)
       validate_nonce                    = optional(bool, true)
-    }))
+      })),
+      {
+        login = {
+
+        }
+    })
     microsoft_v2 = optional(map(object({
       client_id                  = optional(string)
       client_secret_setting_name = optional(string)
