@@ -145,7 +145,6 @@ resource "azurerm_windows_web_app_slot" "this" {
       }
     }
     dynamic "scm_ip_restriction" {
-      # one or more scm_ip_restriction blocks 
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
@@ -164,6 +163,24 @@ resource "azurerm_windows_web_app_slot" "this" {
             x_fd_health_probe = headers.value.x_fd_health_probe
             x_forwarded_for   = headers.value.x_forwarded_for
             x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+    dynamic "virtual_application" {
+      for_each = each.value.site_config.virtual_application
+
+      content {
+        physical_path = virtual_application.value.physical_path
+        preload       = virtual_application.value.preload_enabled
+        virtual_path  = virtual_application.value.virtual_path
+
+        dynamic "virtual_directory" {
+          for_each = virtual_application.value.virtual_directory
+
+          content {
+            physical_path = virtual_directory.value.physical_path
+            virtual_path  = virtual_directory.value.virtual_path
           }
         }
       }
