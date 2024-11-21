@@ -44,7 +44,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.12.0"
+  # version = "0.13.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -60,7 +60,7 @@ module "avm_res_web_site" {
 
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.12.0"
+    version = "0.13.0"
   }
 
 }

@@ -1050,7 +1050,7 @@ variable "site_config" {
     container_registry_use_managed_identity       = optional(bool)
     default_documents                             = optional(list(string))
     elastic_instance_minimum                      = optional(number)
-    ftps_state                                    = optional(string, "Disabled")
+    ftps_state                                    = optional(string, "FtpsOnly")
     health_check_eviction_time_in_min             = optional(number)
     health_check_path                             = optional(string)
     http2_enabled                                 = optional(bool, false)
@@ -1167,7 +1167,7 @@ variable "site_config" {
  - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
  - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
  - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
- - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `Disabled`.
+ - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `FtpsOnly`.
  - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
  - `health_check_path` - (Optional) The path to be checked for this function app health.
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
@@ -1178,7 +1178,7 @@ variable "site_config" {
  - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
  - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
  - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
- - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
+ - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
  - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
  - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
  - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
