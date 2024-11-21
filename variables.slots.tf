@@ -313,7 +313,7 @@ variable "deployment_slots" {
     })), {})
 
     site_config = optional(object({
-      always_on                                     = optional(bool, false)
+      always_on                                     = optional(bool, true)
       api_definition_url                            = optional(string)
       api_management_api_id                         = optional(string)
       app_command_line                              = optional(string)
@@ -333,7 +333,7 @@ variable "deployment_slots" {
       load_balancing_mode                           = optional(string, "LeastRequests")
       local_mysql_enabled                           = optional(bool, false)
       managed_pipeline_mode                         = optional(string, "Integrated")
-      minimum_tls_version                           = optional(string, "1.2")
+      minimum_tls_version                           = optional(string, "1.3")
       pre_warmed_instance_count                     = optional(number)
       remote_debugging_enabled                      = optional(bool, false)
       remote_debugging_version                      = optional(string)

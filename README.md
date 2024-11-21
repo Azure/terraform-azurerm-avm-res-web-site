@@ -1198,7 +1198,7 @@ map(object({
     })), {})
 
     site_config = optional(object({
-      always_on                                     = optional(bool, false)
+      always_on                                     = optional(bool, true)
       api_definition_url                            = optional(string)
       api_management_api_id                         = optional(string)
       app_command_line                              = optional(string)
@@ -1218,7 +1218,7 @@ map(object({
       load_balancing_mode                           = optional(string, "LeastRequests")
       local_mysql_enabled                           = optional(bool, false)
       managed_pipeline_mode                         = optional(string, "Integrated")
-      minimum_tls_version                           = optional(string, "1.2")
+      minimum_tls_version                           = optional(string, "1.3")
       pre_warmed_instance_count                     = optional(number)
       remote_debugging_enabled                      = optional(bool, false)
       remote_debugging_version                      = optional(string)
@@ -1609,7 +1609,7 @@ Default: `{}`
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
 Description:   An object that configures the Function App's `site_config` block.
- - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `false`.
+ - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `true`.
  - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
  - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
  - `app_command_line` - (Optional) The App command line to launch.
@@ -1626,7 +1626,7 @@ Description:   An object that configures the Function App's `site_config` block.
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
  - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
- - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
+ - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.3`.
  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
  - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
  - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
@@ -1707,7 +1707,7 @@ Type:
 
 ```hcl
 object({
-    always_on                                     = optional(bool, false)
+    always_on                                     = optional(bool, true)
     api_definition_url                            = optional(string)
     api_management_api_id                         = optional(string)
     app_command_line                              = optional(string)
@@ -1727,7 +1727,7 @@ object({
     load_balancing_mode                           = optional(string, "LeastRequests")
     local_mysql_enabled                           = optional(bool, false)
     managed_pipeline_mode                         = optional(string, "Integrated")
-    minimum_tls_version                           = optional(string, "1.2")
+    minimum_tls_version                           = optional(string, "1.3")
     pre_warmed_instance_count                     = optional(number)
     remote_debugging_enabled                      = optional(bool, false)
     remote_debugging_version                      = optional(string)
