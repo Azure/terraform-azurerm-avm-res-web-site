@@ -1038,7 +1038,7 @@ DESCRIPTION
 
 variable "site_config" {
   type = object({
-    always_on                                     = optional(bool, false)
+    always_on                                     = optional(bool, true)
     api_definition_url                            = optional(string)
     api_management_api_id                         = optional(string)
     app_command_line                              = optional(string)
@@ -1050,7 +1050,7 @@ variable "site_config" {
     container_registry_use_managed_identity       = optional(bool)
     default_documents                             = optional(list(string))
     elastic_instance_minimum                      = optional(number)
-    ftps_state                                    = optional(string, "Disabled")
+    ftps_state                                    = optional(string, "FtpsOnly")
     health_check_eviction_time_in_min             = optional(number)
     health_check_path                             = optional(string)
     http2_enabled                                 = optional(bool, false)
@@ -1058,7 +1058,7 @@ variable "site_config" {
     load_balancing_mode                           = optional(string, "LeastRequests")
     local_mysql_enabled                           = optional(bool, false)
     managed_pipeline_mode                         = optional(string, "Integrated")
-    minimum_tls_version                           = optional(string, "1.2")
+    minimum_tls_version                           = optional(string, "1.3")
     pre_warmed_instance_count                     = optional(number)
     remote_debugging_enabled                      = optional(bool, false)
     remote_debugging_version                      = optional(string)
@@ -1156,7 +1156,7 @@ variable "site_config" {
   default     = {}
   description = <<DESCRIPTION
   An object that configures the Function App's `site_config` block.
- - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `false`.
+ - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `true`.
  - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
  - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
  - `app_command_line` - (Optional) The App command line to launch.
@@ -1167,18 +1167,18 @@ variable "site_config" {
  - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
  - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
  - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
- - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `Disabled`.
+ - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `FtpsOnly`.
  - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
  - `health_check_path` - (Optional) The path to be checked for this function app health.
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
  - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
- - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
+ - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.3`.
  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
  - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
  - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
  - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
- - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.2`.
+ - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
  - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
  - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
  - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.

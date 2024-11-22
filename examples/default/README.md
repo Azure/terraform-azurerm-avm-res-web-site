@@ -8,7 +8,7 @@ This deploys the module in its simplest form.
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = "0.3.0"
+  version = ">= 0.8.0"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -57,7 +57,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.12.0"
+  # version = "0.13.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -78,7 +78,7 @@ module "avm_res_web_site" {
 
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.12.0"
+    version = "0.13.0"
   }
 
 }
@@ -195,7 +195,7 @@ Version: 0.3.0
 
 Source: Azure/regions/azurerm
 
-Version: 0.3.0
+Version: >= 0.8.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
