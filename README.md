@@ -3,7 +3,11 @@
 
 This is the module to deploy function apps in Azure.
 
-NOTE: `0.12.0` introduces some breaking changes, such as no longer supporting `azurerm` `0.3.x`. Please use `0.11.x` and prior releases if support for `azurerm` `0.3.x` is needed. Please review the release notes for a full breakdown of each release.
+NOTES:
+
+- `0.13.0` supports `azurerm` `4.8` and later versions.
+- For `azurerm` `4.x` support, please use `0.12.x` and later versions.
+- For `azurerm` `3.x` support, please use `0.11.x` and prior versions.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements
@@ -12,7 +16,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
