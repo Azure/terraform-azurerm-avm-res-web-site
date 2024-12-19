@@ -902,6 +902,8 @@ Default: `0`
 Description:
   ```
 
+  > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
+
 ```
 
 Type:
