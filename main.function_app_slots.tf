@@ -31,8 +31,8 @@ resource "azurerm_windows_function_app_slot" "this" {
     api_management_api_id                  = each.value.site_config.api_management_api_id
     app_command_line                       = each.value.site_config.app_command_line
     app_scale_limit                        = each.value.site_config.app_scale_limit
-    application_insights_connection_string = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].connection_string, var.site_config.application_insights_connection_string) : var.site_config.application_insights_connection_string
-    application_insights_key               = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].instrumentation_key, var.site_config.application_insights_key) : var.site_config.application_insights_key
+    application_insights_connection_string = var.enable_application_insights ? (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) : coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)) : null
+    application_insights_key               = var.enable_application_insights ? (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) : coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)) : null
     default_documents                      = each.value.site_config.default_documents
     elastic_instance_minimum               = each.value.site_config.elastic_instance_minimum
     ftps_state                             = each.value.site_config.ftps_state
@@ -436,8 +436,8 @@ resource "azurerm_linux_function_app_slot" "this" {
     api_management_api_id                  = each.value.site_config.api_management_api_id
     app_command_line                       = each.value.site_config.app_command_line
     app_scale_limit                        = each.value.site_config.app_scale_limit
-    application_insights_connection_string = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].connection_string, var.site_config.application_insights_connection_string) : var.site_config.application_insights_connection_string
-    application_insights_key               = var.enable_application_insights ? coalesce(azurerm_application_insights.this[0].instrumentation_key, var.site_config.application_insights_key) : var.site_config.application_insights_key
+    application_insights_connection_string = var.enable_application_insights ? (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) : coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)) : null
+    application_insights_key               = var.enable_application_insights ? (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) : coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)) : null
     default_documents                      = each.value.site_config.default_documents
     elastic_instance_minimum               = each.value.site_config.elastic_instance_minimum
     ftps_state                             = each.value.site_config.ftps_state
