@@ -1241,6 +1241,7 @@ map(object({
         retention_period_days = optional(number)
       })), {})
       application_stack = optional(map(object({
+        dotnet_core_version         = optional(string)
         dotnet_version              = optional(string)
         java_version                = optional(string)
         node_version                = optional(string)
@@ -1651,6 +1652,7 @@ Description:   An object that configures the Function App's `site_config` block.
 
  ---
  `application_stack` block supports the following:
+ - `dotnet_core_version` - (Optional) The version of .NET Core to use. Possible values include `v4.0`.
  - `dotnet_version` - (Optional) The version of .NET to use. Possible values include `3.1`, `6.0`, `7.0` and `8.0`.
  - `java_version` - (Optional) The Version of Java to use. Supported versions include `8`, `11` & `17`.
  - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
@@ -1750,6 +1752,7 @@ object({
       retention_period_days = optional(number)
     })), {})
     application_stack = optional(map(object({
+      dotnet_core_version         = optional(string)
       dotnet_version              = optional(string)
       java_version                = optional(string)
       node_version                = optional(string)

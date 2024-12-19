@@ -375,6 +375,7 @@ variable "deployment_slots" {
         retention_period_days = optional(number)
       })), {})
       application_stack = optional(map(object({
+        dotnet_core_version         = optional(string)
         dotnet_version              = optional(string)
         java_version                = optional(string)
         node_version                = optional(string)
