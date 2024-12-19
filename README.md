@@ -29,6 +29,7 @@ The following resources are used by this module:
 - [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_app_service_slot_custom_hostname_binding.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_slot_custom_hostname_binding) (resource)
+- [azurerm_application_insights.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
 - [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
 - [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
@@ -1210,6 +1211,7 @@ map(object({
       app_scale_limit                               = optional(number)
       application_insights_connection_string        = optional(string)
       application_insights_key                      = optional(string)
+      slot_application_insights_object_key          = optional(string)
       container_registry_managed_identity_client_id = optional(string)
       container_registry_use_managed_identity       = optional(bool)
       default_documents                             = optional(list(string))
@@ -1826,6 +1828,35 @@ object({
         }
     })
   })
+```
+
+Default: `{}`
+
+### <a name="input_slot_application_insights"></a> [slot\_application\_insights](#input\_slot\_application\_insights)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    application_type                      = optional(string, "web")
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  }))
 ```
 
 Default: `{}`

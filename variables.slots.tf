@@ -16,6 +16,30 @@ variable "app_service_active_slot" {
   DESCRIPTION
 }
 
+variable "slot_application_insights" {
+  type = map(object({
+    application_type                      = optional(string, "web")
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  }))
+  default = {
+
+  }
+}
+
 variable "deployment_slots" {
   type = map(object({
     name                                           = optional(string)
@@ -321,6 +345,7 @@ variable "deployment_slots" {
       app_scale_limit                               = optional(number)
       application_insights_connection_string        = optional(string)
       application_insights_key                      = optional(string)
+      slot_application_insights_object_key          = optional(string)
       container_registry_managed_identity_client_id = optional(string)
       container_registry_use_managed_identity       = optional(bool)
       default_documents                             = optional(list(string))

@@ -73,11 +73,18 @@ resource "azurerm_private_dns_zone_virtual_network_link" "example" {
   virtual_network_id    = azurerm_virtual_network.example.id
 }
 
+resource "azurerm_application_insights" "example" {
+  application_type    = "web"
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.application_insights.name_unique}-staging"
+  resource_group_name = azurerm_resource_group.example.name
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.13.0"
+  # version = "0.14.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -96,10 +103,14 @@ module "avm_res_web_site" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   # storage_uses_managed_identity = true
 
+  application_insights = {
+    name = "${module.naming.application_insights.name_unique}-production"
+  }
+
   site_config = {
     application_stack = {
       dotnet = {
-        dotnet_version              = "8.0"
+        dotnet_version              = "v8.0"
         use_custom_runtime          = false
         use_dotnet_isolated_runtime = true
       }
@@ -108,19 +119,36 @@ module "avm_res_web_site" {
 
   deployment_slots = {
     slot1 = {
-      name = "staging"
+      name = "development"
       site_config = {
+        slot_application_insights_object_key = "development"
         application_stack = {
           dotnet = {
-            dotnet_version              = "8.0"
+            dotnet_version              = "v8.0"
             use_custom_runtime          = false
             use_dotnet_isolated_runtime = true
           }
         }
       }
+    }
+    slot2 = {
+      name = "staging"
+      site_config = {
+        application_insights_connection_string = nonsensitive(azurerm_application_insights.example.connection_string)
+        application_insights_key               = nonsensitive(azurerm_application_insights.example.instrumentation_key)
+        application_stack = {
+          dotnet = {
+            dotnet_version              = "v8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+
       # lock = {
       #   kind = "CanNotDelete"
       # }
+
       public_network_access_enabled = false
       private_endpoints = {
         slot_primary = {
@@ -133,6 +161,17 @@ module "avm_res_web_site" {
         }
       }
     }
+  }
+
+  slot_application_insights = {
+    development = {
+      name         = "${module.naming.application_insights.name_unique}-development"
+      inherit_tags = true
+    }
+  }
+
+  tags = {
+    environment = "AVM"
   }
 
 }
