@@ -2085,6 +2085,10 @@ Description: The default hostname of the resource.
 
 Description: value
 
+### <a name="output_system_assigned_mi_principal_id_slots"></a> [system\_assigned\_mi\_principal\_id\_slots](#output\_system\_assigned\_mi\_principal\_id\_slots)
+
+Description: Map or value of system-assigned managed identity principal IDs for resources slots
+
 ### <a name="output_thumbprints"></a> [thumbprints](#output\_thumbprints)
 
 Description: The thumbprint of the certificate.
