@@ -84,6 +84,24 @@ output "system_assigned_mi_principal_id" {
   value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
 }
 
+output "system_assigned_mi_principal_id_slots" {
+  description = "Map or value of system-assigned managed identity principal IDs for resources slots"
+  sensitive   = true
+  value = var.kind == "functionapp" ? (
+    var.os_type == "Windows" ? (
+      length(azurerm_windows_function_app_slot.this) > 0 ?
+      { for slot_key, slot_resource in azurerm_windows_function_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
+    ) : length(azurerm_linux_function_app_slot.this) > 0 ?
+    { for slot_key, slot_resource in azurerm_linux_function_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
+    ) : (
+    var.os_type == "Windows" ? (
+      length(azurerm_windows_web_app_slot.this) > 0 ?
+      { for slot_key, slot_resource in azurerm_windows_web_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
+    ) : length(azurerm_linux_web_app_slot.this) > 0 ?
+    { for slot_key, slot_resource in azurerm_linux_web_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
+  )
+}
+
 output "thumbprints" {
   description = "The thumbprint of the certificate."
   sensitive   = true
