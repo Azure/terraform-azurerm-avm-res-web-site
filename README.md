@@ -910,20 +910,24 @@ Type:
 
 ```hcl
 map(object({
-    name                                           = optional(string)
-    app_settings                                   = optional(map(string))
-    builtin_logging_enabled                        = optional(bool, true)
-    content_share_force_disabled                   = optional(bool, false)
-    client_affinity_enabled                        = optional(bool, false)
-    client_certificate_enabled                     = optional(bool, false)
-    client_certificate_exclusion_paths             = optional(string, null)
-    client_certificate_mode                        = optional(string, "Required")
-    daily_memory_time_quota                        = optional(number, 0)
-    enabled                                        = optional(bool, true)
-    functions_extension_version                    = optional(string, "~4")
-    ftp_publish_basic_authentication_enabled       = optional(bool, true)
-    https_only                                     = optional(bool, false)
-    key_vault_reference_identity_id                = optional(string, null)
+    name                                     = optional(string)
+    app_settings                             = optional(map(string))
+    builtin_logging_enabled                  = optional(bool, true)
+    content_share_force_disabled             = optional(bool, false)
+    client_affinity_enabled                  = optional(bool, false)
+    client_certificate_enabled               = optional(bool, false)
+    client_certificate_exclusion_paths       = optional(string, null)
+    client_certificate_mode                  = optional(string, "Required")
+    daily_memory_time_quota                  = optional(number, 0)
+    enabled                                  = optional(bool, true)
+    functions_extension_version              = optional(string, "~4")
+    ftp_publish_basic_authentication_enabled = optional(bool, true)
+    https_only                               = optional(bool, false)
+    key_vault_reference_identity_id          = optional(string, null)
+    # managed_identities = optional(object({
+    #   system_assigned            = optional(bool, false)
+    #   user_assigned_resource_ids = optional(set(string), [])
+    # }), {})
     public_network_access_enabled                  = optional(bool, true)
     service_plan_id                                = optional(string, null)
     tags                                           = optional(map(string))
@@ -1839,7 +1843,9 @@ Default: `{}`
 
 ### <a name="input_slot_application_insights"></a> [slot\_application\_insights](#input\_slot\_application\_insights)
 
-Description: n/a
+Description:   Configures the Application Insights instance(s) for the deployment slot(s).
+  ```
+```
 
 Type:
 
@@ -2084,6 +2090,10 @@ Description: The default hostname of the resource.
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 
 Description: value
+
+### <a name="output_system_assigned_mi_principal_id_slots"></a> [system\_assigned\_mi\_principal\_id\_slots](#output\_system\_assigned\_mi\_principal\_id\_slots)
+
+Description: Map or value of system-assigned managed identity principal IDs for resources slots
 
 ### <a name="output_thumbprints"></a> [thumbprints](#output\_thumbprints)
 

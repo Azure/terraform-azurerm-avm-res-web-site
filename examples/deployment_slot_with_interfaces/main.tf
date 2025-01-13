@@ -80,11 +80,17 @@ resource "azurerm_application_insights" "example" {
   resource_group_name = azurerm_resource_group.example.name
 }
 
+resource "azurerm_user_assigned_identity" "user" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.user_assigned_identity.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.14.0"
+  # version = "0.15.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -105,6 +111,14 @@ module "avm_res_web_site" {
 
   application_insights = {
     name = "${module.naming.application_insights.name_unique}-production"
+  }
+
+  managed_identities = {
+    # Identities can only be used with the Standard SKU    
+    system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.user.id
+    ]
   }
 
   site_config = {
