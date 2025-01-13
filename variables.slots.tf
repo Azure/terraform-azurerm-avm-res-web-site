@@ -38,6 +38,10 @@ variable "slot_application_insights" {
   default = {
 
   }
+  description = <<DESCRIPTION
+  Configures the Application Insights instance(s) for the deployment slot(s).
+  ```
+  DESCRIPTION
 }
 
 variable "deployment_slots" {

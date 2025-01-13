@@ -1843,7 +1843,9 @@ Default: `{}`
 
 ### <a name="input_slot_application_insights"></a> [slot\_application\_insights](#input\_slot\_application\_insights)
 
-Description: n/a
+Description:   Configures the Application Insights instance(s) for the deployment slot(s).
+  ```
+```
 
 Type:
 
