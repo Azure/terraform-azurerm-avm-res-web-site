@@ -49,6 +49,16 @@ output "storage_account_replication_type" {
   value       = azurerm_storage_account.example.account_replication_type
 }
 
+output "system_assigned_mi_principal_id" {
+  description = "Test"
+  value       = module.avm_res_web_site.system_assigned_mi_principal_id
+}
+
+output "system_assigned_mi_principal_id_slots" {
+  description = "Test"
+  value       = module.avm_res_web_site.system_assigned_mi_principal_id_slots
+}
+
 output "worker_count" {
   description = "The number of workers"
   value       = azurerm_service_plan.example.worker_count

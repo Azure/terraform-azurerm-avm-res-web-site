@@ -86,11 +86,17 @@ resource "azurerm_application_insights" "example" {
   resource_group_name = azurerm_resource_group.example.name
 }
 
+resource "azurerm_user_assigned_identity" "user" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.user_assigned_identity.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.14.0"
+  # version = "0.15.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -111,6 +117,14 @@ module "avm_res_web_site" {
 
   application_insights = {
     name = "${module.naming.application_insights.name_unique}-production"
+  }
+
+  managed_identities = {
+    # Identities can only be used with the Standard SKU    
+    system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.user.id
+    ]
   }
 
   site_config = {
@@ -207,6 +221,7 @@ The following resources are used by this module:
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_user_assigned_identity.user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
@@ -272,6 +287,14 @@ Description: Full output of storage account created
 ### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
 
 Description: The kind of storage account
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: Test
+
+### <a name="output_system_assigned_mi_principal_id_slots"></a> [system\_assigned\_mi\_principal\_id\_slots](#output\_system\_assigned\_mi\_principal\_id\_slots)
+
+Description: Test
 
 ### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
 
