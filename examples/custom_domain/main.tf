@@ -66,7 +66,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.14.1"
+  # version = "0.14.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -160,7 +160,7 @@ module "avm_res_web_site" {
     qa = {
       slot_as_target = true
 
-      zone_resource_group_name = "rg-personal-domain"
+      zone_resource_group_name = "<zone_resource_group_name>"
 
       create_txt_records = true
       txt_name           = "asuid.${module.naming.function_app.name_unique}-qa"

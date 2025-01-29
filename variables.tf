@@ -139,7 +139,7 @@ variable "application_insights" {
 
 variable "auth_settings" {
   type = map(object({
-    additional_login_parameters    = optional(list(string))
+    additional_login_parameters    = optional(map(string))
     allowed_external_redirect_urls = optional(list(string))
     default_provider               = optional(string)
     enabled                        = optional(bool, false)
@@ -153,36 +153,36 @@ variable "auth_settings" {
       allowed_audiences          = optional(list(string))
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
-    })))
+    })), {})
     facebook = optional(map(object({
       app_id                  = optional(string)
       app_secret              = optional(string)
       app_secret_setting_name = optional(string)
       oauth_scopes            = optional(list(string))
-    })))
+    })), {})
     github = optional(map(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })))
+    })), {})
     google = optional(map(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })))
+    })), {})
     microsoft = optional(map(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })))
+    })), {})
     twitter = optional(map(object({
       consumer_key                 = optional(string)
       consumer_secret              = optional(string)
       consumer_secret_setting_name = optional(string)
-    })))
+    })), {})
   }))
   default = {
 
