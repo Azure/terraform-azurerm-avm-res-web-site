@@ -58,7 +58,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.14.1"
+  # version = "0.14.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -82,7 +82,19 @@ module "avm_res_web_site" {
 
   # May require additional configuration for the authentication settings by use of App Registration
 
-  /*
+  # /*
+
+  auth_settings = {
+    sso = {
+      enabled = true
+      active_directory = {
+        aad = {
+          client_id                  = "000000-000000-000000-000000"
+          client_secret_setting_name = "SSO_CLIENT_SECRET"
+        }
+      }
+    }
+  }
 
   auth_settings_v2 = {
     setting1 = {
@@ -103,7 +115,7 @@ module "avm_res_web_site" {
     }
   }
 
-  */
+  # */
 
 }
 ```

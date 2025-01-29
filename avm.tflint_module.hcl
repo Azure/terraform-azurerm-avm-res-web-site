@@ -6,7 +6,7 @@ plugin "terraform" {
 
 plugin "avm" {
   enabled     = true
-  version     = "0.11.5"
+  version     = "0.13.0"
   source      = "github.com/Azure/tflint-ruleset-avm"
   signing_key = <<-KEY
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -190,4 +190,8 @@ rule "tags" {
 
 rule "provider_modtm_version" {
   enabled = false
+}
+
+rule "valid_template_interpolation" {
+  enabled = true
 }
