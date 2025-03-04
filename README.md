@@ -16,7 +16,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0, >= 4.21.1, < 5.0.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
@@ -34,6 +34,7 @@ The following resources are used by this module:
 - [azurerm_dns_cname_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_cname_record) (resource)
 - [azurerm_dns_txt_record.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_txt_record) (resource)
 - [azurerm_function_app_active_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/function_app_active_slot) (resource)
+- [azurerm_function_app_flex_consumption.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/function_app_flex_consumption) (resource)
 - [azurerm_linux_function_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app) (resource)
 - [azurerm_linux_function_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app_slot) (resource)
 - [azurerm_linux_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) (resource)
@@ -100,6 +101,25 @@ Type: `string`
 ### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
 
 Description: The resource ID of the App Service Plan to deploy the App Service in in.
+
+Type: `string`
+
+### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
+
+Description:   The authentication type which will be used to access the backend storage account for the Function App.   
+  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+
+Type: `string`
+
+### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
+
+Description: The backend storage container endpoint which will be used by this Function App.
+
+Type: `string`
+
+### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
+
+Description: The storage container type used for the Function App. The current supported type is `blobContainer`.
 
 Type: `string`
 
@@ -1416,6 +1436,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
+
+Description: Should this Function App run on a Flex Consumption Plan?
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
 Description: The version of the Azure Functions runtime to use. Defaults to `~4`.
@@ -1431,6 +1459,14 @@ Description: Should the Function App only be accessible over HTTPS?
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_instance_memory_in_mb"></a> [instance\_memory\_in\_mb](#input\_instance\_memory\_in\_mb)
+
+Description: The amount of memory to allocate for the instance(s).
+
+Type: `number`
+
+Default: `null`
 
 ### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
 
@@ -1504,6 +1540,14 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_maximum_instance_count"></a> [maximum\_instance\_count](#input\_maximum\_instance\_count)
+
+Description: The number of workers this function app can scale out to.
+
+Type: `number`
+
+Default: `null`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -1618,6 +1662,27 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_runtime_name"></a> [runtime\_name](#input\_runtime\_name)
+
+Description: The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_runtime_version"></a> [runtime\_version](#input\_runtime\_version)
+
+Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  - `dotnet-isolated` supported values are: `8.0`, `9.0`
+  - `node` supported values are: `20`
+  - `python` supported values are: `3.10`, `3.11`
+  - `java` supported values are: `11`, `17`
+  - `powershell` supported values are: `7.4`
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
@@ -1900,7 +1965,8 @@ Default: `{}`
 
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
-Description: The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity`.
+Description:   The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity` (non-flex consumption function app configurations).  
+  This will resolve to `storage_acccess_key` for flex consumption function apps. Must be specified if `storage_authentication_type` is set to `storageaccountconnecionstring` Conflicts with `storage_user_assigned_identity_id`.
 
 Type: `string`
 
