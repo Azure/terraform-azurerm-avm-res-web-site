@@ -40,24 +40,6 @@ variable "service_plan_resource_id" {
   description = "The resource ID of the App Service Plan to deploy the App Service in in."
 }
 
-variable "storage_authentication_type" {
-  type        = string
-  description = <<DESCRIPTION
-  The authentication type which will be used to access the backend storage account for the Function App. 
-  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
-  DESCRIPTION
-}
-
-variable "storage_container_endpoint" {
-  type        = string
-  description = "The backend storage container endpoint which will be used by this Function App."
-}
-
-variable "storage_container_type" {
-  type        = string
-  description = "The storage container type used for the Function App. The current supported type is `blobContainer`."
-}
-
 variable "all_child_resources_inherit_lock" {
   type        = bool
   default     = true
@@ -1357,6 +1339,27 @@ variable "storage_account_name" {
   type        = string
   default     = null
   description = "The name of the Storage Account to deploy the Function App in."
+}
+
+variable "storage_authentication_type" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+  The authentication type which will be used to access the backend storage account for the Function App. 
+  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+  DESCRIPTION
+}
+
+variable "storage_container_endpoint" {
+  type        = string
+  default     = null
+  description = "The backend storage container endpoint which will be used by this Function App."
+}
+
+variable "storage_container_type" {
+  type        = string
+  default     = null
+  description = "The storage container type used for the Function App. The current supported type is `blobContainer`."
 }
 
 variable "storage_key_vault_secret_id" {

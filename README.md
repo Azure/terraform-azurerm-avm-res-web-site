@@ -104,25 +104,6 @@ Description: The resource ID of the App Service Plan to deploy the App Service i
 
 Type: `string`
 
-### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
-
-Description:   The authentication type which will be used to access the backend storage account for the Function App.   
-  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
-
-Type: `string`
-
-### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
-
-Description: The backend storage container endpoint which will be used by this Function App.
-
-Type: `string`
-
-### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
-
-Description: The storage container type used for the Function App. The current supported type is `blobContainer`.
-
-Type: `string`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
@@ -1975,6 +1956,31 @@ Default: `null`
 ### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
 
 Description: The name of the Storage Account to deploy the Function App in.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
+
+Description:   The authentication type which will be used to access the backend storage account for the Function App.   
+  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
+
+Description: The backend storage container endpoint which will be used by this Function App.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
+
+Description: The storage container type used for the Function App. The current supported type is `blobContainer`.
 
 Type: `string`
 
