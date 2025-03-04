@@ -855,6 +855,12 @@ variable "ftp_publish_basic_authentication_enabled" {
   description = "Should basic authentication be enabled for FTP publish?"
 }
 
+variable "function_app_uses_fc1" {
+  type        = bool
+  default     = false
+  description = "Should this Function App run on a Flex Consumption Plan?"
+}
+
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
@@ -865,6 +871,17 @@ variable "https_only" {
   type        = bool
   default     = false
   description = "Should the Function App only be accessible over HTTPS?"
+}
+
+variable "instance_memory_in_mb" {
+  type        = number
+  default     = 2048
+  description = "The amount of memory to allocate for the instance(s)."
+
+  validation {
+    error_message = "The value must be on of: `2048 or `4096`"
+    condition     = contains([2048, 4096], var.instance_memory_in_mb)
+  }
 }
 
 variable "key_vault_reference_identity_id" {
@@ -931,6 +948,12 @@ variable "managed_identities" {
   default     = {}
   description = "Managed identities to be created for the resource."
   nullable    = false
+}
+
+variable "maximum_instance_count" {
+  type        = number
+  default     = null
+  description = "The number of workers this function app can scale out to."
 }
 
 variable "private_endpoints" {
@@ -1034,6 +1057,25 @@ A map of role assignments to create on this resource. The map key is deliberatel
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
+}
+
+variable "runtime_name" {
+  type        = string
+  default     = null
+  description = "The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
+}
+
+variable "runtime_version" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  - `dotnet-isolated` supported values are: `8.0`, `9.0`
+  - `node` supported values are: `20`
+  - `python` supported values are: `3.10`, `3.11`
+  - `java` supported values are: `11`, `17`
+  - `powershell` supported values are: `7.4`
+  DESCRIPTION
 }
 
 variable "site_config" {
@@ -1286,7 +1328,10 @@ variable "sticky_settings" {
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity`."
+  description = <<DESCRIPTION
+  The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity` (non-flex consumption function app configurations).
+  This will resolve to `storage_acccess_key` for flex consumption function apps. Must be specified if `storage_authentication_type` is set to `storageaccountconnecionstring` Conflicts with `storage_user_assigned_identity_id`.
+  DESCRIPTION
   sensitive   = true
 }
 
@@ -1294,6 +1339,27 @@ variable "storage_account_name" {
   type        = string
   default     = null
   description = "The name of the Storage Account to deploy the Function App in."
+}
+
+variable "storage_authentication_type" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+  The authentication type which will be used to access the backend storage account for the Function App. 
+  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+  DESCRIPTION
+}
+
+variable "storage_container_endpoint" {
+  type        = string
+  default     = null
+  description = "The backend storage container endpoint which will be used by this Function App."
+}
+
+variable "storage_container_type" {
+  type        = string
+  default     = null
+  description = "The storage container type used for the Function App. The current supported type is `blobContainer`."
 }
 
 variable "storage_key_vault_secret_id" {

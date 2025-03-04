@@ -10,18 +10,18 @@ output "deployment_slot_locks" {
 
 output "function_app_active_slot" {
   description = "The active slot."
-  value       = var.kind == "functionapp" && var.app_service_active_slot != null ? azurerm_function_app_active_slot.this[0].id : (var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_function_app.this[0].id : var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Linux" ? azurerm_linux_function_app.this[0].id : null
+  value       = var.kind == "functionapp" && var.app_service_active_slot != null ? azurerm_function_app_active_slot.this[0].id : (var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_function_app.this[0].id : var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Linux" && var.function_app_uses_fc1 == false ? azurerm_linux_function_app.this[0].id : null
 }
 
 output "function_app_deployment_slots" {
   description = "The deployment slots."
-  value       = var.kind == "functionapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_function_app_slot.this : azurerm_linux_function_app_slot.this
+  value       = var.kind == "functionapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_function_app_slot.this : (var.function_app_uses_fc1 == true ? null : azurerm_linux_function_app_slot.this)
 }
 
 output "identity_principal_id" {
   description = "The object principal id of the resource."
   sensitive   = true
-  value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
+  value       = var.kind == "functionapp" ? /* kind == functionapp */ (var.function_app_uses_fc1 == true ? /* FC1*/ (length(azurerm_function_app_flex_consumption.this[0].identity) > 0 ? /* contains identity*/ azurerm_function_app_flex_consumption.this[0].identity[0].principal_id : /* no identity*/ null) : /* no FC1*/ (var.os_type == "Windows" ? /* os == windows */ (length(azurerm_windows_function_app.this[0].identity) > 0 ? /* contains identity*/ azurerm_windows_function_app.this[0].identity[0].principal_id : /* no identity */ null) : /* os == Linux*/ length(azurerm_linux_function_app.this[0].identity) > 0 ? /* contains identity */ azurerm_linux_function_app.this[0].identity[0].principal_id : /* no identity */ null)) : /* kind == webapp*/ (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
 }
 
 output "kind" {
@@ -36,7 +36,7 @@ output "location" {
 
 output "name" {
   description = "The name of the resource."
-  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
+  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].name : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name)) : null
 }
 
 output "os_type" {
@@ -54,13 +54,13 @@ output "private_endpoint_locks" {
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0] : azurerm_linux_function_app.this[0]) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0] : azurerm_linux_web_app.this[0])) : null
+  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 ? /* FC1 */ azurerm_function_app_flex_consumption.this[0] : /* not FC1*/ (var.os_type == "Windows" ? azurerm_windows_function_app.this[0] : azurerm_linux_function_app.this[0])) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0] : azurerm_linux_web_app.this[0])) : null
 }
 
 output "resource_id" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].id : azurerm_linux_web_app.this[0].id)) : null
+  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 ? azurerm_function_app_flex_consumption.this[0].id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].id : azurerm_linux_web_app.this[0].id)) : null
 }
 
 output "resource_lock" {
@@ -75,13 +75,13 @@ output "resource_private_endpoints" {
 
 output "resource_uri" {
   description = "The default hostname of the resource."
-  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname)) : null
+  value       = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].default_hostname : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname)) : null
 }
 
 output "system_assigned_mi_principal_id" {
   description = "value"
   sensitive   = true
-  value       = var.kind == "functionapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
+  value       = var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? (length(azurerm_function_app_flex_consumption.this[0].identity) > 0 ? azurerm_function_app_flex_consumption.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null)) : (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
