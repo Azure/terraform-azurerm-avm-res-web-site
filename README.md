@@ -1447,7 +1447,7 @@ Description: The amount of memory to allocate for the instance(s).
 
 Type: `number`
 
-Default: `null`
+Default: `2048`
 
 ### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
 

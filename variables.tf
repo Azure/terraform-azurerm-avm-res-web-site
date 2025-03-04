@@ -875,7 +875,7 @@ variable "https_only" {
 
 variable "instance_memory_in_mb" {
   type        = number
-  default     = null
+  default     = 2048
   description = "The amount of memory to allocate for the instance(s)."
 
   validation {
