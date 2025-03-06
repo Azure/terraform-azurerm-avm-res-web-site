@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Web App
+# Function App from ZIP deployment
 
-This deploys the module with a Windows Web App in its simplest form.
+This deploys the module as a Function App leveraging zip file deployment.
 
 ```hcl
 ## Section to provide a random Azure region for the resource group
@@ -29,34 +29,92 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-zip"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 resource "azurerm_service_plan" "example" {
   location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
+  os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-webapp"
+    app = "${module.naming.function_app.name_unique}-zip"
+  }
+  zone_balancing_enabled = true
+}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
   }
 }
 
+/*
+data "archive_file" "function_package" {
+  type        = "zip"
+  source_file = "../zip_deploy_file/resources_for_zip_deploy/http_function.py"
+  output_path = "http_function.zip"
+}
+*/
+
 module "avm_res_web_site" {
+
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.1"
+  #   source             = "Azure/avm-res-web-site/azurerm"
+  #   version = "0.15.1"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-webapp"
+  name                = "${module.naming.function_app.name_unique}-zip"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  kind = "webapp"
+  kind = "functionapp"
 
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
+
+  # Uses an existing storage account
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # storage_uses_managed_identity = true
+
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+  }
+
+  /*
+
+    # If you experience a 401 authentication/authorization error, consider deploying the function app, and then add the `zip_deploy_file` and `WEBSITE_RUN_FROM_PACKAGE` configuration in a separate apply.
+  zip_deploy_file = data.archive_file.function_package.output_path
+
+  app_settings = {
+    WEBSITE_RUN_FROM_PACKAGE = 1
+  }
+  */
+
+  site_config = {
+    application_stack = {
+      python = {
+        python_version = "3.11"
+      }
+    }
+  }
 
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
@@ -71,9 +129,9 @@ module "avm_res_web_site" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.10)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.21.1)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -81,8 +139,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -131,6 +191,22 @@ Description: Full output of service plan created
 ### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
 
 Description: The number of workers
+
+### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
+
+Description: The ID of the storage account
+
+### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
+
+Description: The kind of storage account
+
+### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
+
+Description: Full output of storage account created
+
+### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
+
+Description: The kind of storage account
 
 ### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
 

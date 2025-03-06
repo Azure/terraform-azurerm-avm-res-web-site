@@ -23,15 +23,24 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-zip"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 resource "azurerm_service_plan" "example" {
   location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
+  os_type             = "Linux"
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-mi"
+    app = "${module.naming.function_app.name_unique}-zip"
   }
+  zone_balancing_enabled = true
 }
 
 resource "azurerm_storage_account" "example" {
@@ -47,22 +56,24 @@ resource "azurerm_storage_account" "example" {
   }
 }
 
-resource "azurerm_role_assignment" "example" {
-  principal_id         = module.avm_res_web_site.identity_principal_id
-  scope                = azurerm_storage_account.example.id
-  role_definition_name = "Storage Blob Data Owner"
+/*
+data "archive_file" "function_package" {
+  type        = "zip"
+  source_file = "../zip_deploy_file/resources_for_zip_deploy/http_function.py"
+  output_path = "http_function.zip"
 }
+*/
 
-# This is the module call
 module "avm_res_web_site" {
+
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.1"
+  #   source             = "Azure/avm-res-web-site/azurerm"
+  #   version = "0.15.1"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-mi"
+  name                = "${module.naming.function_app.name_unique}-zip"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
@@ -73,11 +84,35 @@ module "avm_res_web_site" {
   service_plan_resource_id = azurerm_service_plan.example.id
 
   # Uses an existing storage account
-  storage_account_name          = azurerm_storage_account.example.name
-  storage_uses_managed_identity = true
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # storage_uses_managed_identity = true
 
-  managed_identities = {
-    system_assigned = true
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+  }
+
+  /*
+
+    # If you experience a 401 authentication/authorization error, consider deploying the function app, and then add the `zip_deploy_file` and `WEBSITE_RUN_FROM_PACKAGE` configuration in a separate apply.
+  zip_deploy_file = data.archive_file.function_package.output_path
+
+  app_settings = {
+    WEBSITE_RUN_FROM_PACKAGE = 1
+  }
+  */
+
+  site_config = {
+    application_stack = {
+      python = {
+        python_version = "3.11"
+      }
+    }
+  }
+
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.15.1"
   }
 
 }
