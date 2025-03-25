@@ -90,7 +90,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.1"
+  # version = "0.15.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -114,7 +114,7 @@ module "avm_res_web_site" {
   }
 
   managed_identities = {
-    # Identities can only be used with the Standard SKU    
+    # Identities can only be used with the Standard SKU
     system_assigned = true
     user_assigned_resource_ids = [
       azurerm_user_assigned_identity.user.id
