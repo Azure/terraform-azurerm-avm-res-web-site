@@ -847,31 +847,29 @@ resource "azurerm_function_app_flex_consumption" "this" {
   location                           = var.location
   name                               = var.name
   resource_group_name                = var.resource_group_name
+  runtime_name                       = var.runtime_name
+  runtime_version                    = var.runtime_version
   service_plan_id                    = var.service_plan_resource_id
+  storage_authentication_type        = var.storage_authentication_type
+  storage_container_endpoint         = var.storage_container_endpoint
+  storage_container_type             = var.storage_container_type
   app_settings                       = var.app_settings
   client_certificate_enabled         = var.client_certificate_enabled
   client_certificate_exclusion_paths = var.client_certificate_exclusion_paths
   client_certificate_mode            = var.client_certificate_mode
   # content_share_force_disabled                   = var.content_share_force_disabled
   # daily_memory_time_quota                        = var.daily_memory_time_quota
-  enabled = var.enabled
+  enabled                = var.enabled
+  instance_memory_in_mb  = var.instance_memory_in_mb
+  maximum_instance_count = var.maximum_instance_count
   # https_only                                     = var.https_only
   # key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
+  storage_access_key                             = var.storage_account_access_key
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
-
-  runtime_name           = var.runtime_name
-  runtime_version        = var.runtime_version
-  maximum_instance_count = var.maximum_instance_count
-  instance_memory_in_mb  = var.instance_memory_in_mb
-
-  storage_access_key          = var.storage_account_access_key
-  storage_container_endpoint  = var.storage_container_endpoint
-  storage_authentication_type = var.storage_authentication_type
-  storage_container_type      = var.storage_container_type
 
   site_config {
     api_definition_url                            = var.site_config.api_definition_url
@@ -908,7 +906,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
         retention_period_days = app_service_logs.value.retention_period_days
       }
     }
-
     dynamic "cors" {
       for_each = var.site_config.cors
 
@@ -1174,17 +1171,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
       }
     }
   }
-  # dynamic "backup" {
-  #   for_each = var.backup
-
-  #   content {
-  #     name                = backup.value.name
-  #     storage_account_url = backup.value.storage_account_url
-  #     enabled             = backup.value.enabled
-
-  #     dynamic "schedule" {
-  #       for_each = backup.value.schedule
-
   #       content {
   #         frequency_interval       = schedule.value.frequency_interval
   #         frequency_unit           = schedule.value.frequency_unit
@@ -1220,7 +1206,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
       connection_string_names = sticky_settings.value.connection_string_names
     }
   }
-
   dynamic "timeouts" {
     for_each = var.timeouts == null ? [] : [var.timeouts]
 
