@@ -1,11 +1,11 @@
 # Required Inputs
 variable "kind" {
   type        = string
-  description = "The type of App Service to deploy. Possible values are `functionapp` and `webapp`."
+  description = "The type of App Service to deploy. Possible values are `functionapp`, `webapp` and `logicapp`."
 
   validation {
-    error_message = "The value must be on of: `functionapp` or `webapp`"
-    condition     = contains(["functionapp", "webapp"], var.kind)
+    error_message = "The value must be on of: `functionapp`, `webapp` or `logicapp`"
+    condition     = contains(["functionapp", "webapp", "logicapp"], var.kind)
   }
 }
 
@@ -59,8 +59,8 @@ variable "app_settings" {
 
   }
   description = <<DESCRIPTION
-  A map of key-value pairs for [App Settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings) and custom values to assign to the Function App. 
-  
+  A map of key-value pairs for [App Settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings) and custom values to assign to the Function App.
+
   ```terraform
   app_settings = {
     WEBSITE_NODE_DEFAULT_VERSION = "10.14.1"
@@ -188,7 +188,7 @@ variable "auth_settings" {
 
   }
   description = <<DESCRIPTION
-  A map of authentication settings to assign to the Function App. 
+  A map of authentication settings to assign to the Function App.
  - `additional_login_parameters` - (Optional) Specifies a map of login Parameters to send to the OpenID Connect authorization endpoint when a user logs in.
  - `allowed_external_redirect_urls` - (Optional) Specifies a list of External URLs that can be redirected to as part of logging in or logging out of the Linux Web App.
  - `default_provider` - (Optional) The default authentication provider to use when multiple providers are configured. Possible values include: `AzureActiveDirectory`, `Facebook`, `Google`, `MicrosoftAccount`, `Twitter`, `Github`
@@ -239,7 +239,7 @@ variable "auth_settings" {
  - `consumer_key` - (Required) The OAuth 1.0a consumer key of the Twitter application used for sign-in.
  - `consumer_secret` - (Optional) The OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret_setting_name`.
  - `consumer_secret_setting_name` - (Optional) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret`.
-  
+
   ```terraform
   auth_settings = {
     example = {
@@ -357,7 +357,7 @@ variable "auth_settings_v2" {
   }
   description = <<DESCRIPTION
 A map of authentication settings (V2) to assign to the Function App.
-    
+
 - `auth_enabled` - (Optional) Should the AuthV2 Settings be enabled. Defaults to `false`.
 - `config_file_path` - (Optional) The path to the App Auth settings.
 - `default_provider` - (Optional) The Default Authentication Provider to use when the `unauthenticated_action` is set to `RedirectToLoginPage`. Possible values include: `apple`, `azureactivedirectory`, `facebook`, `github`, `google`, `twitter` and the `name` of your `custom_oidc_v2` provider.
@@ -531,7 +531,7 @@ variable "auto_heal_setting" {
       - `count` - (Required) The number of slow requests to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
       - `take_taken` - (Required) The time taken to trigger the action.
-      - `path` - (Optional) The path to trigger the action. 
+      - `path` - (Optional) The path to trigger the action.
       > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
     - `status_code` - (Optional) The status code trigger to activate the action.
       - `count` - (Required) The number of status codes to trigger the action.
@@ -632,6 +632,12 @@ variable "builtin_logging_enabled" {
   type        = bool
   default     = true
   description = "Should builtin logging be enabled for the Function App?"
+}
+
+variable "bundle_version" {
+  type        = string
+  default     = "[1.*, 2.0.0)"
+  description = "The version of the extension bundle to use. Defaults to `[1.*, 2.0.0)`. (Logic App)"
 }
 
 variable "client_affinity_enabled" {
@@ -1078,13 +1084,22 @@ variable "runtime_version" {
   DESCRIPTION
 }
 
+variable "runtime_version" {
+  type        = string
+  default     = "~4"
+  description = " The runtime version associated with the Logic App. Defaults to ~4 (Logic App)"
+}
+
 variable "site_config" {
   type = object({
     always_on                                     = optional(bool, true)
+    linux_fx_version                              = optional(string)
     api_definition_url                            = optional(string)
     api_management_api_id                         = optional(string)
     app_command_line                              = optional(string)
     auto_heal_enabled                             = optional(bool)
+    dotnet_framework_version                      = optional(string, "v4.0")
+    auto_swap_slot_name                           = optional(string)
     app_scale_limit                               = optional(number)
     application_insights_connection_string        = optional(string)
     application_insights_key                      = optional(string)
@@ -1105,6 +1120,7 @@ variable "site_config" {
     remote_debugging_enabled                      = optional(bool, false)
     remote_debugging_version                      = optional(string)
     runtime_scale_monitoring_enabled              = optional(bool)
+    scm_type                                      = optional(string, "None")
     scm_ip_restriction_default_action             = optional(string, "Allow")
     scm_minimum_tls_version                       = optional(string, "1.2")
     scm_use_main_ip_restriction                   = optional(bool, false)
@@ -1200,6 +1216,7 @@ variable "site_config" {
   description = <<DESCRIPTION
   An object that configures the Function App's `site_config` block.
  - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `true`.
+ - `auto_swap_slot_name` - (Optional) The name of the slot to swap with. (Logic App)
  - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
  - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
  - `app_command_line` - (Optional) The App command line to launch.
@@ -1209,12 +1226,14 @@ variable "site_config" {
  - `container_registry_managed_identity_client_id` - (Optional) The Client ID of the Managed Service Identity to use for connections to the Azure Container Registry.
  - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
  - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
+ - `dotnet_framework_version` - (Optional) The version of the .NET Framework to use. Possible values are `v4.0` (including .NET Core 2.1 and 3.1), `v5.0`, `v6.0` and `v8.0`. Defaults to `v4.0`.
  - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
  - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `FtpsOnly`.
  - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
  - `health_check_path` - (Optional) The path to be checked for this function app health.
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
  - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
+ - `linux_fx_version` - (Optional) Linux App Framework and version for the App Service, e.g. `DOCKER|(golang:latest)`. Setting this value will also set the kind of application deployed to `functionapp,linux,container,workflowapp`. You must set `os_type` to `Linux` when this property is set.
  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
  - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.3`.
  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
@@ -1223,6 +1242,7 @@ variable "site_config" {
  - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
  - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
  - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
+ - `scm_type` - (Optional) The type of SCM to use. Possible values include: `None`, `LocalGit`, `GitHub`, `BitbucketGit`, `BitBucketHg`, `CodePlexHg`, `CodePlexGit`, `Dropbox`, `Tfs`, `VSO`, `VSTSRM`, `ExternalGit`, `ExternalHg` and `OneDrive`. Defaults to `None`.
  - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
  - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
  - `websockets_enabled` - (Optional) Should Web Sockets be enabled. Defaults to `false`.
@@ -1341,11 +1361,17 @@ variable "storage_account_name" {
   description = "The name of the Storage Account to deploy the Function App in."
 }
 
+variable "storage_account_share_name" {
+  type        = string
+  default     = null
+  description = "(Logic App)"
+}
+
 variable "storage_authentication_type" {
   type        = string
   default     = null
   description = <<DESCRIPTION
-  The authentication type which will be used to access the backend storage account for the Function App. 
+  The authentication type which will be used to access the backend storage account for the Function App.
   Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
   DESCRIPTION
 }
@@ -1433,6 +1459,12 @@ variable "timeouts" {
  - `read` - (Defaults to 5 minutes) Used when retrieving the Linux Function App.
  - `update` - (Defaults to 30 minutes) Used when updating the Linux Function App.
 EOT
+}
+
+variable "use_extension_bundle" {
+  type        = bool
+  default     = true
+  description = "Should the extension bundle be used? (Logic App)"
 }
 
 variable "virtual_network_subnet_id" {
