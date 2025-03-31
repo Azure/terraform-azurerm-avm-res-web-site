@@ -109,7 +109,7 @@ resource "azurerm_windows_function_app" "this" {
       }
     }
     dynamic "scm_ip_restriction" {
-      # one or more scm_ip_restriction blocks 
+      # one or more scm_ip_restriction blocks
       for_each = var.site_config.scm_ip_restriction
 
       content {
@@ -538,7 +538,7 @@ resource "azurerm_linux_function_app" "this" {
       }
     }
     dynamic "scm_ip_restriction" {
-      # one or more scm_ip_restriction blocks 
+      # one or more scm_ip_restriction blocks
       for_each = var.site_config.scm_ip_restriction
 
       content {
@@ -847,8 +847,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
   location                           = var.location
   name                               = var.name
   resource_group_name                = var.resource_group_name
-  runtime_name                       = var.runtime_name
-  runtime_version                    = var.runtime_version
+  runtime_name                       = var.logic_app_runtime_name
+  runtime_version                    = var.logic_app_runtime_version
   service_plan_id                    = var.service_plan_resource_id
   storage_authentication_type        = var.storage_authentication_type
   storage_container_endpoint         = var.storage_container_endpoint
@@ -938,7 +938,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
       }
     }
     dynamic "scm_ip_restriction" {
-      # one or more scm_ip_restriction blocks 
+      # one or more scm_ip_restriction blocks
       for_each = var.site_config.scm_ip_restriction
 
       content {
