@@ -77,8 +77,8 @@ module "avm_res_web_site" {
   storage_container_type      = "blobContainer"
   storage_container_endpoint  = azurerm_storage_container.example.id
 
-  runtime_name           = "node"
-  runtime_version        = "20"
+  fc1_runtime_name       = "node"
+  fc1_runtime_version    = "20"
   maximum_instance_count = 100
   instance_memory_in_mb  = 2048
 
