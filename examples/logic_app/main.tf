@@ -23,12 +23,20 @@ resource "azurerm_resource_group" "example" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-logicapp"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 resource "azurerm_service_plan" "example" {
   location            = azurerm_resource_group.example.location
   name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
+  os_type             = "Windows"
   resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "FC1"
+  sku_name            = "WS1"
   tags = {
     app = "${module.naming.function_app.name_unique}-default"
   }
@@ -47,44 +55,37 @@ resource "azurerm_storage_account" "example" {
   }
 }
 
-resource "azurerm_storage_container" "example" {
-  name               = "example-flexcontainer"
-  storage_account_id = azurerm_storage_account.example.id
-}
-
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.2"
+  # version = "0.15.3"
 
   enable_telemetry = var.enable_telemetry
 
-  name                = "${module.naming.function_app.name_unique}-flex"
+  name                = "${module.naming.logic_app_workflow.name_unique}-logicapp" # Likely to change naming in the future
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-
-  kind                  = "functionapp"
-  function_app_uses_fc1 = true
-
+  kind                = "logicapp"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
-
   # Uses an existing storage account
-  storage_account_access_key  = azurerm_storage_account.example.primary_access_key
-  storage_authentication_type = "StorageAccountConnectionString"
-  storage_container_type      = "blobContainer"
-  storage_container_endpoint  = azurerm_storage_container.example.id
-
-  fc1_runtime_name       = "node"
-  fc1_runtime_version    = "20"
-  maximum_instance_count = 100
-  instance_memory_in_mb  = 2048
-
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  app_settings = {
+    FUNCTIONS_RUNTIME_WORKER     = "node"
+    WEBSITE_NODE_DEFAULT_VERSION = "~18"
+  }
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+  }
+  site_config = {
+    always_on = false
+  }
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.15.2"
+    version = "0.15.3"
   }
 
 }

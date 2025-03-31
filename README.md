@@ -39,6 +39,7 @@ The following resources are used by this module:
 - [azurerm_linux_function_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app_slot) (resource)
 - [azurerm_linux_web_app.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) (resource)
 - [azurerm_linux_web_app_slot.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app_slot) (resource)
+- [azurerm_logic_app_standard.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/logic_app_standard) (resource)
 - [azurerm_management_lock.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
@@ -70,7 +71,7 @@ The following input variables are required:
 
 ### <a name="input_kind"></a> [kind](#input\_kind)
 
-Description: The type of App Service to deploy. Possible values are `functionapp` and `webapp`.
+Description: The type of App Service to deploy. Possible values are `functionapp`, `webapp` and `logicapp`.
 
 Type: `string`
 
@@ -733,6 +734,14 @@ Description: Should builtin logging be enabled for the Function App?
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_bundle_version"></a> [bundle\_version](#input\_bundle\_version)
+
+Description: The version of the extension bundle to use. Defaults to `[1.*, 2.0.0)`. (Logic App)
+
+Type: `string`
+
+Default: `"[1.*, 2.0.0)"`
 
 ### <a name="input_client_affinity_enabled"></a> [client\_affinity\_enabled](#input\_client\_affinity\_enabled)
 
@@ -1409,6 +1418,27 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_fc1_runtime_name"></a> [fc1\_runtime\_name](#input\_fc1\_runtime\_name)
+
+Description: The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
+
+Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  - `dotnet-isolated` supported values are: `8.0`, `9.0`
+  - `node` supported values are: `20`
+  - `python` supported values are: `3.10`, `3.11`
+  - `java` supported values are: `11`, `17`
+  - `powershell` supported values are: `7.4`
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
 Description: Should basic authentication be enabled for FTP publish?
@@ -1472,6 +1502,14 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_logic_app_runtime_version"></a> [logic\_app\_runtime\_version](#input\_logic\_app\_runtime\_version)
+
+Description:  The runtime version associated with the Logic App. Defaults to ~4 (Logic App)
+
+Type: `string`
+
+Default: `"~4"`
 
 ### <a name="input_logs"></a> [logs](#input\_logs)
 
@@ -1644,31 +1682,11 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_runtime_name"></a> [runtime\_name](#input\_runtime\_name)
-
-Description: The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_runtime_version"></a> [runtime\_version](#input\_runtime\_version)
-
-Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
-  - `dotnet-isolated` supported values are: `8.0`, `9.0`
-  - `node` supported values are: `20`
-  - `python` supported values are: `3.10`, `3.11`
-  - `java` supported values are: `11`, `17`
-  - `powershell` supported values are: `7.4`
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
 Description:   An object that configures the Function App's `site_config` block.
  - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `true`.
+ - `auto_swap_slot_name` - (Optional) The name of the slot to swap with. (Logic App)
  - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
  - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
  - `app_command_line` - (Optional) The App command line to launch.
@@ -1678,12 +1696,14 @@ Description:   An object that configures the Function App's `site_config` block.
  - `container_registry_managed_identity_client_id` - (Optional) The Client ID of the Managed Service Identity to use for connections to the Azure Container Registry.
  - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
  - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
+ - `dotnet_framework_version` - (Optional) The version of the .NET Framework to use. Possible values are `v4.0` (including .NET Core 2.1 and 3.1), `v5.0`, `v6.0` and `v8.0`. Defaults to `v4.0`.
  - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
  - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `FtpsOnly`.
  - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
  - `health_check_path` - (Optional) The path to be checked for this function app health.
  - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
  - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
+ - `linux_fx_version` - (Optional) Linux App Framework and version for the App Service, e.g. `DOCKER|(golang:latest)`. Setting this value will also set the kind of application deployed to `functionapp,linux,container,workflowapp`. You must set `os_type` to `Linux` when this property is set.
  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
  - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.3`.
  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
@@ -1692,6 +1712,7 @@ Description:   An object that configures the Function App's `site_config` block.
  - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
  - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
  - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
+ - `scm_type` - (Optional) The type of SCM to use. Possible values include: `None`, `LocalGit`, `GitHub`, `BitbucketGit`, `BitBucketHg`, `CodePlexHg`, `CodePlexGit`, `Dropbox`, `Tfs`, `VSO`, `VSTSRM`, `ExternalGit`, `ExternalHg` and `OneDrive`. Defaults to `None`.
  - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
  - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
  - `websockets_enabled` - (Optional) Should Web Sockets be enabled. Defaults to `false`.
@@ -1768,10 +1789,13 @@ Type:
 ```hcl
 object({
     always_on                                     = optional(bool, true)
+    linux_fx_version                              = optional(string)
     api_definition_url                            = optional(string)
     api_management_api_id                         = optional(string)
     app_command_line                              = optional(string)
     auto_heal_enabled                             = optional(bool)
+    dotnet_framework_version                      = optional(string, "v4.0")
+    auto_swap_slot_name                           = optional(string)
     app_scale_limit                               = optional(number)
     application_insights_connection_string        = optional(string)
     application_insights_key                      = optional(string)
@@ -1792,6 +1816,7 @@ object({
     remote_debugging_enabled                      = optional(bool, false)
     remote_debugging_version                      = optional(string)
     runtime_scale_monitoring_enabled              = optional(bool)
+    scm_type                                      = optional(string, "None")
     scm_ip_restriction_default_action             = optional(string, "Allow")
     scm_minimum_tls_version                       = optional(string, "1.2")
     scm_use_main_ip_restriction                   = optional(bool, false)
@@ -1961,9 +1986,17 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_storage_account_share_name"></a> [storage\_account\_share\_name](#input\_storage\_account\_share\_name)
+
+Description: (Logic App)
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
 
-Description:   The authentication type which will be used to access the backend storage account for the Function App.   
+Description:   The authentication type which will be used to access the backend storage account for the Function App.  
   Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
 
 Type: `string`
@@ -2070,6 +2103,14 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_use_extension_bundle"></a> [use\_extension\_bundle](#input\_use\_extension\_bundle)
+
+Description: Should the extension bundle be used? (Logic App)
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#input\_virtual\_network\_subnet\_id)
 
