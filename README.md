@@ -1418,6 +1418,27 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_fc1_runtime_name"></a> [fc1\_runtime\_name](#input\_fc1\_runtime\_name)
+
+Description: The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
+
+Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  - `dotnet-isolated` supported values are: `8.0`, `9.0`
+  - `node` supported values are: `20`
+  - `python` supported values are: `3.10`, `3.11`
+  - `java` supported values are: `11`, `17`
+  - `powershell` supported values are: `7.4`
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
 Description: Should basic authentication be enabled for FTP publish?
@@ -1481,6 +1502,14 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_logic_app_runtime_version"></a> [logic\_app\_runtime\_version](#input\_logic\_app\_runtime\_version)
+
+Description:  The runtime version associated with the Logic App. Defaults to ~4 (Logic App)
+
+Type: `string`
+
+Default: `"~4"`
 
 ### <a name="input_logs"></a> [logs](#input\_logs)
 
@@ -1652,22 +1681,6 @@ map(object({
 ```
 
 Default: `{}`
-
-### <a name="input_runtime_name"></a> [runtime\_name](#input\_runtime\_name)
-
-Description: The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_runtime_version"></a> [runtime\_version](#input\_runtime\_version)
-
-Description:  The runtime version associated with the Logic App. Defaults to ~4 (Logic App)
-
-Type: `string`
-
-Default: `"~4"`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 

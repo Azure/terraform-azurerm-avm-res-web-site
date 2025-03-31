@@ -19,7 +19,7 @@ resource "azurerm_logic_app_standard" "this" {
   # vnet_content_share_enabled = var.vnet_content_share_enabled
   tags                      = var.tags
   use_extension_bundle      = var.use_extension_bundle
-  version                   = var.runtime_version
+  version                   = var.logic_app_runtime_version
   virtual_network_subnet_id = var.virtual_network_subnet_id
 
   dynamic "connection_string" {

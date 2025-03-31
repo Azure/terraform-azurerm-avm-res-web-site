@@ -855,6 +855,25 @@ variable "enabled" {
   description = "Is the Function App enabled? Defaults to `true`."
 }
 
+variable "fc1_runtime_name" {
+  type        = string
+  default     = null
+  description = "The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
+}
+
+variable "fc1_runtime_version" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  - `dotnet-isolated` supported values are: `8.0`, `9.0`
+  - `node` supported values are: `20`
+  - `python` supported values are: `3.10`, `3.11`
+  - `java` supported values are: `11`, `17`
+  - `powershell` supported values are: `7.4`
+  DESCRIPTION
+}
+
 variable "ftp_publish_basic_authentication_enabled" {
   type        = bool
   default     = true
@@ -909,6 +928,12 @@ variable "lock" {
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
     error_message = "The lock level must be one of: `CanNotDelete`, or `ReadOnly`."
   }
+}
+
+variable "logic_app_runtime_version" {
+  type        = string
+  default     = "~4"
+  description = " The runtime version associated with the Logic App. Defaults to ~4 (Logic App)"
 }
 
 variable "logs" {
@@ -1063,31 +1088,6 @@ A map of role assignments to create on this resource. The map key is deliberatel
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
-}
-
-variable "runtime_name" {
-  type        = string
-  default     = null
-  description = "The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
-}
-
-variable "runtime_version" {
-  type        = string
-  default     = null
-  description = <<DESCRIPTION
-  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
-  - `dotnet-isolated` supported values are: `8.0`, `9.0`
-  - `node` supported values are: `20`
-  - `python` supported values are: `3.10`, `3.11`
-  - `java` supported values are: `11`, `17`
-  - `powershell` supported values are: `7.4`
-  DESCRIPTION
-}
-
-variable "runtime_version" {
-  type        = string
-  default     = "~4"
-  description = " The runtime version associated with the Logic App. Defaults to ~4 (Logic App)"
 }
 
 variable "site_config" {
