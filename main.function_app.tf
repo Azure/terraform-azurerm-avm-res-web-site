@@ -847,8 +847,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
   location                           = var.location
   name                               = var.name
   resource_group_name                = var.resource_group_name
-  runtime_name                       = var.logic_app_runtime_name
-  runtime_version                    = var.logic_app_runtime_version
+  runtime_name                       = var.fc1_runtime_name
+  runtime_version                    = var.fc1_runtime_version
   service_plan_id                    = var.service_plan_resource_id
   storage_authentication_type        = var.storage_authentication_type
   storage_container_endpoint         = var.storage_container_endpoint
