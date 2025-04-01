@@ -486,7 +486,7 @@ variable "auto_heal_setting" {
       requests = optional(object({
         count    = number
         interval = string
-      }))
+      }), {})
       slow_request = optional(map(object({
         count      = number
         interval   = string
