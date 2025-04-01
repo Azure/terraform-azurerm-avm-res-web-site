@@ -29,6 +29,14 @@ output "kind" {
   value       = var.kind
 }
 
+output "kind_full" {
+  description = "The kind of app service output as an objeect, including the user input and what Azure resolves it to."
+  value = {
+    app_kind      = var.kind
+    resource_kind = (var.kind == "functionapp" || var.kind == "webapp" || var.kind == "logicapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 ? /* FC1 */ azurerm_function_app_flex_consumption.this[0].kind : /* not FC1*/ (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].kind : azurerm_linux_function_app.this[0].kind)) : (var.kind == "webapp" ? (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].kind : azurerm_linux_web_app.this[0].kind) : azurerm_logic_app_standard.this[0].kind)) : null
+  }
+}
+
 output "location" {
   description = "The location of the resource."
   value       = var.location

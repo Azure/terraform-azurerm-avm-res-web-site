@@ -865,7 +865,7 @@ variable "fc1_runtime_version" {
   type        = string
   default     = null
   description = <<DESCRIPTION
-  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `fc1_runtime_name`:
   - `dotnet-isolated` supported values are: `8.0`, `9.0`
   - `node` supported values are: `20`
   - `python` supported values are: `3.10`, `3.11`

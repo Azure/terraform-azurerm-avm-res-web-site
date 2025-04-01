@@ -1428,7 +1428,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
 
-Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
+Description:   The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `fc1_runtime_name`:
   - `dotnet-isolated` supported values are: `8.0`, `9.0`
   - `node` supported values are: `20`
   - `python` supported values are: `3.10`, `3.11`
@@ -2163,6 +2163,10 @@ Description: The object principal id of the resource.
 ### <a name="output_kind"></a> [kind](#output\_kind)
 
 Description: The kind of app service.
+
+### <a name="output_kind_full"></a> [kind\_full](#output\_kind\_full)
+
+Description: The kind of app service output as an objeect, including the user input and what Azure resolves it to.
 
 ### <a name="output_location"></a> [location](#output\_location)
 
