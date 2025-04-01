@@ -9,7 +9,7 @@ variable "app_service_active_slot" {
   ```
   Object that sets the active slot for the App Service.
 
-  `slot_key` - The key of the slot object to set as active. 
+  `slot_key` - The key of the slot object to set as active.
   `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
 
   ```
@@ -238,7 +238,7 @@ variable "deployment_slots" {
         status_code = optional(map(object({
           count             = number
           interval          = string
-          status_code_range = number
+          status_code_range = string
           path              = optional(string)
           sub_status        = optional(number)
           win32_status_code = optional(number)

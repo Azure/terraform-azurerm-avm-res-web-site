@@ -667,7 +667,7 @@ map(object({
       status_code = optional(map(object({
         count             = number
         interval          = string
-        status_code_range = number
+        status_code_range = string
         path              = optional(string)
         sub_status        = optional(number)
         win32_status_code = optional(number)
@@ -1112,7 +1112,7 @@ map(object({
         status_code = optional(map(object({
           count             = number
           interval          = string
-          status_code_range = number
+          status_code_range = string
           path              = optional(string)
           sub_status        = optional(number)
           win32_status_code = optional(number)
