@@ -587,7 +587,7 @@ Description:
     - `slow_request` - (Optional) The slow request trigger to activate the action.
       - `count` - (Required) The number of slow requests to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
-      - `take_taken` - (Required) The time taken to trigger the action.
+      - `time_taken` - (Required) The time taken to trigger the action.
       - `path` - (Optional) The path to trigger the action.
       > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
     - `status_code` - (Optional) The status code trigger to activate the action.
@@ -655,13 +655,13 @@ map(object({
       slow_request = optional(map(object({
         count      = number
         interval   = string
-        take_taken = string
+        time_taken = string
         path       = optional(string)
       })), {})
       slow_request_with_path = optional(map(object({
         count      = number
         interval   = string
-        take_taken = string
+        time_taken = string
         path       = optional(string)
       })), {})
       status_code = optional(map(object({
@@ -1100,13 +1100,13 @@ map(object({
         slow_request = optional(map(object({
           count      = number
           interval   = string
-          take_taken = string
+          time_taken = string
           path       = optional(string)
         })), {})
         slow_request_with_path = optional(map(object({
           count      = number
           interval   = string
-          take_taken = string
+          time_taken = string
           path       = optional(string)
         })), {})
         status_code = optional(map(object({
