@@ -219,10 +219,10 @@ variable "deployment_slots" {
       }))
       trigger = optional(object({
         private_memory_kb = optional(number)
-        requests = optional(object({
+        requests = optional(map(object({
           count    = number
           interval = string
-        }))
+        })), {})
         slow_request = optional(map(object({
           count      = number
           interval   = string

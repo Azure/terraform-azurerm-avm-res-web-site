@@ -651,7 +651,7 @@ map(object({
       requests = optional(object({
         count    = number
         interval = string
-      }))
+      }), {})
       slow_request = optional(map(object({
         count      = number
         interval   = string
@@ -1096,7 +1096,7 @@ map(object({
         requests = optional(object({
           count    = number
           interval = string
-        }))
+        }), {})
         slow_request = optional(map(object({
           count      = number
           interval   = string

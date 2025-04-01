@@ -483,10 +483,10 @@ variable "auto_heal_setting" {
     }))
     trigger = optional(object({
       private_memory_kb = optional(number)
-      requests = optional(object({
+      requests = optional(map(object({
         count    = number
         interval = string
-      }))
+      })), {})
       slow_request = optional(map(object({
         count      = number
         interval   = string
