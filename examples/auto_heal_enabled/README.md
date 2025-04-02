@@ -40,11 +40,19 @@ resource "azurerm_service_plan" "example" {
   }
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-auto-heal"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.2"
+  # version = "0.16.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -57,10 +65,15 @@ module "avm_res_web_site" {
   os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
 
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+  }
+
   site_config = {
 
   }
-  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+
+  auto_heal_setting = {
     setting_1 = {
       action = {
         action_type                    = "Recycle"
@@ -68,8 +81,10 @@ module "avm_res_web_site" {
       }
       trigger = {
         requests = {
-          count    = 100
-          interval = "00:00:30"
+          request = {
+            count    = 100
+            interval = "00:00:30"
+          }
         }
         status_code = {
           status_5000 = {
@@ -108,6 +123,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)

@@ -483,26 +483,26 @@ variable "auto_heal_setting" {
     }))
     trigger = optional(object({
       private_memory_kb = optional(number)
-      requests = optional(object({
+      requests = optional(map(object({
         count    = number
         interval = string
-      }))
+      })), {})
       slow_request = optional(map(object({
         count      = number
         interval   = string
-        take_taken = string
+        time_taken = string
         path       = optional(string)
       })), {})
       slow_request_with_path = optional(map(object({
         count      = number
         interval   = string
-        take_taken = string
+        time_taken = string
         path       = optional(string)
       })), {})
       status_code = optional(map(object({
         count             = number
         interval          = string
-        status_code_range = number
+        status_code_range = string
         path              = optional(string)
         sub_status        = optional(number)
         win32_status_code = optional(number)
@@ -530,7 +530,7 @@ variable "auto_heal_setting" {
     - `slow_request` - (Optional) The slow request trigger to activate the action.
       - `count` - (Required) The number of slow requests to trigger the action.
       - `interval` - (Required) The interval to trigger the action.
-      - `take_taken` - (Required) The time taken to trigger the action.
+      - `time_taken` - (Required) The time taken to trigger the action.
       - `path` - (Optional) The path to trigger the action.
       > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
     - `status_code` - (Optional) The status code trigger to activate the action.
@@ -542,10 +542,7 @@ variable "auto_heal_setting" {
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
-  site_config = {
-    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
-  }
-  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+  auto_heal_setting = {
     setting_1 = {
       action = {
         action_type                    = "Recycle"
@@ -1092,12 +1089,12 @@ DESCRIPTION
 
 variable "site_config" {
   type = object({
-    always_on                                     = optional(bool, true)
-    linux_fx_version                              = optional(string)
-    api_definition_url                            = optional(string)
-    api_management_api_id                         = optional(string)
-    app_command_line                              = optional(string)
-    auto_heal_enabled                             = optional(bool)
+    always_on             = optional(bool, true)
+    linux_fx_version      = optional(string)
+    api_definition_url    = optional(string)
+    api_management_api_id = optional(string)
+    app_command_line      = optional(string)
+    # auto_heal_enabled                             = optional(bool)
     dotnet_framework_version                      = optional(string, "v4.0")
     auto_swap_slot_name                           = optional(string)
     app_scale_limit                               = optional(number)
@@ -1315,11 +1312,6 @@ variable "site_config" {
  - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
 
   DESCRIPTION
-
-  validation {
-    condition     = var.site_config.auto_heal_enabled != null && var.site_config.auto_heal_enabled != true ? contains([true, null], var.site_config.auto_heal_enabled) : true
-    error_message = "The value of `auto_heal_enabled` can only be set to `true` or `null`."
-  }
 }
 
 variable "sticky_settings" {
