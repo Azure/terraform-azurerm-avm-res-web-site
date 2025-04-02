@@ -75,27 +75,30 @@ resource "azurerm_windows_web_app_slot" "this" {
         trigger {
           private_memory_kb = auto_heal_setting.value.trigger.private_memory_kb
 
-          requests {
-            count    = auto_heal_setting.value.trigger.requests.count
-            interval = auto_heal_setting.value.trigger.requests.interval
+          dynamic "requests" {
+            for_each = auto_heal_setting.value.trigger.requests
+            content {
+              count    = requests.value.trigger.requests.count
+              interval = requests.value.trigger.requests.interval
+            }
           }
           dynamic "slow_request" {
             for_each = auto_heal_setting.value.trigger.slow_request
 
             content {
-              count      = slow_requests.value.count
-              interval   = slow_requests.value.interval
-              time_taken = slow_requests.value.time_taken
+              count      = slow_request.value.count
+              interval   = slow_request.value.interval
+              time_taken = slow_request.value.time_taken
             }
           }
           dynamic "slow_request_with_path" {
             for_each = auto_heal_setting.value.trigger.slow_request_with_path
 
             content {
-              count      = slow_requests_with_path.value.count
-              interval   = slow_requests_with_path.value.interval
-              time_taken = slow_requests_with_path.value.time_taken
-              path       = slow_requests_with_path.value.path
+              count      = slow_request_with_path.value.count
+              interval   = slow_request_with_path.value.interval
+              time_taken = slow_request_with_path.value.time_taken
+              path       = slow_request_with_path.value.path
             }
           }
           dynamic "status_code" {
@@ -581,27 +584,30 @@ resource "azurerm_linux_web_app_slot" "this" {
           minimum_process_execution_time = auto_heal_setting.value.action.minimum_process_execution_time
         }
         trigger {
-          requests {
-            count    = auto_heal_setting.value.trigger.requests.count
-            interval = auto_heal_setting.value.trigger.requests.interval
+          dynamic "requests" {
+            for_each = auto_heal_setting.value.trigger.requests
+            content {
+              count    = requests.value.trigger.requests.count
+              interval = requests.value.trigger.requests.interval
+            }
           }
           dynamic "slow_request" {
             for_each = auto_heal_setting.value.trigger.slow_request
 
             content {
-              count      = slow_requests.value.count
-              interval   = slow_requests.value.interval
-              time_taken = slow_requests.value.time_taken
+              count      = slow_request.value.count
+              interval   = slow_request.value.interval
+              time_taken = slow_request.value.time_taken
             }
           }
           dynamic "slow_request_with_path" {
             for_each = auto_heal_setting.value.trigger.slow_request_with_path
 
             content {
-              count      = slow_requests_with_path.value.count
-              interval   = slow_requests_with_path.value.interval
-              time_taken = slow_requests_with_path.value.time_taken
-              path       = slow_requests_with_path.value.path
+              count      = slow_request_with_path.value.count
+              interval   = slow_request_with_path.value.interval
+              time_taken = slow_request_with_path.value.time_taken
+              path       = slow_request_with_path.value.path
             }
           }
           dynamic "status_code" {
@@ -651,7 +657,7 @@ resource "azurerm_linux_web_app_slot" "this" {
       }
     }
     dynamic "scm_ip_restriction" {
-      # one or more scm_ip_restriction blocks 
+      # one or more scm_ip_restriction blocks
       for_each = each.value.site_config.scm_ip_restriction
 
       content {
