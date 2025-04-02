@@ -82,12 +82,12 @@ resource "azurerm_windows_web_app" "this" {
 
           dynamic "requests" {
             for_each = auto_heal_setting.value.trigger.requests
-            content{
-              count    = requests.value.trigger.requests.count
-              interval = requests.value.trigger.requests.interval
+
+            content {
+              count    = requests.value.count
+              interval = requests.value.interval
             }
           }
-
           dynamic "slow_request" {
             for_each = auto_heal_setting.value.trigger.slow_request
 
@@ -605,9 +605,10 @@ resource "azurerm_linux_web_app" "this" {
         trigger {
           dynamic "requests" {
             for_each = auto_heal_setting.value.trigger.requests
-            content{
-              count    = requests.value.trigger.requests.count
-              interval = requests.value.trigger.requests.interval
+
+            content {
+              count    = requests.value.count
+              interval = requests.value.interval
             }
           }
           dynamic "slow_request" {

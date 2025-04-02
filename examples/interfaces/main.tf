@@ -98,7 +98,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.2"
+  # version = "0.16.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -287,7 +287,7 @@ resource "azurerm_windows_virtual_machine" "example" {
 # Create the virtual machine
 # module "avm_res_compute_virtualmachine" {
 #   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-#   version = "0.15.2"
+#   version = "0.16.0"
 
 #   enable_telemetry = var.enable_telemetry
 
@@ -333,7 +333,7 @@ resource "azurerm_windows_virtual_machine" "example" {
 
 # module "avm_res_compute_virtualmachine_sku_selector" {
 #   source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
-#   version = "0.15.2"
+#   version = "0.16.0"
 
 #   deployment_region = azurerm_resource_group.example.location
 # }

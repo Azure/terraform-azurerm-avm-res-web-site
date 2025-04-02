@@ -542,10 +542,7 @@ variable "auto_heal_setting" {
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
-  site_config = {
-    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
-  }
-  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+  auto_heal_setting = {
     setting_1 = {
       action = {
         action_type                    = "Recycle"
@@ -1092,12 +1089,12 @@ DESCRIPTION
 
 variable "site_config" {
   type = object({
-    always_on                                     = optional(bool, true)
-    linux_fx_version                              = optional(string)
-    api_definition_url                            = optional(string)
-    api_management_api_id                         = optional(string)
-    app_command_line                              = optional(string)
-    auto_heal_enabled                             = optional(bool)
+    always_on             = optional(bool, true)
+    linux_fx_version      = optional(string)
+    api_definition_url    = optional(string)
+    api_management_api_id = optional(string)
+    app_command_line      = optional(string)
+    # auto_heal_enabled                             = optional(bool)
     dotnet_framework_version                      = optional(string, "v4.0")
     auto_swap_slot_name                           = optional(string)
     app_scale_limit                               = optional(number)
@@ -1315,11 +1312,6 @@ variable "site_config" {
  - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
 
   DESCRIPTION
-
-  validation {
-    condition     = var.site_config.auto_heal_enabled != null && var.site_config.auto_heal_enabled != true ? contains([true, null], var.site_config.auto_heal_enabled) : true
-    error_message = "The value of `auto_heal_enabled` can only be set to `true` or `null`."
-  }
 }
 
 variable "sticky_settings" {

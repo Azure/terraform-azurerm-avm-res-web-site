@@ -77,6 +77,7 @@ resource "azurerm_windows_web_app_slot" "this" {
 
           dynamic "requests" {
             for_each = auto_heal_setting.value.trigger.requests
+
             content {
               count    = requests.value.trigger.requests.count
               interval = requests.value.trigger.requests.interval
@@ -586,6 +587,7 @@ resource "azurerm_linux_web_app_slot" "this" {
         trigger {
           dynamic "requests" {
             for_each = auto_heal_setting.value.trigger.requests
+
             content {
               count    = requests.value.trigger.requests.count
               interval = requests.value.trigger.requests.interval

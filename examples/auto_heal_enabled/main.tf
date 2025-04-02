@@ -34,11 +34,19 @@ resource "azurerm_service_plan" "example" {
   }
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-auto-heal"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.15.2"
+  # version = "0.16.0"
 
   enable_telemetry = var.enable_telemetry
 
@@ -51,10 +59,15 @@ module "avm_res_web_site" {
   os_type                  = azurerm_service_plan.example.os_type
   service_plan_resource_id = azurerm_service_plan.example.id
 
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+  }
+
   site_config = {
 
   }
-  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+
+  auto_heal_setting = {
     setting_1 = {
       action = {
         action_type                    = "Recycle"
@@ -62,8 +75,10 @@ module "avm_res_web_site" {
       }
       trigger = {
         requests = {
-          count    = 100
-          interval = "00:00:30"
+          request = {
+            count    = 100
+            interval = "00:00:30"
+          }
         }
         status_code = {
           status_5000 = {

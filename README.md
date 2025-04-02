@@ -599,10 +599,7 @@ Description:
       - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
 
   ```terraform
-  site_config = {
-    auto_heal_enabled = true # `auto_heal_enabled` deprecated in azurerm 4.x
-  }
-  auto_heal_setting = { # auto_heal_setting should only be specified if auto_heal_enabled is set to `true`
+  auto_heal_setting = {
     setting_1 = {
       action = {
         action_type                    = "Recycle"
@@ -1788,12 +1785,12 @@ Type:
 
 ```hcl
 object({
-    always_on                                     = optional(bool, true)
-    linux_fx_version                              = optional(string)
-    api_definition_url                            = optional(string)
-    api_management_api_id                         = optional(string)
-    app_command_line                              = optional(string)
-    auto_heal_enabled                             = optional(bool)
+    always_on             = optional(bool, true)
+    linux_fx_version      = optional(string)
+    api_definition_url    = optional(string)
+    api_management_api_id = optional(string)
+    app_command_line      = optional(string)
+    # auto_heal_enabled                             = optional(bool)
     dotnet_framework_version                      = optional(string, "v4.0")
     auto_swap_slot_name                           = optional(string)
     app_scale_limit                               = optional(number)
