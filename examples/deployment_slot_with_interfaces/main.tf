@@ -73,15 +73,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "example" {
   virtual_network_id    = azurerm_virtual_network.example.id
 }
 
-resource "azurerm_application_insights" "example-staging" {
+resource "azurerm_application_insights" "example_staging" {
   application_type    = "web"
   location            = azurerm_resource_group.example.location
   name                = "${module.naming.application_insights.name_unique}-staging"
   resource_group_name = azurerm_resource_group.example.name
-  workspace_id = azurerm_log_analytics_workspace.example-staging.id
+  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
 }
 
-resource "azurerm_log_analytics_workspace" "example-production" {
+resource "azurerm_log_analytics_workspace" "example_production" {
   location            = azurerm_resource_group.example.location
   name                = "${module.naming.log_analytics_workspace.name}-prod"
   resource_group_name = azurerm_resource_group.example.name
@@ -89,7 +89,7 @@ resource "azurerm_log_analytics_workspace" "example-production" {
   sku                 = "PerGB2018"
 }
 
-resource "azurerm_log_analytics_workspace" "example-staging" {
+resource "azurerm_log_analytics_workspace" "example_staging" {
   location            = azurerm_resource_group.example.location
   name                = "${module.naming.log_analytics_workspace.name}-staging"
   resource_group_name = azurerm_resource_group.example.name
@@ -97,7 +97,7 @@ resource "azurerm_log_analytics_workspace" "example-staging" {
   sku                 = "PerGB2018"
 }
 
-resource "azurerm_log_analytics_workspace" "example-development" {
+resource "azurerm_log_analytics_workspace" "example_development" {
   location            = azurerm_resource_group.example.location
   name                = "${module.naming.log_analytics_workspace.name}-development"
   resource_group_name = azurerm_resource_group.example.name
@@ -115,7 +115,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.0"
+  # version = "0.16.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -137,8 +137,8 @@ module "avm_res_web_site" {
 
   # Creates application insights
   application_insights = {
-    name = "${module.naming.application_insights.name_unique}-production"
-    workspace_resource_id = azurerm_log_analytics_workspace.example-production.id
+    name                  = "${module.naming.application_insights.name_unique}-production"
+    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
 
   managed_identities = {
@@ -177,8 +177,8 @@ module "avm_res_web_site" {
       name = "staging"
       site_config = {
         # Uses existing application insights
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example-staging.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example-staging.instrumentation_key)
+        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
+        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
         application_stack = {
           dotnet = {
             dotnet_version              = "v8.0"
@@ -200,7 +200,7 @@ module "avm_res_web_site" {
           subnet_resource_id            = azurerm_subnet.example.id
           ip_configurations = {
             primary = {
-              name = "api.${azurerm_private_dns_zone.example.name}"
+              name               = "api.${azurerm_private_dns_zone.example.name}"
               private_ip_address = "192.168.0.4"
             }
           }
@@ -215,9 +215,9 @@ module "avm_res_web_site" {
   # Creates application insights for slot
   slot_application_insights = {
     development = {
-      name         = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azurerm_log_analytics_workspace.example-development.id
-      inherit_tags = true
+      name                  = "${module.naming.application_insights.name_unique}-development"
+      workspace_resource_id = azurerm_log_analytics_workspace.example_development.id
+      inherit_tags          = true
     }
   }
 
