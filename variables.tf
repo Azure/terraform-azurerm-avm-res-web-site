@@ -934,31 +934,29 @@ variable "logic_app_runtime_version" {
 }
 
 variable "logs" {
-  type = map(object({
-    application_logs = optional(map(object({
+  type = object({
+    application_logs = optional(object({
       azure_blob_storage = optional(object({
-        level             = optional(string, "Off")
-        retention_in_days = optional(number, 0)
+        level             = string
+        retention_in_days = number
         sas_url           = string
-      }))
-      file_system_level = optional(string, "Off")
-    })), {})
-    detailed_error_messages = optional(bool, false)
-    failed_request_tracing  = optional(bool, false)
-    http_logs = optional(map(object({
+      }), null)
+      file_system_level = string
+    }), null)
+    detailed_error_messages = optional(bool)
+    failed_request_tracing  = optional(bool)
+    http_logs = optional(object({
       azure_blob_storage_http = optional(object({
-        retention_in_days = optional(number, 0)
+        retention_in_days = optional(number)
         sas_url           = string
-      }))
+      }), null)
       file_system = optional(object({
-        retention_in_days = optional(number, 0)
+        retention_in_days = number
         retention_in_mb   = number
-      }))
-    })), {})
-  }))
-  default = {
-
-  }
+      }), null)
+    }), null)
+  })
+  default     = null
   description = <<DESCRIPTION
 
   A map of logs to create on the Function App.
