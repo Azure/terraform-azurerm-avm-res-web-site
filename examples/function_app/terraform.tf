@@ -20,6 +20,6 @@ provider "azurerm" {
     }
   }
 
-  subscription_id = "<subscription-id>"
+  # subscription_id = "<subscription-id>"
 
 }

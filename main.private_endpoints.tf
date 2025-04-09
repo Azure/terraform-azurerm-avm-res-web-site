@@ -95,10 +95,10 @@ resource "azurerm_private_endpoint" "slot" {
     for_each = each.value.pe_value.ip_configurations
 
     content {
-      name               = ip_configuration.value.pe_value.name
-      private_ip_address = ip_configuration.value.pe_value.private_ip_address
-      member_name        = "sites"
-      subresource_name   = "sites"
+      name               = ip_configuration.value.name
+      private_ip_address = ip_configuration.value.private_ip_address
+      member_name        = "sites-staging"
+      subresource_name   = "sites-staging"
     }
   }
   dynamic "private_dns_zone_group" {

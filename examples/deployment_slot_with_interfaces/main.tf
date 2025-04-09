@@ -38,7 +38,7 @@ resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
+  name                     = "${module.naming.storage_account.name_unique}dmv"
   resource_group_name      = azurerm_resource_group.example.name
 
   network_rules {
@@ -73,11 +73,36 @@ resource "azurerm_private_dns_zone_virtual_network_link" "example" {
   virtual_network_id    = azurerm_virtual_network.example.id
 }
 
-resource "azurerm_application_insights" "example" {
+resource "azurerm_application_insights" "example_staging" {
   application_type    = "web"
   location            = azurerm_resource_group.example.location
   name                = "${module.naming.application_insights.name_unique}-staging"
   resource_group_name = azurerm_resource_group.example.name
+  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
+}
+
+resource "azurerm_log_analytics_workspace" "example_production" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-prod"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
+resource "azurerm_log_analytics_workspace" "example_staging" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-staging"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
+resource "azurerm_log_analytics_workspace" "example_development" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-development"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
 }
 
 resource "azurerm_user_assigned_identity" "user" {
@@ -90,7 +115,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.0"
+  # version = "0.16.1"
 
   enable_telemetry = var.enable_telemetry
 
@@ -109,8 +134,11 @@ module "avm_res_web_site" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   # storage_uses_managed_identity = true
 
+
+  # Creates application insights
   application_insights = {
-    name = "${module.naming.application_insights.name_unique}-production"
+    name                  = "${module.naming.application_insights.name_unique}-production"
+    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
 
   managed_identities = {
@@ -135,7 +163,7 @@ module "avm_res_web_site" {
     slot1 = {
       name = "development"
       site_config = {
-        slot_application_insights_object_key = "development"
+        slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
         application_stack = {
           dotnet = {
             dotnet_version              = "v8.0"
@@ -148,8 +176,9 @@ module "avm_res_web_site" {
     slot2 = {
       name = "staging"
       site_config = {
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example.instrumentation_key)
+        # Uses existing application insights
+        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
+        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
         application_stack = {
           dotnet = {
             dotnet_version              = "v8.0"
@@ -169,6 +198,12 @@ module "avm_res_web_site" {
           name                          = "slot-primary"
           private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
           subnet_resource_id            = azurerm_subnet.example.id
+          ip_configurations = {
+            primary = {
+              name               = "api.${azurerm_private_dns_zone.example.name}"
+              private_ip_address = "192.168.0.4"
+            }
+          }
           tags = {
             environment = "staging"
           }
@@ -177,10 +212,12 @@ module "avm_res_web_site" {
     }
   }
 
+  # Creates application insights for slot
   slot_application_insights = {
     development = {
-      name         = "${module.naming.application_insights.name_unique}-development"
-      inherit_tags = true
+      name                  = "${module.naming.application_insights.name_unique}-development"
+      workspace_resource_id = azurerm_log_analytics_workspace.example_development.id
+      inherit_tags          = true
     }
   }
 
