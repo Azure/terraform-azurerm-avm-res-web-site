@@ -978,7 +978,7 @@ resource "azurerm_linux_web_app" "this" {
         content {
 
           dynamic "azure_blob_storage" {
-            for_each = http_logs.value.azure_blob_storage == null ? [] : [http_logs.value.azure_blob_storage]
+            for_each = try(http_logs.value.azure_blob_storage == null ? [] : [http_logs.value.azure_blob_storage], [])
 
             content {
               retention_in_days = azure_blob_storage.value.retention_in_days
@@ -986,7 +986,7 @@ resource "azurerm_linux_web_app" "this" {
             }
           }
           dynamic "file_system" {
-            for_each = http_logs.value.file_system == null ? [] : [http_logs.value.file_system]
+            for_each = try(http_logs.value.file_system == null ? [] : [http_logs.value.file_system], [])
 
             content {
               retention_in_days = file_system.value.retention_in_days
