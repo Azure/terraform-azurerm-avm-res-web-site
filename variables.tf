@@ -956,13 +956,16 @@ variable "logs" {
       }), null)
     }), null)
   })
+  nullable    = true
   default     = null
+
   description = <<DESCRIPTION
+
 
   A map of logs to create on the Function App.
 
   DESCRIPTION
-  nullable    = false
+
 }
 
 # tflint-ignore: terraform_unused_declarations
