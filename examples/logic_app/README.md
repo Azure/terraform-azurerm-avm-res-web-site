@@ -61,11 +61,43 @@ resource "azurerm_storage_account" "example" {
   }
 }
 
+resource "azurerm_virtual_network" "example" {
+  address_space       = ["192.168.0.0/24"]
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.virtual_network.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "example" {
+  address_prefixes     = ["192.168.0.0/24"]
+  name                 = module.naming.subnet.name_unique
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+}
+
+resource "azurerm_private_dns_zone" "example" {
+  name                = local.azurerm_private_dns_zone_resource_name
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = azurerm_resource_group.example.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+}
+
+data "azurerm_client_config" "this" {}
+
+data "azurerm_role_definition" "example" {
+  name = "Contributor"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.1"
+  # version = "0.16.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -87,11 +119,31 @@ module "avm_res_web_site" {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
   site_config = {
-    always_on = false
+
   }
+
+  role_assignments = {
+    role_assignment_1 = {
+      role_definition_id_or_name = data.azurerm_role_definition.example.id
+      principal_id               = data.azurerm_client_config.this.object_id
+    }
+  }
+
+  private_endpoints = {
+    # Use of private endpoints requires Standard SKU
+    primary = {
+      name                          = "primary-interfaces"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
+      subnet_resource_id            = azurerm_subnet.example.id
+      tags = {
+        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+      }
+    }
+  }
+
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.1"
+    version = "0.16.2"
   }
 
 }
@@ -113,10 +165,16 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
+- [azurerm_private_dns_zone.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
+- [azurerm_private_dns_zone_virtual_network_link.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [azurerm_subnet.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_virtual_network.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [azurerm_client_config.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_role_definition.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -136,6 +194,14 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id)
+
+Description: The subscription ID to use for the Azure resources.
+
+Type: `string`
+
+Default: `"d717cc8e-8af6-4764-bb9a-c86a529be857"`
 
 ## Outputs
 

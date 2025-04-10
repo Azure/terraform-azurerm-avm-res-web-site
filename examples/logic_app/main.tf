@@ -81,6 +81,12 @@ resource "azurerm_private_dns_zone_virtual_network_link" "example" {
   virtual_network_id    = azurerm_virtual_network.example.id
 }
 
+data "azurerm_client_config" "this" {}
+
+data "azurerm_role_definition" "example" {
+  name = "Contributor"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
@@ -107,7 +113,14 @@ module "avm_res_web_site" {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
   site_config = {
-    always_on = false
+
+  }
+
+  role_assignments = {
+    role_assignment_1 = {
+      role_definition_id_or_name = data.azurerm_role_definition.example.id
+      principal_id               = data.azurerm_client_config.this.object_id
+    }
   }
 
   private_endpoints = {
