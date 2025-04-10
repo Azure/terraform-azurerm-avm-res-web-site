@@ -55,11 +55,43 @@ resource "azurerm_storage_account" "example" {
   }
 }
 
+resource "azurerm_virtual_network" "example" {
+  address_space       = ["192.168.0.0/24"]
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.virtual_network.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "example" {
+  address_prefixes     = ["192.168.0.0/24"]
+  name                 = module.naming.subnet.name_unique
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+}
+
+resource "azurerm_private_dns_zone" "example" {
+  name                = local.azurerm_private_dns_zone_resource_name
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = azurerm_resource_group.example.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+}
+
+data "azurerm_client_config" "this" {}
+
+data "azurerm_role_definition" "example" {
+  name = "Contributor"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.1"
+  # version = "0.16.2"
 
   enable_telemetry = var.enable_telemetry
 
@@ -81,11 +113,31 @@ module "avm_res_web_site" {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
   site_config = {
-    always_on = false
+
   }
+
+  role_assignments = {
+    role_assignment_1 = {
+      role_definition_id_or_name = data.azurerm_role_definition.example.id
+      principal_id               = data.azurerm_client_config.this.object_id
+    }
+  }
+
+  private_endpoints = {
+    # Use of private endpoints requires Standard SKU
+    primary = {
+      name                          = "primary-interfaces"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
+      subnet_resource_id            = azurerm_subnet.example.id
+      tags = {
+        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+      }
+    }
+  }
+
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.1"
+    version = "0.16.2"
   }
 
 }
