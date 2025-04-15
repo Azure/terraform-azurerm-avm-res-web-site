@@ -959,6 +959,24 @@ variable "logs" {
   default = {
 
   }
+  validation {
+    condition = alltrue(
+      [
+        for _, v in var.logs :
+        length(v.http_logs) == 1 ? length(v.application_logs) != 0 : true
+      ]
+    )
+    error_message = "If specifying `http_logs`, you must also specify `application_logs`."
+  }
+  validation {
+    condition = alltrue(
+      [
+        for _, v in var.logs :
+        length(v.application_logs) == 1 || length(v.http_logs) == 1
+      ]
+    )
+    error_message = "If specifying `http_logs`, you must also specify `application_logs`."
+  }
   description = <<DESCRIPTION
 
   A map of logs to create on the Function App.

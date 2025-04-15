@@ -438,7 +438,8 @@ resource "azurerm_windows_web_app_slot" "this" {
     }
   }
   dynamic "logs" {
-    for_each = each.value.logs
+    for_each = contains(local.webapp_slots_with_logs_keys, "${each.key}") ? { for k,v in each.value.logs : k => v if (lower(v.application_logs[local.webapp_slot_lk[k].file_system_level_key].file_system_level)) != "off" && v.application_logs[local.webapp_slot_lk[k].file_system_level_key].file_system_level != null} : {}
+
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages
@@ -931,7 +932,8 @@ resource "azurerm_linux_web_app_slot" "this" {
     }
   }
   dynamic "logs" {
-    for_each = each.value.logs
+    for_each = contains(local.webapp_slots_with_logs_keys, "${each.key}") ? { for k,v in each.value.logs : k => v if (lower(v.application_logs[local.webapp_slot_lk[k].file_system_level_key].file_system_level)) != "off" && v.application_logs[local.webapp_slot_lk[k].file_system_level_key].file_system_level != null} : {}
+
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages

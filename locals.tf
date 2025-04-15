@@ -1,6 +1,29 @@
 locals {
   # Custom domain verification id
   custom_domain_verification_id = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].custom_domain_verification_id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].custom_domain_verification_id : azurerm_linux_function_app.this[0].custom_domain_verification_id)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].custom_domain_verification_id : azurerm_linux_web_app.this[0].custom_domain_verification_id)) : null
+  # Store key for `logs` and `application_logs`
+  webapp_logs_key = length(var.logs) == 1 ? keys(var.logs) : null
+  webapp_lk = local.webapp_logs_key != null ? local.webapp_logs_key[0] : null
+  webapp_application_logs_key = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null
+  webapp_alk = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null
+
+  webapp_keys = {
+    logs_key = local.webapp_logs_key
+    application_logs_key = local.webapp_application_logs_key
+    lk = local.webapp_lk
+    alk = local.webapp_alk
+  }
+
+  deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
+  webapp_slots_with_logs_keys = [for x in local.deployment_slot_keys : x if length(var.deployment_slots[x].logs) == 1] # keys(var.deployment_slots[x].logs)]
+  webapp_slot_lk = {for x in local.webapp_slots_with_logs_keys : x =>
+    {
+      keys = keys(var.deployment_slots[x].logs)
+      log_settings = var.deployment_slots[x].logs[keys(var.deployment_slots[x].logs)[0]]
+      file_system_level_key = keys(var.deployment_slots[x].logs[keys(var.deployment_slots[x].logs)[0]].application_logs)[0]
+    }
+  }
+
   # Managed identities
   managed_identities = {
     system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {

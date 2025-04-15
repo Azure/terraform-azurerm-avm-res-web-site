@@ -444,7 +444,7 @@ resource "azurerm_windows_web_app" "this" {
     }
   }
   dynamic "logs" {
-    for_each = var.logs
+    for_each = local.webapp_keys.alk != null ? [for x in var.logs : x if (x.application_logs[local.webapp_keys.alk].file_system_level != "Off" && x.application_logs[local.webapp_keys.alk].file_system_level != null)] : []
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages
@@ -949,7 +949,7 @@ resource "azurerm_linux_web_app" "this" {
     }
   }
   dynamic "logs" {
-    for_each = var.logs
+    for_each = local.webapp_keys.alk != null ? [for x in var.logs : x if (x.application_logs[local.webapp_keys.alk].file_system_level != "Off" && x.application_logs[local.webapp_keys.alk].file_system_level != null)] : []
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages
