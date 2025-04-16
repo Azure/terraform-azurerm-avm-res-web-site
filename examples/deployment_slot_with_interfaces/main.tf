@@ -115,7 +115,7 @@ module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.1"
+  # version = "0.16.3"
 
   enable_telemetry = var.enable_telemetry
 
@@ -161,7 +161,7 @@ module "avm_res_web_site" {
 
   deployment_slots = {
     slot1 = {
-      name = "development"
+      name = "development-env"
       site_config = {
         slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
         application_stack = {
@@ -174,7 +174,7 @@ module "avm_res_web_site" {
       }
     }
     slot2 = {
-      name = "staging"
+      name = "staging-env"
       site_config = {
         # Uses existing application insights
         application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
