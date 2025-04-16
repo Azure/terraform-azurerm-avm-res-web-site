@@ -72,7 +72,7 @@ module "avm_res_web_site" {
   source = "../.."
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.2"
+  # version = "0.16.3"
 
   enable_telemetry = var.enable_telemetry
 
@@ -123,8 +123,8 @@ module "avm_res_web_site" {
 
   deployment_slots = {
     slot1 = {
-      name = "development-logs"
-      ftp_publish_basic_authentication_enabled = false
+      name                                           = "development-logs"
+      ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
         slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
@@ -155,8 +155,8 @@ module "avm_res_web_site" {
       }
     }
     slot2 = {
-      name = "staging-logs"
-      ftp_publish_basic_authentication_enabled = false
+      name                                           = "staging-logs"
+      ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
         # Uses existing application insights

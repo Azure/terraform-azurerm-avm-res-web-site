@@ -959,6 +959,13 @@ variable "logs" {
   default = {
 
   }
+  description = <<DESCRIPTION
+
+  A map of logs to create on the Function App.
+
+  DESCRIPTION
+  nullable    = false
+
   validation {
     condition = alltrue(
       [
@@ -977,12 +984,6 @@ variable "logs" {
     )
     error_message = "If specifying `http_logs`, you must also specify `application_logs`."
   }
-  description = <<DESCRIPTION
-
-  A map of logs to create on the Function App.
-
-  DESCRIPTION
-  nullable    = false
 }
 
 # tflint-ignore: terraform_unused_declarations
