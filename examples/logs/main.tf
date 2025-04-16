@@ -199,4 +199,8 @@ module "avm_res_web_site" {
       inherit_tags          = true
     }
   }
+
+  tags = {
+
+  }
 }
