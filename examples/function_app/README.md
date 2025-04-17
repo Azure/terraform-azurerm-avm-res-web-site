@@ -53,11 +53,19 @@ resource "azurerm_storage_account" "example" {
   }
 }
 
+resource "azurerm_log_analytics_workspace" "example_production" {
+  location            = azurerm_resource_group.example.location
+  name                = "${module.naming.log_analytics_workspace.name}-production"
+  resource_group_name = azurerm_resource_group.example.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
   # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.3"
+  # version = "0.16.4"
 
   enable_telemetry = var.enable_telemetry
 
@@ -76,9 +84,13 @@ module "avm_res_web_site" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   # storage_uses_managed_identity = true
 
+  application_insights = {
+    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
+  }
+
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.3"
+    version = "0.16.4"
   }
 
 }
@@ -99,6 +111,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_log_analytics_workspace.example_production](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)

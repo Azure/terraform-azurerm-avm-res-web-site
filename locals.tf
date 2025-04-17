@@ -1,7 +1,8 @@
 locals {
   # Custom domain verification id
   custom_domain_verification_id = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].custom_domain_verification_id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].custom_domain_verification_id : azurerm_linux_function_app.this[0].custom_domain_verification_id)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].custom_domain_verification_id : azurerm_linux_web_app.this[0].custom_domain_verification_id)) : null
-  deployment_slot_keys          = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
+  # Checks if there are deployment slots, and grabs keys of slots
+  deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
   # Managed identities
   managed_identities = {
     system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {
@@ -87,7 +88,7 @@ locals {
   # Grabs the key for the `logs` object
   webapp_logs_key = length(var.logs) == 1 ? keys(var.logs) : null
   # Creates a map of webapp slots that have logs, identifies key(s) and stores some infomation about the configuration
-  webapp_slot_lk = { for x in local.webapp_slots_with_logs_keys : x =>
+  webapp_slot_lk = local.webapp_slots_with_logs_keys != null ? { for x in local.webapp_slots_with_logs_keys : x =>
     {
       keys = keys(var.deployment_slots[x].logs)
       # For testing purposes
@@ -95,7 +96,7 @@ locals {
       # Identifies the key for the `file_system_level`
       file_system_level_key = keys(var.deployment_slots[x].logs[keys(var.deployment_slots[x].logs)[0]].application_logs)[0]
     }
-  }
-  # Grabs keys of slots that have logs
-  webapp_slots_with_logs_keys = [for x in local.deployment_slot_keys : x if length(var.deployment_slots[x].logs) == 1]
+  } : null
+  # Checks is there are deployment slots, and grabs keys of slots that have logs
+  webapp_slots_with_logs_keys = local.deployment_slot_keys != null ? [for x in local.deployment_slot_keys : x if length(var.deployment_slots[x].logs) == 1] : null
 }
