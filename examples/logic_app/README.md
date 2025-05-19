@@ -96,21 +96,13 @@ data "azurerm_role_definition" "example" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.logic_app_workflow.name_unique}-logicapp" # Likely to change naming in the future
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  kind                = "logicapp"
+  kind     = "logicapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.logic_app_workflow.name_unique}-logicapp" # Likely to change naming in the future
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-  # Uses an existing storage account
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
   app_settings = {
     FUNCTIONS_RUNTIME_WORKER     = "node"
     WEBSITE_NODE_DEFAULT_VERSION = "~18"
@@ -118,17 +110,7 @@ module "avm_res_web_site" {
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
-  site_config = {
-
-  }
-
-  role_assignments = {
-    role_assignment_1 = {
-      role_definition_id_or_name = data.azurerm_role_definition.example.id
-      principal_id               = data.azurerm_client_config.this.object_id
-    }
-  }
-
+  enable_telemetry = var.enable_telemetry
   private_endpoints = {
     # Use of private endpoints requires Standard SKU
     primary = {
@@ -140,12 +122,22 @@ module "avm_res_web_site" {
       }
     }
   }
+  role_assignments = {
+    role_assignment_1 = {
+      role_definition_id_or_name = data.azurerm_role_definition.example.id
+      principal_id               = data.azurerm_client_config.this.object_id
+    }
+  }
+  site_config = {
 
+  }
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.16.2"
   }
-
 }
 ```
 
