@@ -537,7 +537,7 @@ map(object({
     login = optional(map(object({
       allowed_external_redirect_urls    = optional(list(string))
       cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "00:00:00")
+      cookie_expiration_time            = optional(string, "08:00:00")
       logout_endpoint                   = optional(string)
       nonce_expiration_time             = optional(string, "00:05:00")
       preserve_url_fragments_for_logins = optional(bool, false)
