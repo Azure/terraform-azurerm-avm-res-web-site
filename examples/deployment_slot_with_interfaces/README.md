@@ -120,51 +120,18 @@ resource "azurerm_user_assigned_identity" "user" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-slots"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "functionapp"
-
+  kind     = "functionapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.function_app.name_unique}-slots"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  # Uses an existing storage account
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-  # storage_uses_managed_identity = true
-
-
   # Creates application insights
   application_insights = {
     name                  = "${module.naming.application_insights.name_unique}-production"
     workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
-
-  managed_identities = {
-    # Identities can only be used with the Standard SKU
-    system_assigned = true
-    user_assigned_resource_ids = [
-      azurerm_user_assigned_identity.user.id
-    ]
-  }
-
-  site_config = {
-    application_stack = {
-      dotnet = {
-        dotnet_version              = "v8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
-
   deployment_slots = {
     slot1 = {
       name = "development-env"
@@ -217,7 +184,23 @@ module "avm_res_web_site" {
       }
     }
   }
-
+  enable_telemetry = var.enable_telemetry
+  managed_identities = {
+    # Identities can only be used with the Standard SKU
+    system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.user.id
+    ]
+  }
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "v8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
   # Creates application insights for slot
   slot_application_insights = {
     development = {
@@ -226,11 +209,12 @@ module "avm_res_web_site" {
       inherit_tags          = true
     }
   }
-
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
   tags = {
     environment = "AVM"
   }
-
 }
 
 

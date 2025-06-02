@@ -69,36 +69,13 @@ data "azurerm_key_vault_secret" "stored_certificate" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-default"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "functionapp"
-
+  kind     = "functionapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.function_app.name_unique}-default"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  # Uses an existing storage account
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-  # storage_uses_managed_identity = true
-
-  site_config = {
-    application_stack = {
-      dotnet = {
-        dotnet_version              = "v8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
-
   deployment_slots = {
     qa = {
       name = "qa"
@@ -125,80 +102,22 @@ module "avm_res_web_site" {
       }
     }
   }
-
-  /*
-
-  custom_domains = {
-    # Allows for the configuration of custom domains for the Function App
-    # If not already set, the module allows for the creation of TXT and CNAME records
-
-    production = {
-
-      zone_resource_group_name = "<zone_resource_group_name>"
-
-      create_txt_records = true
-      txt_name           = "asuid.${module.naming.function_app.name_unique}-custom-domain"
-      txt_zone_name      = "<zone_name>"
-      txt_records = {
-        record = {
-          value = "" # Feel free to leave empty, as module will reference Function App ID after Function App creation
-        }
+  enable_telemetry = var.enable_telemetry
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "v8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
       }
-
-      create_cname_records = true
-      cname_name           = "${module.naming.function_app.name_unique}-custom-domain"
-      cname_zone_name      = "<zone_name>"
-      cname_record         = "${module.naming.function_app.name_unique}-custom-domain.azurewebsites.net"
-
-      create_certificate   = true
-      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      certificate_location = azurerm_resource_group.example.location
-      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
-
-      app_service_name    = "${module.naming.function_app.name_unique}-custom-domain"
-      hostname            = "${module.naming.function_app.name_unique}-custom-domain.<zone_name>"
-      resource_group_name = azurerm_resource_group.example.name
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "production" # Currently the key of the custom domain
-    },
-    qa = {
-      slot_as_target = true
-
-      zone_resource_group_name = "<zone_resource_group_name>"
-
-      create_txt_records = true
-      txt_name           = "asuid.${module.naming.function_app.name_unique}-qa"
-      txt_zone_name      = "<zone_name>"
-      txt_records = {
-        record = {
-          value = "" # Leave empty as module will reference Function App ID after Function App creation
-        }
-      }
-
-      create_cname_records = true
-      cname_name           = "${module.naming.function_app.name_unique}-qa"
-      cname_zone_name      = "<zone_name>"
-      cname_record         = "${module.naming.function_app.name_unique}-custom-domain-qa.azurewebsites.net"
-
-      create_certificate   = true
-      certificate_name     = "${module.naming.function_app.name_unique}-${data.azurerm_key_vault_secret.stored_certificate.name}"
-      certificate_location = azurerm_resource_group.example.location
-      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
-
-      app_service_slot_key = "qa"
-      hostname             = "${module.naming.function_app.name_unique}-qa.<zone_name>"
-      ssl_state            = "SniEnabled"
-      thumbprint_key       = "production"
     }
-
   }
-
-  */
-
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
   tags = {
     environment = "dev-tf"
   }
-
 }
 ```
 

@@ -85,21 +85,29 @@ output "system_assigned_mi_principal_id" {
 }
 
 output "system_assigned_mi_principal_id_slots" {
-  description = "Map or value of system-assigned managed identity principal IDs for resources slots"
+  description = "Map or value of system-assigned managed identity principal IDs for resources slots (only for webapp & functionapp)"
   sensitive   = true
-  value = (var.kind == "functionapp" || var.kind == "webapp") ? ( # Exclude logic apps
-    var.os_type == "Windows" ? (
-      length(azurerm_windows_function_app_slot.this) > 0 ?
-      { for slot_key, slot_resource in azurerm_windows_function_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
-    ) : length(azurerm_linux_function_app_slot.this) > 0 ?
-    { for slot_key, slot_resource in azurerm_linux_function_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
-    ) : (
-    var.os_type == "Windows" ? (
-      length(azurerm_windows_web_app_slot.this) > 0 ?
-      { for slot_key, slot_resource in azurerm_windows_web_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
-    ) : length(azurerm_linux_web_app_slot.this) > 0 ?
-    { for slot_key, slot_resource in azurerm_linux_web_app_slot.this : slot_key => try(slot_resource.identity[0].principal_id, null) } : {}
-  )
+  value = var.kind == "functionapp" ? ( # Exclude logic apps
+    var.os_type == "Windows"
+    ? { for slot_key, slot in azurerm_windows_function_app_slot.this :
+      slot_key => try(slot.identity[0].principal_id, null)
+      if try(slot.identity[0].principal_id, null) != null
+    }
+    : { for slot_key, slot in azurerm_linux_function_app_slot.this :
+      slot_key => try(slot.identity[0].principal_id, null)
+      if try(slot.identity[0].principal_id, null) != null
+    }
+    ) : var.kind == "webapp" ? (
+    var.os_type == "Windows"
+    ? { for slot_key, slot in azurerm_windows_web_app_slot.this :
+      slot_key => try(slot.identity[0].principal_id, null)
+      if try(slot.identity[0].principal_id, null) != null
+    }
+    : { for slot_key, slot in azurerm_linux_web_app_slot.this :
+      slot_key => try(slot.identity[0].principal_id, null)
+      if try(slot.identity[0].principal_id, null) != null
+    }
+  ) : {}
 }
 
 output "thumbprints" {

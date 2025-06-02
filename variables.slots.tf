@@ -16,34 +16,6 @@ variable "app_service_active_slot" {
   DESCRIPTION
 }
 
-variable "slot_application_insights" {
-  type = map(object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    resource_group_name                   = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  }))
-  default = {
-
-  }
-  description = <<DESCRIPTION
-  Configures the Application Insights instance(s) for the deployment slot(s).
-  ```
-  DESCRIPTION
-}
-
 variable "deployment_slots" {
   type = map(object({
     name                                     = optional(string)
@@ -490,5 +462,32 @@ variable "deployment_slots_inherit_lock" {
   type        = bool
   default     = true
   description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
+}
 
+variable "slot_application_insights" {
+  type = map(object({
+    application_type                      = optional(string, "web")
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  Configures the Application Insights instance(s) for the deployment slot(s).
+  ```
+  DESCRIPTION
 }

@@ -51,30 +51,21 @@ resource "azurerm_log_analytics_workspace" "example_production" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-webapp"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "webapp"
-
+  kind     = "webapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.function_app.name_unique}-webapp"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
-
+  enable_telemetry = var.enable_telemetry
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.16.4"
   }
-
 }
 ```
 
