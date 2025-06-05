@@ -1498,6 +1498,12 @@ variable "virtual_network_subnet_id" {
   description = "The ID of the subnet to deploy the Function App in."
 }
 
+variable "vnet_image_pull_enabled" {
+  type        = bool
+  default     = false
+  description = "Should the App Service pull images from a Virtual Network? Defaults to `false`."
+}
+
 variable "webdeploy_publish_basic_authentication_enabled" {
   type        = bool
   default     = true

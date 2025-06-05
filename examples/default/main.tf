@@ -65,4 +65,5 @@ module "avm_res_web_site" {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.0"
   }
+  vnet_image_pull_enabled = true
 }

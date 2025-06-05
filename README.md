@@ -14,7 +14,9 @@ NOTES:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.11)
+
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0, >= 4.21.1, < 5.0.0)
 
@@ -26,6 +28,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_update_resource.linux_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.linux_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.windows_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.windows_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
 - [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_app_service_slot_custom_hostname_binding.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_slot_custom_hostname_binding) (resource)
@@ -2132,6 +2138,14 @@ Description: The ID of the subnet to deploy the Function App in.
 Type: `string`
 
 Default: `null`
+
+### <a name="input_vnet_image_pull_enabled"></a> [vnet\_image\_pull\_enabled](#input\_vnet\_image\_pull\_enabled)
+
+Description: Should the App Service pull images from a Virtual Network? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
 
