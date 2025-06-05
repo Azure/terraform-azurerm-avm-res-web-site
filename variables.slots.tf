@@ -450,10 +450,15 @@ variable "deployment_slots" {
   description = <<DESCRIPTION
 
   ```
-
   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
-
+  - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
+    - `name` - The name of the share.
+    - `access_key` has been deprecated and should not be used. Instead variable `slots_storage_shares_to_mount_sensitive_values` should be used.
+    - `account_name` - The name of the Storage Account.
+    - `share_name` - The name of the share in the Storage Account.
+    - `mount_path` - The path where the share will be mounted in the Function App.
+    - `type` - The type of mount, defaults to "AzureFiles".
   ```
   DESCRIPTION
 }
@@ -490,4 +495,17 @@ variable "slot_application_insights" {
   Configures the Application Insights instance(s) for the deployment slot(s).
   ```
   DESCRIPTION
+}
+
+variable "slots_storage_shares_to_mount_sensitive_values" {
+  type = map(string)
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the Function App.
+  The key is the supplied input to `var.storage_shares_to_mount`.
+  The value is the secret value (storage access key).
+  DESCRIPTION
+  sensitive   = true
 }

@@ -136,7 +136,7 @@ module "avm_res_web_site" {
   storage_account_name = azurerm_storage_account.example.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.2"
+    version = "0.17.0"
   }
 }
 ```

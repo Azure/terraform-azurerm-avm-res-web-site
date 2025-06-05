@@ -77,6 +77,10 @@ module "avm_res_web_site" {
   # Uses an existing storage account
   storage_account_name          = azurerm_storage_account.example.name
   storage_uses_managed_identity = true
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
+  }
 }
 ```
 

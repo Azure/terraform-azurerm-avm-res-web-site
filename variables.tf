@@ -1,3 +1,17 @@
+# variable "storage_shares_to_mount_sensitive_values" {
+#   type = map(string)
+#   default = {
+
+#   }
+#   description = <<DESCRIPTION
+#   A map of sensitive values (Storage Access Key) for the Storage Account FILE SHARES to mount to the Function App.
+#   A map of storage access key keys to values.
+#   The map key is the supplied input to `var.storage_shares_to_mount`.
+#   The map value is the secret value.
+#   DESCRIPTION
+#   sensitive = true
+# }
+
 # Required Inputs
 variable "kind" {
   type        = string
@@ -1430,7 +1444,7 @@ variable "storage_shares_to_mount" {
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
-  storage_accounts = {
+  storage_shares_to_mount = {
     storacc1 = {
       access_key   = "00000000-0000-0000-0000-000000000000"
       account_name = "example"

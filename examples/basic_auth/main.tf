@@ -93,4 +93,8 @@ module "avm_res_web_site" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   # Uses an existing storage account
   storage_account_name = azurerm_storage_account.example.name
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
+  }
 }

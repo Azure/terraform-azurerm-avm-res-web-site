@@ -81,7 +81,7 @@ module "avm_res_web_site" {
   storage_container_type      = "blobContainer"
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.4"
+    version = "0.17.0"
   }
 }
 ```

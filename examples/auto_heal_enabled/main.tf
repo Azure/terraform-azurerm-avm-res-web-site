@@ -90,4 +90,8 @@ module "avm_res_web_site" {
   site_config = {
 
   }
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
+  }
 }

@@ -490,7 +490,8 @@ resource "azurerm_windows_web_app_slot" "this" {
     for_each = each.value.storage_shares_to_mount
 
     content {
-      access_key   = storage_account.value.access_key
+      # access_key   = storage_account.value.access_key
+      access_key   = var.slots_storage_shares_to_mount_sensitive_values[storage_account.key]
       account_name = storage_account.value.account_name
       name         = storage_account.value.name
       share_name   = storage_account.value.share_name
@@ -983,7 +984,8 @@ resource "azurerm_linux_web_app_slot" "this" {
     for_each = each.value.storage_shares_to_mount
 
     content {
-      access_key   = storage_account.value.access_key
+      # access_key   = storage_account.value.access_key
+      access_key   = var.slots_storage_shares_to_mount_sensitive_values[storage_account.key]
       account_name = storage_account.value.account_name
       name         = storage_account.value.name
       share_name   = storage_account.value.share_name
