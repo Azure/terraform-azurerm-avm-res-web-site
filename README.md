@@ -912,7 +912,7 @@ Description:
 
   - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
     - `name` - The name of the share.
-    - `access_key` has been deprecated and should not be used. Instead variable `slots_storage_shares_to_mount_sensitive_values` should be used.
+    - `access_key` has been DEPRECATED and should not be used. Instead variable `slots_storage_shares_to_mount_sensitive_values` should be used.
     - `account_name` - The name of the Storage Account.
     - `share_name` - The name of the share in the Storage Account.
     - `mount_path` - The path where the share will be mounted in the Function App.
@@ -1213,7 +1213,7 @@ map(object({
     })), {})
 
     storage_shares_to_mount = optional(map(object({
-      access_key   = string
+      # access_key   = optional(string, null)
       account_name = string
       mount_path   = string
       name         = string
