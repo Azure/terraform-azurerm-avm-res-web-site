@@ -412,6 +412,18 @@ resource "azurerm_windows_function_app" "this" {
   }
 }
 
+resource "azapi_update_resource" "windows_functionapp" {
+  count = var.kind == "functionapp" && var.os_type == "Windows" && var.vnet_image_pull_enabled ? 1 : 0
+
+  resource_id = azurerm_windows_function_app.this[0].id
+  type        = "Microsoft.Web/sites@2024-04-01"
+  body = {
+    properties = {
+      vnetImagePullEnabled = var.vnet_image_pull_enabled
+    }
+  }
+}
+
 resource "azurerm_linux_function_app" "this" {
   count = var.kind == "functionapp" && var.os_type == "Linux" && var.function_app_uses_fc1 == false ? 1 : 0
 
@@ -837,6 +849,18 @@ resource "azurerm_linux_function_app" "this" {
       delete = timeouts.value.delete
       read   = timeouts.value.read
       update = timeouts.value.update
+    }
+  }
+}
+
+resource "azapi_update_resource" "linux_functionapp" {
+  count = var.kind == "functionapp" && var.os_type == "Linux" && var.vnet_image_pull_enabled ? 1 : 0
+
+  resource_id = azurerm_linux_function_app.this[0].id
+  type        = "Microsoft.Web/sites@2024-04-01"
+  body = {
+    properties = {
+      vnetImagePullEnabled = var.vnet_image_pull_enabled
     }
   }
 }

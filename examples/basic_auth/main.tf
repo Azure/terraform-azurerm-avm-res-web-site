@@ -50,33 +50,13 @@ resource "azurerm_storage_account" "example" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.1"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-basic-auth"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "functionapp"
-
+  kind     = "functionapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.function_app.name_unique}-basic-auth"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  # Uses an existing storage account
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-
-  site_config = {
-    ftps_state = "FtpsOnly"
-  }
-
-  # May require additional configuration for the authentication settings by use of App Registration
-
-  # /*
-
   auth_settings = {
     sso = {
       enabled = true
@@ -88,7 +68,6 @@ module "avm_res_web_site" {
       }
     }
   }
-
   auth_settings_v2 = {
     setting1 = {
       auth_enabled     = true
@@ -107,7 +86,15 @@ module "avm_res_web_site" {
       }
     }
   }
-
-  # */
-
+  enable_telemetry = var.enable_telemetry
+  site_config = {
+    ftps_state = "FtpsOnly"
+  }
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
+  }
 }

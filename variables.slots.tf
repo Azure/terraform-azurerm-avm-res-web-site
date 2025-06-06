@@ -16,34 +16,6 @@ variable "app_service_active_slot" {
   DESCRIPTION
 }
 
-variable "slot_application_insights" {
-  type = map(object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    resource_group_name                   = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  }))
-  default = {
-
-  }
-  description = <<DESCRIPTION
-  Configures the Application Insights instance(s) for the deployment slot(s).
-  ```
-  DESCRIPTION
-}
-
 variable "deployment_slots" {
   type = map(object({
     name                                     = optional(string)
@@ -336,7 +308,7 @@ variable "deployment_slots" {
     })), {})
 
     storage_shares_to_mount = optional(map(object({
-      access_key   = string
+      # access_key   = optional(string, null)
       account_name = string
       mount_path   = string
       name         = string
@@ -478,10 +450,15 @@ variable "deployment_slots" {
   description = <<DESCRIPTION
 
   ```
-
   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
-
+  - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
+    - `name` - The name of the share.
+    - `access_key` has been DEPRECATED and should not be used. Instead variable `slots_storage_shares_to_mount_sensitive_values` should be used.
+    - `account_name` - The name of the Storage Account.
+    - `share_name` - The name of the share in the Storage Account.
+    - `mount_path` - The path where the share will be mounted in the Function App.
+    - `type` - The type of mount, defaults to "AzureFiles".
   ```
   DESCRIPTION
 }
@@ -490,5 +467,45 @@ variable "deployment_slots_inherit_lock" {
   type        = bool
   default     = true
   description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
+}
 
+variable "slot_application_insights" {
+  type = map(object({
+    application_type                      = optional(string, "web")
+    inherit_tags                          = optional(bool, false)
+    location                              = optional(string)
+    name                                  = optional(string)
+    resource_group_name                   = optional(string)
+    tags                                  = optional(map(any), null)
+    workspace_resource_id                 = optional(string)
+    daily_data_cap_in_gb                  = optional(number)
+    daily_data_cap_notifications_disabled = optional(bool)
+    retention_in_days                     = optional(number, 90)
+    sampling_percentage                   = optional(number, 100)
+    disable_ip_masking                    = optional(bool, false)
+    local_authentication_disabled         = optional(bool, false)
+    internet_ingestion_enabled            = optional(bool, true)
+    internet_query_enabled                = optional(bool, true)
+    force_customer_storage_for_profiler   = optional(bool, false)
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  Configures the Application Insights instance(s) for the deployment slot(s).
+  ```
+  DESCRIPTION
+}
+
+variable "slots_storage_shares_to_mount_sensitive_values" {
+  type = map(string)
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the Function App.
+  The key is the supplied input to `var.storage_shares_to_mount`.
+  The value is the secret value (storage access key).
+  DESCRIPTION
+  sensitive   = true
 }

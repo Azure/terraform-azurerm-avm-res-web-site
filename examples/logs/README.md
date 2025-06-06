@@ -74,59 +74,17 @@ resource "azurerm_log_analytics_workspace" "example_development" {
 
 # This is the module call
 module "avm_res_web_site" {
-
   source = "../.."
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-logs"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "webapp"
-
+  kind                     = "webapp"
+  location                 = azurerm_resource_group.example.location
+  name                     = "${module.naming.function_app.name_unique}-logs"
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
-
-  site_config = {
-    application_stack = {
-      dotnet = {
-        dotnet_version              = "8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
-
-  logs = {
-    app_service_logs = {
-      # Added validation to ensure that logs object is configured.
-      # If file_system_level is set to "Off", then http_logs will have no effect
-      # logs set in `logs`
-      application_logs = {
-        file_system_level = {
-          file_system_level = "Off"
-        }
-      }
-      # Added validation to ensure that is http_logs is configured, application_logs must also be configured.
-      http_logs = {
-        file_system_level = {
-          file_system = {
-            retention_in_days = 7
-            retention_in_mb   = 35
-          }
-        }
-      }
-    }
-  }
-
   deployment_slots = {
     slot1 = {
       name                                           = "development-logs"
@@ -196,7 +154,37 @@ module "avm_res_web_site" {
       }
     }
   }
-
+  enable_telemetry = var.enable_telemetry
+  logs = {
+    app_service_logs = {
+      # Added validation to ensure that logs object is configured.
+      # If file_system_level is set to "Off", then http_logs will have no effect
+      # logs set in `logs`
+      application_logs = {
+        file_system_level = {
+          file_system_level = "Off"
+        }
+      }
+      # Added validation to ensure that is http_logs is configured, application_logs must also be configured.
+      http_logs = {
+        file_system_level = {
+          file_system = {
+            retention_in_days = 7
+            retention_in_mb   = 35
+          }
+        }
+      }
+    }
+  }
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
   # Creates application insights for slot
   slot_application_insights = {
     development = {
@@ -205,9 +193,9 @@ module "avm_res_web_site" {
       inherit_tags          = true
     }
   }
-
   tags = {
-
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
   }
 }
 ```

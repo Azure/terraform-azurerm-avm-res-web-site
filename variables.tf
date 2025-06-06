@@ -1,3 +1,17 @@
+# variable "storage_shares_to_mount_sensitive_values" {
+#   type = map(string)
+#   default = {
+
+#   }
+#   description = <<DESCRIPTION
+#   A map of sensitive values (Storage Access Key) for the Storage Account FILE SHARES to mount to the Function App.
+#   A map of storage access key keys to values.
+#   The map key is the supplied input to `var.storage_shares_to_mount`.
+#   The map value is the secret value.
+#   DESCRIPTION
+#   sensitive = true
+# }
+
 # Required Inputs
 variable "kind" {
   type        = string
@@ -325,7 +339,7 @@ variable "auth_settings_v2" {
     login = optional(map(object({
       allowed_external_redirect_urls    = optional(list(string))
       cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "00:00:00")
+      cookie_expiration_time            = optional(string, "08:00:00")
       logout_endpoint                   = optional(string)
       nonce_expiration_time             = optional(string, "00:05:00")
       preserve_url_fragments_for_logins = optional(bool, false)
@@ -1430,7 +1444,7 @@ variable "storage_shares_to_mount" {
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
-  storage_accounts = {
+  storage_shares_to_mount = {
     storacc1 = {
       access_key   = "00000000-0000-0000-0000-000000000000"
       account_name = "example"
@@ -1482,6 +1496,12 @@ variable "virtual_network_subnet_id" {
   type        = string
   default     = null
   description = "The ID of the subnet to deploy the Function App in."
+}
+
+variable "vnet_image_pull_enabled" {
+  type        = bool
+  default     = false
+  description = "Should the App Service pull images from a Virtual Network? Defaults to `false`."
 }
 
 variable "webdeploy_publish_basic_authentication_enabled" {

@@ -14,7 +14,9 @@ NOTES:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.11)
+
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0, >= 4.21.1, < 5.0.0)
 
@@ -26,6 +28,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_update_resource.linux_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.linux_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.windows_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
+- [azapi_update_resource.windows_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
 - [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_app_service_slot_custom_hostname_binding.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_slot_custom_hostname_binding) (resource)
@@ -537,7 +543,7 @@ map(object({
     login = optional(map(object({
       allowed_external_redirect_urls    = optional(list(string))
       cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "00:00:00")
+      cookie_expiration_time            = optional(string, "08:00:00")
       logout_endpoint                   = optional(string)
       nonce_expiration_time             = optional(string, "00:05:00")
       preserve_url_fragments_for_logins = optional(bool, false)
@@ -908,9 +914,15 @@ Default: `0`
 
 Description:
   ```
-
   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
+  - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
+    - `name` - The name of the share.
+    - `access_key` has been DEPRECATED and should not be used. Instead variable `slots_storage_shares_to_mount_sensitive_values` should be used.
+    - `account_name` - The name of the Storage Account.
+    - `share_name` - The name of the share in the Storage Account.
+    - `mount_path` - The path where the share will be mounted in the Function App.
+    - `type` - The type of mount, defaults to "AzureFiles".
 ```
 
 Type:
@@ -1207,7 +1219,7 @@ map(object({
     })), {})
 
     storage_shares_to_mount = optional(map(object({
-      access_key   = string
+      # access_key   = optional(string, null)
       account_name = string
       mount_path   = string
       name         = string
@@ -1940,6 +1952,16 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_slots_storage_shares_to_mount_sensitive_values"></a> [slots\_storage\_shares\_to\_mount\_sensitive\_values](#input\_slots\_storage\_shares\_to\_mount\_sensitive\_values)
+
+Description:   A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the Function App.  
+  The key is the supplied input to `var.storage_shares_to_mount`.  
+  The value is the secret value (storage access key).
+
+Type: `map(string)`
+
+Default: `{}`
+
 ### <a name="input_sticky_settings"></a> [sticky\_settings](#input\_sticky\_settings)
 
 Description:   A map of sticky settings to assign to the Function App.
@@ -2038,7 +2060,7 @@ Description:   A map of objects that represent Storage Account FILE SHARES to mo
   - `mount_path` - (Optional) The path to mount the Storage Account to.
 
   ```terraform
-  storage_accounts = {
+  storage_shares_to_mount = {
     storacc1 = {
       access_key   = "00000000-0000-0000-0000-000000000000"
       account_name = "example"
@@ -2116,6 +2138,14 @@ Description: The ID of the subnet to deploy the Function App in.
 Type: `string`
 
 Default: `null`
+
+### <a name="input_vnet_image_pull_enabled"></a> [vnet\_image\_pull\_enabled](#input\_vnet\_image\_pull\_enabled)
+
+Description: Should the App Service pull images from a Virtual Network? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
 
@@ -2203,7 +2233,7 @@ Description: value
 
 ### <a name="output_system_assigned_mi_principal_id_slots"></a> [system\_assigned\_mi\_principal\_id\_slots](#output\_system\_assigned\_mi\_principal\_id\_slots)
 
-Description: Map or value of system-assigned managed identity principal IDs for resources slots
+Description: Map or value of system-assigned managed identity principal IDs for resources slots (only for webapp & functionapp)
 
 ### <a name="output_thumbprints"></a> [thumbprints](#output\_thumbprints)
 

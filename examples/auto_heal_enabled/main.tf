@@ -45,28 +45,15 @@ resource "azurerm_log_analytics_workspace" "example" {
 module "avm_res_web_site" {
   source = "../../"
 
-  # source             = "Azure/avm-res-web-site/azurerm"
-  # version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-auto-heal"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "webapp"
-
+  kind                     = "webapp"
+  location                 = azurerm_resource_group.example.location
+  name                     = "${module.naming.function_app.name_unique}-auto-heal"
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
-
-  site_config = {
-
-  }
-
   auto_heal_setting = {
     setting_1 = {
       action = {
@@ -98,5 +85,13 @@ module "avm_res_web_site" {
         }
       }
     }
+  }
+  enable_telemetry = var.enable_telemetry
+  site_config = {
+
+  }
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.17.0"
   }
 }

@@ -65,43 +65,19 @@ data "archive_file" "function_package" {
 */
 
 module "avm_res_web_site" {
-
   source = "../../"
 
-  #   source             = "Azure/avm-res-web-site/azurerm"
-  #   version = "0.16.4"
-
-  enable_telemetry = var.enable_telemetry
-
-  name                = "${module.naming.function_app.name_unique}-zip"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  kind = "functionapp"
-
+  kind     = "functionapp"
+  location = azurerm_resource_group.example.location
+  name     = "${module.naming.function_app.name_unique}-zip"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  # Uses an existing storage account
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-  # storage_uses_managed_identity = true
-
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example.id
   }
-
-  /*
-
-    # If you experience a 401 authentication/authorization error, consider deploying the function app, and then add the `zip_deploy_file` and `WEBSITE_RUN_FROM_PACKAGE` configuration in a separate apply.
-  zip_deploy_file = data.archive_file.function_package.output_path
-
-  app_settings = {
-    WEBSITE_RUN_FROM_PACKAGE = 1
-  }
-  */
-
+  enable_telemetry = var.enable_telemetry
   site_config = {
     application_stack = {
       python = {
@@ -109,10 +85,11 @@ module "avm_res_web_site" {
       }
     }
   }
-
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.16.4"
+    version = "0.17.0"
   }
-
 }
