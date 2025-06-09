@@ -1,21 +1,22 @@
 resource "azurerm_logic_app_standard" "this" {
   count = var.kind == "logicapp" ? 1 : 0
 
-  app_service_plan_id        = var.service_plan_resource_id
-  location                   = var.location
-  name                       = var.name
-  resource_group_name        = var.resource_group_name
-  storage_account_access_key = var.storage_account_access_key
-  storage_account_name       = var.storage_account_name
-  app_settings               = var.app_settings
-  bundle_version             = var.bundle_version
-  client_affinity_enabled    = var.client_affinity_enabled
-  client_certificate_mode    = var.client_certificate_mode
-  enabled                    = var.enabled
-  # ftp_publish_basic_authentication_enabled = var.ftp_publish_basic_authentication_enabled
-  https_only                 = var.https_only
-  public_network_access      = var.public_network_access_enabled == true ? "Enabled" : "Disabled"
-  storage_account_share_name = var.storage_account_share_name
+  app_service_plan_id                      = var.service_plan_resource_id
+  location                                 = var.location
+  name                                     = var.name
+  resource_group_name                      = var.resource_group_name
+  storage_account_access_key               = var.storage_account_access_key
+  storage_account_name                     = var.storage_account_name
+  app_settings                             = var.app_settings
+  bundle_version                           = var.bundle_version
+  client_affinity_enabled                  = var.client_affinity_enabled
+  client_certificate_mode                  = var.client_certificate_mode
+  enabled                                  = var.enabled
+  ftp_publish_basic_authentication_enabled = var.ftp_publish_basic_authentication_enabled
+  https_only                               = var.https_only
+  public_network_access                    = var.public_network_access_enabled == true ? "Enabled" : "Disabled"
+  scm_publish_basic_authentication_enabled = var.scm_publish_basic_authentication_enabled
+  storage_account_share_name               = var.storage_account_share_name
   # vnet_content_share_enabled = var.vnet_content_share_enabled
   tags                      = var.tags
   use_extension_bundle      = var.use_extension_bundle
@@ -39,7 +40,6 @@ resource "azurerm_logic_app_standard" "this" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
-  # scm_publish_basic_authentication_enabled = var.scm_publish_basic_authentication_enabled
   site_config {
     always_on                        = var.site_config.always_on
     app_scale_limit                  = var.site_config.app_scale_limit

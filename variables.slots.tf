@@ -5,14 +5,10 @@ variable "app_service_active_slot" {
   })
   default     = null
   description = <<DESCRIPTION
-
-  ```
   Object that sets the active slot for the App Service.
 
   `slot_key` - The key of the slot object to set as active.
   `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
-
-  ```
   DESCRIPTION
 }
 
@@ -448,8 +444,6 @@ variable "deployment_slots" {
 
   }
   description = <<DESCRIPTION
-
-  ```
   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
   - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
@@ -459,7 +453,6 @@ variable "deployment_slots" {
     - `share_name` - The name of the share in the Storage Account.
     - `mount_path` - The path where the share will be mounted in the Function App.
     - `type` - The type of mount, defaults to "AzureFiles".
-  ```
   DESCRIPTION
 }
 

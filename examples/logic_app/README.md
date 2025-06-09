@@ -49,7 +49,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 resource "azurerm_storage_account" "example" {
-  account_replication_type = "ZRS"
+  account_replication_type = "LRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.example.location
   name                     = module.naming.storage_account.name_unique

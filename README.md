@@ -133,14 +133,10 @@ Default: `true`
 
 ### <a name="input_app_service_active_slot"></a> [app\_service\_active\_slot](#input\_app\_service\_active\_slot)
 
-Description:
-  ```
-  Object that sets the active slot for the App Service.
+Description:   Object that sets the active slot for the App Service.
 
   `slot_key` - The key of the slot object to set as active.
   `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
-
-```
 
 Type:
 
@@ -912,9 +908,7 @@ Default: `0`
 
 ### <a name="input_deployment_slots"></a> [deployment\_slots](#input\_deployment\_slots)
 
-Description:
-  ```
-  > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
+Description:   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
   - `storage_shares_to_mount` - A map of storage shares to mount to the Function App deployment slot.
     - `name` - The name of the share.
@@ -923,7 +917,6 @@ Description:
     - `share_name` - The name of the share in the Storage Account.
     - `mount_path` - The path where the share will be mounted in the Function App.
     - `type` - The type of mount, defaults to "AzureFiles".
-```
 
 Type:
 
@@ -1690,6 +1683,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_scm_publish_basic_authentication_enabled"></a> [scm\_publish\_basic\_authentication\_enabled](#input\_scm\_publish\_basic\_authentication\_enabled)
+
+Description: Should basic authentication be enabled for SCM publish?
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
