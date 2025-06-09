@@ -1120,6 +1120,12 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "scm_publish_basic_authentication_enabled" {
+  type        = bool
+  default     = true
+  description = "Should basic authentication be enabled for SCM publish?"
+}
+
 variable "site_config" {
   type = object({
     always_on             = optional(bool, true)
