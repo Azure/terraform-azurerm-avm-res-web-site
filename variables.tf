@@ -1498,6 +1498,12 @@ variable "use_extension_bundle" {
   description = "Should the extension bundle be used? (Logic App)"
 }
 
+variable "virtual network_backup_restore_enabled" {
+  type        = bool
+  default     = false
+  description = "Should backup and restore operations over the linked virtual network are enabled? Defaults to `false`."
+}
+
 variable "virtual_network_subnet_id" {
   type        = string
   default     = null
@@ -1507,7 +1513,7 @@ variable "virtual_network_subnet_id" {
 variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
-  description = "Should the App Service pull images from a Virtual Network? Defaults to `false`."
+  description = "Should the traffic for the image pull be routed over virtual network enabled? Defaults to `false`."
 }
 
 variable "webdeploy_publish_basic_authentication_enabled" {

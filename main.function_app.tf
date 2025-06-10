@@ -23,7 +23,9 @@ resource "azurerm_windows_function_app" "this" {
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
   storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = var.tags
+  virtual_network_backup_restore_enabled       = var.virtual_network_backup_restore_enabled
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
+  vnet_image_pull_enabled = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
 
@@ -449,7 +451,9 @@ resource "azurerm_linux_function_app" "this" {
   storage_key_vault_secret_id                    = var.storage_key_vault_secret_id
   storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = var.tags
+  virtual_network_backup_restore_enabled       = var.virtual_network_backup_restore_enabled
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
+  vnet_image_pull_enabled = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
 
