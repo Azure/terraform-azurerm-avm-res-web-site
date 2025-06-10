@@ -1498,7 +1498,7 @@ variable "use_extension_bundle" {
   description = "Should the extension bundle be used? (Logic App)"
 }
 
-variable "virtual network_backup_restore_enabled" {
+variable "virtual_network_backup_restore_enabled" {
   type        = bool
   default     = false
   description = "Should backup and restore operations over the linked virtual network are enabled? Defaults to `false`."
