@@ -16,8 +16,6 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.11)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
-
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0, >= 4.21.1, < 5.0.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
@@ -28,10 +26,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_update_resource.linux_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
-- [azapi_update_resource.linux_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
-- [azapi_update_resource.windows_functionapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
-- [azapi_update_resource.windows_webapp](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
 - [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_app_service_slot_custom_hostname_binding.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_slot_custom_hostname_binding) (resource)
@@ -2132,6 +2126,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_virtual_network_backup_restore_enabled"></a> [virtual\_network\_backup\_restore\_enabled](#input\_virtual\_network\_backup\_restore\_enabled)
+
+Description: Should backup and restore operations over the linked virtual network are enabled? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#input\_virtual\_network\_subnet\_id)
 
 Description: The ID of the subnet to deploy the Function App in.
@@ -2142,7 +2144,7 @@ Default: `null`
 
 ### <a name="input_vnet_image_pull_enabled"></a> [vnet\_image\_pull\_enabled](#input\_vnet\_image\_pull\_enabled)
 
-Description: Should the App Service pull images from a Virtual Network? Defaults to `false`.
+Description: Should the traffic for the image pull be routed over virtual network enabled? Defaults to `false`.
 
 Type: `bool`
 
