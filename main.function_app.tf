@@ -879,6 +879,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
   runtime_version                    = var.fc1_runtime_version
   service_plan_id                    = var.service_plan_resource_id
   storage_authentication_type        = var.storage_authentication_type
+  storage_access_key                 = var.storage_authentication_type == "StorageAccountConnectionString" ? var.storage_account_access_key : null
+  storage_user_assigned_identity_id  = var.storage_authentication_type == "UserAssignedIdentity" ? var.storage_user_assigned_identity_id : null
   storage_container_endpoint         = var.storage_container_endpoint
   storage_container_type             = var.storage_container_type
   app_settings                       = var.app_settings
@@ -888,6 +890,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
   # content_share_force_disabled                   = var.content_share_force_disabled
   # daily_memory_time_quota                        = var.daily_memory_time_quota
   enabled                = var.enabled
+
   instance_memory_in_mb  = var.instance_memory_in_mb
   maximum_instance_count = var.maximum_instance_count
   # https_only                                     = var.https_only
