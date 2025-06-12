@@ -890,7 +890,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
   # content_share_force_disabled                   = var.content_share_force_disabled
   # daily_memory_time_quota                        = var.daily_memory_time_quota
   enabled                = var.enabled
-
   instance_memory_in_mb  = var.instance_memory_in_mb
   maximum_instance_count = var.maximum_instance_count
   # https_only                                     = var.https_only
