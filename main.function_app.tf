@@ -879,6 +879,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
   runtime_version                    = var.fc1_runtime_version
   service_plan_id                    = var.service_plan_resource_id
   storage_authentication_type        = var.storage_authentication_type
+  storage_access_key                 = var.storage_authentication_type == "StorageAccountConnectionString" ? var.storage_account_access_key : null
+  storage_user_assigned_identity_id  = var.storage_authentication_type == "UserAssignedIdentity" ? var.storage_user_assigned_identity_id : null
   storage_container_endpoint         = var.storage_container_endpoint
   storage_container_type             = var.storage_container_type
   app_settings                       = var.app_settings
@@ -893,7 +895,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
   # https_only                                     = var.https_only
   # key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
-  storage_access_key                             = var.storage_account_access_key
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled

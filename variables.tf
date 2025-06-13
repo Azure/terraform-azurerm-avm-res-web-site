@@ -1470,6 +1470,12 @@ variable "storage_uses_managed_identity" {
   description = "Should the Storage Account use a Managed Identity? Conflicts with `storage_account_access_key`."
 }
 
+variable "storage_user_assigned_identity_id" {
+  type        = string
+  default     = null
+  description = "The ID of the User Assigned Managed Identity to use for the Storage Account. Conflicts with `storage_account_access_key`."
+}
+
 variable "tags" {
   type        = map(string)
   default     = null
