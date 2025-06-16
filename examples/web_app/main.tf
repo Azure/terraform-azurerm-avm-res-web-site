@@ -58,6 +58,6 @@ module "avm_res_web_site" {
   enable_telemetry = var.enable_telemetry
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.17.0"
+    version = "0.17.2"
   }
 }

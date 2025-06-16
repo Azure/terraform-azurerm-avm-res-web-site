@@ -1464,6 +1464,12 @@ variable "storage_shares_to_mount" {
   DESCRIPTION
 }
 
+variable "storage_user_assigned_identity_id" {
+  type        = string
+  default     = null
+  description = "The ID of the User Assigned Managed Identity to use for the Storage Account. Conflicts with `storage_account_access_key`."
+}
+
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
