@@ -14,7 +14,7 @@ NOTES:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.11)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0, >= 4.8.0, >= 4.21.1, < 5.0.0)
 
@@ -2081,6 +2081,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
+
+Description: The ID of the User Assigned Managed Identity to use for the Storage Account. Conflicts with `storage_account_access_key`.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 

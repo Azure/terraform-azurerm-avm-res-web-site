@@ -83,6 +83,6 @@ module "avm_res_web_site" {
   }
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.17.0"
+    version = "0.17.2"
   }
 }

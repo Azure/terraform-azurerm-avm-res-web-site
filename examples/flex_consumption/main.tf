@@ -34,6 +34,12 @@ resource "azurerm_service_plan" "example" {
   }
 }
 
+resource "azurerm_user_assigned_identity" "user" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.user_assigned_identity.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+}
+
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
   account_tier             = "Standard"
@@ -67,14 +73,23 @@ module "avm_res_web_site" {
   fc1_runtime_version      = "20"
   function_app_uses_fc1    = true
   instance_memory_in_mb    = 2048
-  maximum_instance_count   = 100
+  managed_identities = {
+    # Identities can only be used with the Standard SKU
+    system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.user.id
+    ]
+  }
+  maximum_instance_count = 100
   # Uses an existing storage account
-  storage_account_access_key  = azurerm_storage_account.example.primary_access_key
-  storage_authentication_type = "StorageAccountConnectionString"
-  storage_container_endpoint  = azurerm_storage_container.example.id
-  storage_container_type      = "blobContainer"
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # storage_authentication_type = "StorageAccountConnectionString"
+  storage_authentication_type       = "UserAssignedIdentity"
+  storage_container_endpoint        = azurerm_storage_container.example.id
+  storage_container_type            = "blobContainer"
+  storage_user_assigned_identity_id = azurerm_user_assigned_identity.user.id
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.17.0"
+    version = "0.17.2"
   }
 }
