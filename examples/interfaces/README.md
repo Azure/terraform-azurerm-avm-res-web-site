@@ -105,7 +105,7 @@ module "avm_res_web_site" {
 
   kind     = "functionapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-default"
+  name     = "${module.naming.function_app.name_unique}-interfaces"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name
@@ -160,7 +160,7 @@ module "avm_res_web_site" {
       # }
 
       tags = {
-        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+        webapp = "${module.naming.function_app.name_unique}-interfaces"
       }
 
     }

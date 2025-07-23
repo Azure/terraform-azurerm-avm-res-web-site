@@ -15,7 +15,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.3.0"
+  version = "0.4.2"
 }
 
 resource "azurerm_resource_group" "example" {
@@ -112,7 +112,7 @@ module "avm_res_web_site" {
       private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
       subnet_resource_id            = azurerm_subnet.example.id
       tags = {
-        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+        webapp = "${module.naming.logic_app_workflow.name_unique}-interfaces"
       }
     }
   }
