@@ -8,7 +8,7 @@ This deploys the module as a Windows Function App using some of the interfaces.
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = ">= 0.8.0"
+  version = "0.8.0"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -22,7 +22,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = ">= 0.3.0"
+  version = "0.4.2"
 }
 
 # data "azurerm_client_config" "this" {}
@@ -105,7 +105,7 @@ module "avm_res_web_site" {
 
   kind     = "functionapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-default"
+  name     = "${module.naming.function_app.name_unique}-interfaces"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name
@@ -160,7 +160,7 @@ module "avm_res_web_site" {
       # }
 
       tags = {
-        webapp = "${module.naming.static_web_app.name_unique}-interfaces"
+        webapp = "${module.naming.function_app.name_unique}-interfaces"
       }
 
     }
@@ -433,13 +433,13 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: >= 0.3.0
+Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/regions/azurerm
 
-Version: >= 0.8.0
+Version: 0.8.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
