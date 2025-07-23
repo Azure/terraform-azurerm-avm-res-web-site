@@ -349,11 +349,12 @@ resource "azurerm_windows_web_app" "this" {
           authorisation_endpoint        = custom_oidc_v2.value.authorisation_endpoint
           certification_uri             = custom_oidc_v2.value.certification_uri
           client_credential_method      = custom_oidc_v2.value.client_credential_method
-          client_secret_setting_name    = "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET"
-          issuer_endpoint               = custom_oidc_v2.value.issuer_endpoint
-          name_claim_type               = custom_oidc_v2.value.name_claim_type
-          scopes                        = custom_oidc_v2.value.scopes
-          token_endpoint                = custom_oidc_v2.value.token_endpoint
+          # Removed `clent_secret_setting_name` as its value will be decided automatically based on the result of applying this configuration.
+          # client_secret_setting_name    = coalesce(custom_oidc_v2.value.client_secret_setting_name, "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET")
+          issuer_endpoint = custom_oidc_v2.value.issuer_endpoint
+          name_claim_type = custom_oidc_v2.value.name_claim_type
+          scopes          = custom_oidc_v2.value.scopes
+          token_endpoint  = custom_oidc_v2.value.token_endpoint
         }
       }
       dynamic "facebook_v2" {
@@ -866,11 +867,12 @@ resource "azurerm_linux_web_app" "this" {
           authorisation_endpoint        = custom_oidc_v2.value.authorisation_endpoint
           certification_uri             = custom_oidc_v2.value.certification_uri
           client_credential_method      = custom_oidc_v2.value.client_credential_method
-          client_secret_setting_name    = "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET"
-          issuer_endpoint               = custom_oidc_v2.value.issuer_endpoint
-          name_claim_type               = custom_oidc_v2.value.name_claim_type
-          scopes                        = custom_oidc_v2.value.scopes
-          token_endpoint                = custom_oidc_v2.value.token_endpoint
+          # Removed `clent_secret_setting_name` as its value will be decided automatically based on the result of applying this configuration.
+          # client_secret_setting_name    = coalesce(custom_oidc_v2.value.client_secret_setting_name, "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET")
+          issuer_endpoint = custom_oidc_v2.value.issuer_endpoint
+          name_claim_type = custom_oidc_v2.value.name_claim_type
+          scopes          = custom_oidc_v2.value.scopes
+          token_endpoint  = custom_oidc_v2.value.token_endpoint
         }
       }
       dynamic "facebook_v2" {
