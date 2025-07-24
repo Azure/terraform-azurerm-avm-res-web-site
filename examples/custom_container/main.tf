@@ -38,7 +38,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-container"
+    app = "${module.naming.app_service.name_unique}-container"
   }
   zone_balancing_enabled = true
 }
@@ -61,7 +61,7 @@ module "avm_res_web_site" {
 
   kind     = "webapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-container"
+  name     = "${module.naming.app_service.name_unique}-container"
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name

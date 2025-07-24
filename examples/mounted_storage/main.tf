@@ -30,7 +30,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-webapp"
+    app = module.naming.app_service.name_unique
   }
 }
 
@@ -79,7 +79,7 @@ module "avm_res_web_site" {
 
   kind     = "webapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-webapp"
+  name     = module.naming.app_service.name_unique
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name

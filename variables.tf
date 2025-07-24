@@ -1241,11 +1241,13 @@ variable "site_config" {
       virtual_path = optional(string, "/")
       })),
       {
-        default = {
-          physical_path   = "site\\wwwroot"
-          preload_enabled = false
-          virtual_path    = "/"
-        }
+        # Removing default, as provider issue needing workaround has been resolved.
+        # https://github.com/hashicorp/terraform-provider-azurerm/issues/16326
+        # default = {
+        #   physical_path   = "site\\wwwroot"
+        #   preload_enabled = false
+        #   virtual_path    = "/"
+        # }
     })
   })
   default     = {}
@@ -1514,6 +1516,12 @@ variable "virtual_network_subnet_id" {
   type        = string
   default     = null
   description = "The ID of the subnet to deploy the Function App in."
+}
+
+variable "vnet_content_share_enabled" {
+  type        = bool
+  default     = false
+  description = "Should the traffic for the content share be routed over virtual network enabled? Defaults to `false`."
 }
 
 variable "vnet_image_pull_enabled" {

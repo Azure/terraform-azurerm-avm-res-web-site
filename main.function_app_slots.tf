@@ -23,6 +23,7 @@ resource "azurerm_windows_function_app_slot" "this" {
   storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
+  vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
 
   site_config {
@@ -429,6 +430,7 @@ resource "azurerm_linux_function_app_slot" "this" {
   storage_uses_managed_identity                  = var.storage_uses_managed_identity == true && var.storage_account_access_key == null ? var.storage_uses_managed_identity : null
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
+  vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
 
   site_config {
