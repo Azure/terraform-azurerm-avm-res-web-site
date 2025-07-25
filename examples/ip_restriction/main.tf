@@ -61,17 +61,23 @@ module "avm_res_web_site" {
   site_config = {
     application_stack = {
       dotnet = {
-        dotnet_version              = "8.0"
+        dotnet_version              = "v8.0"
         use_custom_runtime          = false
         use_dotnet_isolated_runtime = true
       }
     }
     ip_restriction = {
-      test = {
+      test1 = {
         action      = "Allow"
         name        = "PortalAccess"
         priority    = 1000
         service_tag = "AzurePortal"
+        headers = {
+          header1 = {
+            # x_azure_fdid = ["some-value"]
+            x_fd_health_probe = ["1"]
+          }
+        }
       }
     }
   }

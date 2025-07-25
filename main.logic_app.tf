@@ -17,11 +17,11 @@ resource "azurerm_logic_app_standard" "this" {
   public_network_access                    = var.public_network_access_enabled == true ? "Enabled" : "Disabled"
   scm_publish_basic_authentication_enabled = var.scm_publish_basic_authentication_enabled
   storage_account_share_name               = var.storage_account_share_name
-  # vnet_content_share_enabled = var.vnet_content_share_enabled
-  tags                      = var.tags
-  use_extension_bundle      = var.use_extension_bundle
-  version                   = var.logic_app_runtime_version
-  virtual_network_subnet_id = var.virtual_network_subnet_id
+  tags                                     = var.tags
+  use_extension_bundle                     = var.use_extension_bundle
+  version                                  = var.logic_app_runtime_version
+  virtual_network_subnet_id                = var.virtual_network_subnet_id
+  vnet_content_share_enabled               = var.vnet_content_share_enabled
 
   dynamic "connection_string" {
     for_each = var.connection_strings

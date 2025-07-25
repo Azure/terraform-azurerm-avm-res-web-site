@@ -349,11 +349,12 @@ resource "azurerm_windows_web_app" "this" {
           authorisation_endpoint        = custom_oidc_v2.value.authorisation_endpoint
           certification_uri             = custom_oidc_v2.value.certification_uri
           client_credential_method      = custom_oidc_v2.value.client_credential_method
-          client_secret_setting_name    = "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET"
-          issuer_endpoint               = custom_oidc_v2.value.issuer_endpoint
-          name_claim_type               = custom_oidc_v2.value.name_claim_type
-          scopes                        = custom_oidc_v2.value.scopes
-          token_endpoint                = custom_oidc_v2.value.token_endpoint
+          # Removed `clent_secret_setting_name` as its value will be decided automatically based on the result of applying this configuration.
+          # client_secret_setting_name    = coalesce(custom_oidc_v2.value.client_secret_setting_name, "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET")
+          issuer_endpoint = custom_oidc_v2.value.issuer_endpoint
+          name_claim_type = custom_oidc_v2.value.name_claim_type
+          scopes          = custom_oidc_v2.value.scopes
+          token_endpoint  = custom_oidc_v2.value.token_endpoint
         }
       }
       dynamic "facebook_v2" {
@@ -527,18 +528,6 @@ resource "azurerm_windows_web_app" "this" {
   }
 }
 
-# resource "azapi_update_resource" "windows_webapp" {
-#   count = var.kind == "webapp" && var.os_type == "Windows" && var.vnet_image_pull_enabled ? 1 : 0
-
-#   resource_id = azurerm_windows_web_app.this[0].id
-#   type        = "Microsoft.Web/sites@2024-04-01"
-#   body = {
-#     properties = {
-#       vnetImagePullEnabled = var.vnet_image_pull_enabled
-#     }
-#   }
-# }
-
 resource "azurerm_linux_web_app" "this" {
   count = var.kind == "webapp" && var.os_type == "Linux" ? 1 : 0
 
@@ -558,6 +547,7 @@ resource "azurerm_linux_web_app" "this" {
   public_network_access_enabled                  = var.public_network_access_enabled
   tags                                           = var.tags
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
+  vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
 
@@ -866,11 +856,12 @@ resource "azurerm_linux_web_app" "this" {
           authorisation_endpoint        = custom_oidc_v2.value.authorisation_endpoint
           certification_uri             = custom_oidc_v2.value.certification_uri
           client_credential_method      = custom_oidc_v2.value.client_credential_method
-          client_secret_setting_name    = "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET"
-          issuer_endpoint               = custom_oidc_v2.value.issuer_endpoint
-          name_claim_type               = custom_oidc_v2.value.name_claim_type
-          scopes                        = custom_oidc_v2.value.scopes
-          token_endpoint                = custom_oidc_v2.value.token_endpoint
+          # Removed `clent_secret_setting_name` as its value will be decided automatically based on the result of applying this configuration.
+          # client_secret_setting_name    = coalesce(custom_oidc_v2.value.client_secret_setting_name, "${custom_oidc_v2.value.name}_PROVIDER_AUTHENTICATION_SECRET")
+          issuer_endpoint = custom_oidc_v2.value.issuer_endpoint
+          name_claim_type = custom_oidc_v2.value.name_claim_type
+          scopes          = custom_oidc_v2.value.scopes
+          token_endpoint  = custom_oidc_v2.value.token_endpoint
         }
       }
       dynamic "facebook_v2" {

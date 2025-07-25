@@ -36,7 +36,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-webapp"
+    app = module.naming.function_app.name_unique
   }
 }
 
@@ -53,7 +53,7 @@ module "avm_res_web_site" {
 
   kind     = "webapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-webapp"
+  name     = module.naming.app_service.name_unique
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name
@@ -61,7 +61,23 @@ module "avm_res_web_site" {
   application_insights = {
     workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
   }
+  auth_settings_v2 = {
+    default = {
+      auth_enabled     = true
+      default_provider = "okta"
+      custom_oidc_v2 = {
+        default = {
+          name                          = "example_oidc_provider"
+          client_id                     = "your-client-id"
+          openid_configuration_endpoint = "https://test-config-endpoint.com/.well-known/openid-configuration"
+        }
+      }
+    }
+  }
   enable_telemetry = var.enable_telemetry
+  site_config = {
+
+  }
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"

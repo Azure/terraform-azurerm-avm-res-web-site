@@ -44,7 +44,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "P1v2"
   tags = {
-    app = "${module.naming.function_app.name_unique}-zip"
+    app = module.naming.function_app.name_unique
   }
   zone_balancing_enabled = true
 }
@@ -75,7 +75,7 @@ module "avm_res_web_site" {
 
   kind     = "functionapp"
   location = azurerm_resource_group.example.location
-  name     = "${module.naming.function_app.name_unique}-zip"
+  name     = module.naming.function_app.name_unique
   # Uses an existing app service plan
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name

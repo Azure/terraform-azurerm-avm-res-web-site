@@ -36,7 +36,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   sku_name            = "S1"
   tags = {
-    app = "${module.naming.function_app.name_unique}-logs"
+    app = "${module.naming.app_service.name_unique}-logs"
   }
 }
 
@@ -78,7 +78,7 @@ module "avm_res_web_site" {
 
   kind                     = "webapp"
   location                 = azurerm_resource_group.example.location
-  name                     = "${module.naming.function_app.name_unique}-logs"
+  name                     = "${module.naming.app_service.name_unique}-logs"
   os_type                  = azurerm_service_plan.example.os_type
   resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id

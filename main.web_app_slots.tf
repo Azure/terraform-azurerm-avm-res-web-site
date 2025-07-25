@@ -529,6 +529,7 @@ resource "azurerm_linux_web_app_slot" "this" {
   service_plan_id                                = each.value.service_plan_id
   tags                                           = each.value.tags
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
+  vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = each.value.site_config.ftps_state == "Disabled" ? false : each.value.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = each.value.zip_deploy_file
 
