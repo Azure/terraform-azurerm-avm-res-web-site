@@ -47,11 +47,6 @@ resource "azurerm_storage_account" "example" {
   location                 = azurerm_resource_group.example.location
   name                     = module.naming.storage_account.name_unique
   resource_group_name      = azurerm_resource_group.example.name
-
-  network_rules {
-    default_action = "Allow"
-    bypass         = ["AzureServices"]
-  }
 }
 
 resource "azurerm_log_analytics_workspace" "example" {
@@ -212,6 +207,7 @@ resource "azurerm_network_security_rule" "example" {
   priority                    = 100
   protocol                    = "Tcp"
   resource_group_name         = azurerm_resource_group.example.name
+  destination_address_prefix  = "*"
   destination_port_range      = "3389"
   source_address_prefix       = "*"
   source_port_range           = "*"
@@ -238,7 +234,7 @@ resource "azurerm_windows_virtual_machine" "example" {
     azurerm_network_interface.example.id,
   ]
   resource_group_name = azurerm_resource_group.example.name
-  size                = "Standard_F2"
+  size                = "Standard_D2s_v5"
 
   os_disk {
     caching              = "ReadWrite"
