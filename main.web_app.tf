@@ -33,6 +33,7 @@ resource "azurerm_windows_web_app" "this" {
     health_check_path                             = var.site_config.health_check_path
     http2_enabled                                 = var.site_config.http2_enabled
     ip_restriction_default_action                 = var.site_config.ip_restriction_default_action
+    linux_fx_version                              = var.site_config.linux_fx_version
     load_balancing_mode                           = var.site_config.load_balancing_mode
     managed_pipeline_mode                         = var.site_config.managed_pipeline_mode
     minimum_tls_version                           = var.site_config.minimum_tls_version
