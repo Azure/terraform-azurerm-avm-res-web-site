@@ -7,7 +7,7 @@ resource "azurerm_logic_app_standard" "this" {
   resource_group_name                      = var.resource_group_name
   storage_account_access_key               = var.storage_account_access_key
   storage_account_name                     = var.storage_account_name
-  app_settings                             = var.app_settings
+  app_settings                             = var.enable_application_insights ? merge({ "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.this[0].instrumentation_key }, var.app_settings) : var.app_settings
   bundle_version                           = var.bundle_version
   client_affinity_enabled                  = var.client_affinity_enabled
   client_certificate_mode                  = var.client_certificate_mode
