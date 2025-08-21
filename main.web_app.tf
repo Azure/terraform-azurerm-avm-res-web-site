@@ -16,6 +16,7 @@ resource "azurerm_windows_web_app" "this" {
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
   tags                                           = var.tags
+  virtual_network_backup_restore_enabled         = var.virtual_network_backup_restore_enabled
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled
   zip_deploy_file                                = var.zip_deploy_file
@@ -546,6 +547,7 @@ resource "azurerm_linux_web_app" "this" {
   key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
   tags                                           = var.tags
+  virtual_network_backup_restore_enabled         = var.virtual_network_backup_restore_enabled
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
   webdeploy_publish_basic_authentication_enabled = var.site_config.ftps_state == "Disabled" ? false : var.webdeploy_publish_basic_authentication_enabled

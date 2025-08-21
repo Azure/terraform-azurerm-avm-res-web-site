@@ -892,7 +892,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
   enabled                = var.enabled
   instance_memory_in_mb  = var.instance_memory_in_mb
   maximum_instance_count = var.maximum_instance_count
-  # https_only                                     = var.https_only
+  https_only                                     = var.https_only
   # key_vault_reference_identity_id                = var.key_vault_reference_identity_id
   public_network_access_enabled                  = var.public_network_access_enabled
   storage_access_key                             = var.storage_authentication_type == "StorageAccountConnectionString" ? var.storage_account_access_key : null
