@@ -1,7 +1,7 @@
 locals {
   azure_regions = [
     "eastus",
-    "westus"
+    "centralus",
   ]
   azurerm_private_dns_zone_resource_name = "privatelink.${local.reformatted_subdomain}"
   default_host_name                      = module.avm_res_web_site.resource_uri
