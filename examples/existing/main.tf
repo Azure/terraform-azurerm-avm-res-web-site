@@ -35,7 +35,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 resource "azurerm_storage_account" "example" {
-  account_replication_type = "Zcd .RS"
+  account_replication_type = "ZRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.example.location
   name                     = module.naming.storage_account.name_unique
@@ -86,34 +86,13 @@ module "avm_res_web_site" {
   location = azurerm_resource_group.example.location
   name     = "${module.naming.function_app.name_unique}-existing-resources"
   # Uses an existing app service plan
-  os_type                    = azurerm_service_plan.example.os_type
-  resource_group_name        = azurerm_resource_group.example.name
-  service_plan_resource_id   = azurerm_service_plan.example.id
-  enable_telemetry           = var.enable_telemetry
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-  # Uses an existing storage account
-  storage_account_name = azurerm_storage_account.example.name
-  # Uses existing application insights
-  enable_application_insights = false
+  os_type                  = azurerm_service_plan.example.os_type
+  resource_group_name      = azurerm_resource_group.example.name
+  service_plan_resource_id = azurerm_service_plan.example.id
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = nonsensitive(azurerm_application_insights.example.connection_string)
     "APPINSIGHTS_INSTRUMENTATIONKEY"        = nonsensitive(azurerm_application_insights.example.instrumentation_key)
   }
-  site_config = {
-    application_stack = {
-      dotnet = {
-        dotnet_version              = "8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
-  tags = {
-    module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.19.1"
-  }
-  vnet_image_pull_enabled = true
-
   deployment_slots = {
     slot2 = {
       name                                           = "staging"
@@ -133,4 +112,24 @@ module "avm_res_web_site" {
       }
     }
   }
+  # Uses existing application insights
+  enable_application_insights = false
+  enable_telemetry            = var.enable_telemetry
+  site_config = {
+    application_stack = {
+      dotnet = {
+        dotnet_version              = "8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  # Uses an existing storage account
+  storage_account_name = azurerm_storage_account.example.name
+  tags = {
+    module  = "Azure/avm-res-web-site/azurerm"
+    version = "0.19.1"
+  }
+  vnet_image_pull_enabled = true
 }
