@@ -916,8 +916,8 @@ variable "instance_memory_in_mb" {
   description = "The amount of memory to allocate for the instance(s)."
 
   validation {
-    error_message = "The value must be on of: `2048 or `4096`"
-    condition     = contains([2048, 4096], var.instance_memory_in_mb)
+    error_message = "The value must be on of: `512`, `2048`, or `4096`"
+    condition     = contains([512, 2048, 4096], var.instance_memory_in_mb)
   }
 }
 
