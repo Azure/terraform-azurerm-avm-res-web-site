@@ -104,6 +104,7 @@ module "avm_res_web_site" {
   # Configure hybrid connections for the slot
   function_app_slot_hybrid_connections = {
     staging_hybrid_conn = {
+      name          = "staging-sql-connection" # Custom name for the hybrid connection
       slot_key      = "staging"
       relay_id      = azurerm_relay_hybrid_connection.example.id
       hostname      = "on-premises-server.local"
