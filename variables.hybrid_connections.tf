@@ -6,7 +6,6 @@ variable "function_app_slot_hybrid_connections" {
     hostname        = string
     port            = number
     send_key_name   = optional(string, "RootManageSharedAccessKey")
-    send_key_value  = optional(string, null)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -18,7 +17,6 @@ variable "function_app_slot_hybrid_connections" {
   - `hostname` - The hostname of the endpoint.
   - `port` - The port to use for the endpoint.
   - `send_key_name` - (Optional) The name of the Relay key with Send permission to use. Defaults to 'RootManageSharedAccessKey'.
-  - `send_key_value` - (Optional) The Send key value for the Relay. If not provided, will be retrieved automatically from the Relay.
 
   Example:
   ```terraform
@@ -38,13 +36,12 @@ variable "function_app_slot_hybrid_connections" {
 
 variable "web_app_slot_hybrid_connections" {
   type = map(object({
-    name           = string
-    web_app_id     = string
-    relay_id       = string
-    hostname       = string
-    port           = number
-    send_key_name  = optional(string, "RootManageSharedAccessKey")
-    send_key_value = optional(string, null)
+    name          = string
+    web_app_id    = string
+    relay_id      = string
+    hostname      = string
+    port          = number
+    send_key_name = optional(string, "RootManageSharedAccessKey")
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -56,7 +53,6 @@ variable "web_app_slot_hybrid_connections" {
   - `hostname` - The hostname of the endpoint.
   - `port` - The port to use for the endpoint.
   - `send_key_name` - (Optional) The name of the Relay key with Send permission to use. Defaults to 'RootManageSharedAccessKey'.
-  - `send_key_value` - (Optional) The Send key value for the Relay. If not provided, will be retrieved automatically from the Relay.
 
   Example:
   ```terraform

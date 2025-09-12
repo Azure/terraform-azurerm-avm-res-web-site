@@ -1,4 +1,3 @@
-# Get relay namespace keys for function app slots
 data "azapi_resource_action" "function_app_slot_relay_keys" {
   for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
 
@@ -21,7 +20,7 @@ resource "azapi_resource" "function_app_slot_hybrid_connection" {
       hostname     = each.value.hostname
       port         = each.value.port
       sendKeyName  = each.value.send_key_name
-      sendKeyValue = each.value.send_key_value != null ? each.value.send_key_value : data.azapi_resource_action.function_app_slot_relay_keys[each.key].output.primaryKey
+      sendKeyValue = data.azapi_resource_action.function_app_slot_relay_keys[each.key].output.primaryKey
     }
   }
 
@@ -37,7 +36,6 @@ resource "azapi_resource" "function_app_slot_hybrid_connection" {
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Get relay namespace keys for web app slots
 data "azapi_resource_action" "web_app_slot_relay_keys" {
   for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
 
@@ -60,7 +58,7 @@ resource "azapi_resource" "web_app_slot_hybrid_connection" {
       hostname     = each.value.hostname
       port         = each.value.port
       sendKeyName  = each.value.send_key_name
-      sendKeyValue = each.value.send_key_value != null ? each.value.send_key_value : data.azapi_resource_action.web_app_slot_relay_keys[each.key].output.primaryKey
+      sendKeyValue = data.azapi_resource_action.web_app_slot_relay_keys[each.key].output.primaryKey
     }
   }
 
