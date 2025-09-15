@@ -45,17 +45,18 @@ The hybrid connection is configured in the module call:
 
 ```hcl
 function_app_slot_hybrid_connections = {
-  staging_hybrid_conn = {
-    slot_key      = "staging"
-    relay_id      = azurerm_relay_hybrid_connection.example.id
-    hostname      = "on-premises-server.local"
-    port          = 1433
-    send_key_name = "RootManageSharedAccessKey"
+  example = {
+    name            = azurerm_relay_hybrid_connection.example.name
+    function_app_id = module.function_app.function_app_deployment_slots["staging"].id
+    relay_id        = azurerm_relay_hybrid_connection.example.id
+    hostname        = "example.hostname"
+    port            = 8081
+    send_key_name   = "RootManageSharedAccessKey"
   }
 }
 ```
 
 ## Outputs
 
-- `function_app_id`: The ID of the Function App
-- `function_app_slot_hybrid_connections`: The hybrid connection configurations for the slots
+- `function_app.resource_id`: The ID of the Function App
+- `function_app.function_app_deployment_slots`: The deployment slots for the Function App

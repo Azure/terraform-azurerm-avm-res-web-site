@@ -48,59 +48,33 @@ resource "azurerm_relay_hybrid_connection" "example" {
   requires_client_authorization = true
 }
 
-resource "azurerm_windows_function_app" "example" {
-  name                = "${module.naming.function_app.name_unique}-functionapp"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  service_plan_id     = azurerm_service_plan.example.id
+module "function_app" {
+  source = "../.."
+
+  kind                     = "functionapp"
+  os_type                  = "Windows"
+  location                 = azurerm_resource_group.example.location
+  name                     = "${module.naming.function_app.name_unique}-functionapp"
+  resource_group_name      = azurerm_resource_group.example.name
+  service_plan_resource_id = azurerm_service_plan.example.id
 
   storage_account_name       = azurerm_storage_account.example.name
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
 
-  site_config {}
-
-  tags = {
-    example = "function_app_slot_hybrid_connection"
-  }
-}
-
-resource "azurerm_windows_function_app_slot" "example" {
-  name            = "staging"
-  function_app_id = azurerm_windows_function_app.example.id
-
-  storage_account_name = azurerm_storage_account.example.name
-
-  site_config {}
-
-  tags = {
-    example = "function_app_slot_hybrid_connection"
-  }
-}
-
-resource "azapi_resource" "function_app_slot_hybrid_connection" {
-  type      = "Microsoft.Web/sites/slots/hybridConnectionNamespaces/relays@2023-01-01"
-  name      = azurerm_windows_function_app_slot.example.name
-  parent_id = "${azurerm_windows_function_app_slot.example.id}/hybridConnectionNamespaces/${azurerm_relay_namespace.example.name}"
-
-  body = {
-    properties = {
-      relayArmUri  = azurerm_relay_hybrid_connection.example.id
-      hostname     = "example.hostname"
-      port         = 8081
-      sendKeyName  = "RootManageSharedAccessKey"
-      sendKeyValue = data.azapi_resource_action.relay_keys.output.primaryKey
+  deployment_slots = {
+    staging = {
+      name = "staging"
     }
   }
 
-  depends_on = [
-    azurerm_windows_function_app_slot.example,
-    data.azapi_resource_action.relay_keys
-  ]
-}
-
-data "azapi_resource_action" "relay_keys" {
-  type                   = "Microsoft.Relay/namespaces/authorizationRules@2021-11-01"
-  resource_id            = "${azurerm_relay_namespace.example.id}/authorizationRules/RootManageSharedAccessKey"
-  action                 = "listKeys"
-  response_export_values = ["*"]
+  function_app_slot_hybrid_connections = {
+    example = {
+      name            = azurerm_relay_hybrid_connection.example.name
+      function_app_id = module.function_app.function_app_deployment_slots["staging"].id
+      relay_id        = azurerm_relay_hybrid_connection.example.id
+      hostname        = "example.hostname"
+      port            = 8081
+      send_key_name   = "RootManageSharedAccessKey"
+    }
+  }
 }

@@ -40,54 +40,35 @@ resource "azurerm_relay_hybrid_connection" "example" {
   requires_client_authorization = true
 }
 
-resource "azurerm_windows_web_app" "example" {
-  name                = "${module.naming.app_service.name_unique}-webapp"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  service_plan_id     = azurerm_service_plan.example.id
+module "web_app" {
+  source = "../.."
 
-  site_config {}
+  kind                     = "webapp"
+  os_type                  = "Windows"
+  location                 = azurerm_resource_group.example.location
+  name                     = "${module.naming.app_service.name_unique}-webapp"
+  resource_group_name      = azurerm_resource_group.example.name
+  service_plan_resource_id = azurerm_service_plan.example.id
 
-  tags = {
-    example = "web_app_slot_hybrid_connection"
-  }
-}
+  deployment_slots = {
+    staging = {
+      name = "staging"
 
-resource "azurerm_windows_web_app_slot" "example" {
-  name           = "staging"
-  app_service_id = azurerm_windows_web_app.example.id
-
-  site_config {}
-
-  tags = {
-    example = "web_app_slot_hybrid_connection"
-  }
-}
-
-resource "azapi_resource" "web_app_slot_hybrid_connection" {
-  type      = "Microsoft.Web/sites/slots/hybridConnectionNamespaces/relays@2023-01-01"
-  name      = azurerm_windows_web_app_slot.example.name
-  parent_id = "${azurerm_windows_web_app_slot.example.id}/hybridConnectionNamespaces/${azurerm_relay_namespace.example.name}"
-
-  body = {
-    properties = {
-      relayArmUri  = azurerm_relay_hybrid_connection.example.id
-      hostname     = "example.hostname"
-      port         = 8081
-      sendKeyName  = "RootManageSharedAccessKey"
-      sendKeyValue = data.azapi_resource_action.relay_keys.output.primaryKey
+      site_config = {
+        virtual_application = {
+        }
+      }
     }
   }
 
-  depends_on = [
-    azurerm_windows_web_app_slot.example,
-    data.azapi_resource_action.relay_keys
-  ]
-}
-
-data "azapi_resource_action" "relay_keys" {
-  type                   = "Microsoft.Relay/namespaces/authorizationRules@2021-11-01"
-  resource_id            = "${azurerm_relay_namespace.example.id}/authorizationRules/RootManageSharedAccessKey"
-  action                 = "listKeys"
-  response_export_values = ["*"]
+  web_app_slot_hybrid_connections = {
+    example = {
+      name          = azurerm_relay_hybrid_connection.example.name
+      web_app_id    = module.web_app.web_app_deployment_slots["staging"].id
+      relay_id      = azurerm_relay_hybrid_connection.example.id
+      hostname      = "example.hostname"
+      port          = 8081
+      send_key_name = "RootManageSharedAccessKey"
+    }
+  }
 }

@@ -45,11 +45,12 @@ The hybrid connection is configured in the module call:
 
 ```hcl
 web_app_slot_hybrid_connections = {
-  staging_hybrid_conn = {
-    slot_key      = "staging"
+  example = {
+    name          = azurerm_relay_hybrid_connection.example.name
+    web_app_id    = module.web_app.web_app_deployment_slots["staging"].id
     relay_id      = azurerm_relay_hybrid_connection.example.id
-    hostname      = "on-premises-server.local"
-    port          = 1433
+    hostname      = "example.hostname"
+    port          = 8081
     send_key_name = "RootManageSharedAccessKey"
   }
 }
@@ -57,5 +58,5 @@ web_app_slot_hybrid_connections = {
 
 ## Outputs
 
-- `web_app_id`: The ID of the Web App
-- `web_app_slot_hybrid_connections`: The hybrid connection configurations for the slots
+- `web_app.resource_id`: The ID of the Web App
+- `web_app.web_app_deployment_slots`: The deployment slots for the Web App
