@@ -61,12 +61,13 @@ module "web_app" {
   }
   web_app_slot_hybrid_connections = {
     example = {
-      name          = azurerm_relay_hybrid_connection.example.name
-      web_app_id    = module.web_app.web_app_deployment_slots["staging"].id
-      relay_id      = azurerm_relay_hybrid_connection.example.id
-      hostname      = "example.hostname"
-      port          = 8081
-      send_key_name = "RootManageSharedAccessKey"
+      name             = azurerm_relay_hybrid_connection.example.name
+      web_app_id       = module.web_app.web_app_deployment_slots["staging"].id
+      relay_id         = azurerm_relay_hybrid_connection.example.id
+      hostname         = "example.hostname"
+      port             = 8081
+      send_key_name    = "RootManageSharedAccessKey"
+      enable_telemetry = false
     }
   }
 }
