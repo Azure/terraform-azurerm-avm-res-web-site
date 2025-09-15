@@ -59,6 +59,7 @@ module "web_app" {
       }
     }
   }
+  enable_telemetry = var.enable_telemetry
   web_app_slot_hybrid_connections = {
     example = {
       name             = azurerm_relay_hybrid_connection.example.name

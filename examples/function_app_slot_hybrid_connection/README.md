@@ -75,15 +75,15 @@ module "function_app" {
       name = "staging"
     }
   }
+  enable_telemetry = var.enable_telemetry
   function_app_slot_hybrid_connections = {
     example = {
-      name             = azurerm_relay_hybrid_connection.example.name
-      function_app_id  = module.function_app.function_app_deployment_slots["staging"].id
-      relay_id         = azurerm_relay_hybrid_connection.example.id
-      hostname         = "example.hostname"
-      port             = 8081
-      send_key_name    = "RootManageSharedAccessKey"
-      enable_telemetry = false
+      name            = azurerm_relay_hybrid_connection.example.name
+      function_app_id = module.function_app.function_app_deployment_slots["staging"].id
+      relay_id        = azurerm_relay_hybrid_connection.example.id
+      hostname        = "example.hostname"
+      port            = 8081
+      send_key_name   = "RootManageSharedAccessKey"
     }
   }
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
@@ -97,8 +97,6 @@ module "function_app" {
 The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
-
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 

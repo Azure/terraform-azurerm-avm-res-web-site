@@ -72,6 +72,7 @@ module "web_app" {
       }
     }
   }
+  enable_telemetry = var.enable_telemetry
   web_app_slot_hybrid_connections = {
     example = {
       name             = azurerm_relay_hybrid_connection.example.name
@@ -92,8 +93,6 @@ module "web_app" {
 The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
-
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
