@@ -17,14 +17,10 @@ terraform {
   }
 }
 
-# tflint-ignore: terraform_module_provider_declaration, terraform_output_separate, terraform_variable_separate
 provider "azurerm" {
   features {
     resource_group {
       prevent_deletion_if_contains_resources = false
     }
   }
-
-  # subscription_id = "<subscription-id>"
-
 }

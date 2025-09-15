@@ -26,8 +26,7 @@ resource "azapi_resource" "function_app_slot_hybrid_connection" {
 
   depends_on = [
     azurerm_linux_function_app_slot.this,
-    azurerm_windows_function_app_slot.this,
-    data.azapi_resource_action.function_app_slot_relay_keys
+    azurerm_windows_function_app_slot.this
   ]
 
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -64,8 +63,7 @@ resource "azapi_resource" "web_app_slot_hybrid_connection" {
 
   depends_on = [
     azurerm_linux_web_app_slot.this,
-    azurerm_windows_web_app_slot.this,
-    data.azapi_resource_action.web_app_slot_relay_keys
+    azurerm_windows_web_app_slot.this
   ]
 
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
