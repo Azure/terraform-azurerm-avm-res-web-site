@@ -52,21 +52,16 @@ module "function_app" {
   source = "../.."
 
   kind                     = "functionapp"
-  os_type                  = "Windows"
   location                 = azurerm_resource_group.example.location
   name                     = "${module.naming.function_app.name_unique}-functionapp"
+  os_type                  = "Windows"
   resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
-
   deployment_slots = {
     staging = {
       name = "staging"
     }
   }
-
   function_app_slot_hybrid_connections = {
     example = {
       name            = azurerm_relay_hybrid_connection.example.name
@@ -77,4 +72,6 @@ module "function_app" {
       send_key_name   = "RootManageSharedAccessKey"
     }
   }
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  storage_account_name       = azurerm_storage_account.example.name
 }

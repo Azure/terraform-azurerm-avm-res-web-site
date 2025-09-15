@@ -44,12 +44,11 @@ module "web_app" {
   source = "../.."
 
   kind                     = "webapp"
-  os_type                  = "Windows"
   location                 = azurerm_resource_group.example.location
   name                     = "${module.naming.app_service.name_unique}-webapp"
+  os_type                  = "Windows"
   resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-
   deployment_slots = {
     staging = {
       name = "staging"
@@ -60,7 +59,6 @@ module "web_app" {
       }
     }
   }
-
   web_app_slot_hybrid_connections = {
     example = {
       name          = azurerm_relay_hybrid_connection.example.name

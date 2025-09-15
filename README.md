@@ -29,6 +29,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.function_app_slot_hybrid_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.web_app_slot_hybrid_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_app_service_certificate.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_certificate) (resource)
 - [azurerm_app_service_custom_hostname_binding.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_custom_hostname_binding) (resource)
 - [azurerm_app_service_slot_custom_hostname_binding.slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/app_service_slot_custom_hostname_binding) (resource)
@@ -65,6 +67,10 @@ The following resources are used by this module:
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
+- [azapi_resource_action.function_app_slot_relay_hybrid_connection_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
+- [azapi_resource_action.function_app_slot_relay_namespace_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
+- [azapi_resource_action.web_app_slot_relay_hybrid_connection_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
+- [azapi_resource_action.web_app_slot_relay_namespace_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -1446,6 +1452,32 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_function_app_slot_hybrid_connections"></a> [function\_app\_slot\_hybrid\_connections](#input\_function\_app\_slot\_hybrid\_connections)
+
+Description:   A map of hybrid connection configurations for Function App slots.
+
+  - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
+  - `function_app_id` - (Required) The ID of the function app slot. Changing this forces a new resource to be created.
+  - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
+  - `hostname` - (Required) The hostname of the endpoint.
+  - `port` - (Required) The port to use for the endpoint.
+  - `send_key_name` - (Optional) The name of the Relay key with Send permission to use. Defaults to 'RootManageSharedAccessKey'.
+
+Type:
+
+```hcl
+map(object({
+    name            = string
+    function_app_id = string
+    relay_id        = string
+    hostname        = string
+    port            = number
+    send_key_name   = optional(string, "RootManageSharedAccessKey")
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
 
 Description: Should this Function App run on a Flex Consumption Plan?
@@ -2170,6 +2202,32 @@ Description: Should the traffic for the image pull be routed over virtual networ
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_web_app_slot_hybrid_connections"></a> [web\_app\_slot\_hybrid\_connections](#input\_web\_app\_slot\_hybrid\_connections)
+
+Description:   A map of hybrid connection configurations for Web App slots.
+
+  - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
+  - `web_app_id` - (Required) The ID of the web app slot. Changing this forces a new resource to be created.
+  - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
+  - `hostname` - (Required) The hostname of the endpoint.
+  - `port` - (Required) The port to use for the endpoint.
+  - `send_key_name` - (Optional) The name of the Relay key with Send permission to use. Defaults to 'RootManageSharedAccessKey'.
+
+Type:
+
+```hcl
+map(object({
+    name          = string
+    web_app_id    = string
+    relay_id      = string
+    hostname      = string
+    port          = number
+    send_key_name = optional(string, "RootManageSharedAccessKey")
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
 
