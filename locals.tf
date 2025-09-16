@@ -8,8 +8,8 @@ locals {
     key => value.send_key_name == "RootManageSharedAccessKey" ?
     data.azapi_resource_action.function_app_slot_relay_namespace_keys[key].output.primaryKey :
     coalesce(
-      try(data.azapi_resource_action.function_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null),
-      data.azapi_resource_action.function_app_slot_relay_namespace_keys[key].output.primaryKey
+      try(data.azapi_resource_action.function_app_slot_relay_namespace_keys[key].output.primaryKey, null),
+      try(data.azapi_resource_action.function_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null)
     )
   } : {}
   # Managed identities
@@ -89,8 +89,8 @@ locals {
     key => value.send_key_name == "RootManageSharedAccessKey" ?
     data.azapi_resource_action.web_app_slot_relay_namespace_keys[key].output.primaryKey :
     coalesce(
-      try(data.azapi_resource_action.web_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null),
-      data.azapi_resource_action.web_app_slot_relay_namespace_keys[key].output.primaryKey
+      try(data.azapi_resource_action.web_app_slot_relay_namespace_keys[key].output.primaryKey, null),
+      try(data.azapi_resource_action.web_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null)
     )
   } : {}
   webapp_alk                  = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
