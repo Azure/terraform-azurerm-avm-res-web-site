@@ -26,21 +26,18 @@ variable "function_app_slot_hybrid_connections" {
     ])
     error_message = "Hybrid connection name may only contain alphanumeric characters and dashes and up to 60 characters in length."
   }
-
   validation {
     condition = alltrue([
       for config in var.function_app_slot_hybrid_connections : length(trimspace(config.hostname)) > 0
     ])
     error_message = "The hostname cannot be empty or contain only whitespace characters."
   }
-
   validation {
     condition = alltrue([
       for config in var.function_app_slot_hybrid_connections : length(trimspace(config.send_key_name)) > 0
     ])
     error_message = "The send_key_name cannot be empty or contain only whitespace characters."
   }
-
   validation {
     condition = alltrue([
       for config in var.function_app_slot_hybrid_connections : config.port >= 1 && config.port <= 65535
@@ -77,21 +74,18 @@ variable "web_app_slot_hybrid_connections" {
     ])
     error_message = "Hybrid connection name may only contain alphanumeric characters and dashes and up to 60 characters in length."
   }
-
   validation {
     condition = alltrue([
       for config in var.web_app_slot_hybrid_connections : length(trimspace(config.hostname)) > 0
     ])
     error_message = "The hostname cannot be empty or contain only whitespace characters."
   }
-
   validation {
     condition = alltrue([
       for config in var.web_app_slot_hybrid_connections : length(trimspace(config.send_key_name)) > 0
     ])
     error_message = "The send_key_name cannot be empty or contain only whitespace characters."
   }
-
   validation {
     condition = alltrue([
       for config in var.web_app_slot_hybrid_connections : config.port >= 1 && config.port <= 65535
