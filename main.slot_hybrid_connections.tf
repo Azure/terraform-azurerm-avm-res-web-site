@@ -20,6 +20,21 @@ data "azapi_resource_action" "function_app_slot_relay_hybrid_connection_keys" {
   response_export_values = ["*"]
 }
 
+data "azapi_resource" "function_app_slot_for_hybrid_connection" {
+  for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
+
+  type                   = "Microsoft.Web/sites/slots@2023-01-01"
+  resource_id            = each.value.function_app_id
+  response_export_values = ["properties.serverFarmId"]
+}
+
+data "azapi_resource" "function_app_service_plan_for_slot_hybrid_connection" {
+  for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
+
+  type        = "Microsoft.Web/serverfarms@2023-01-01"
+  resource_id = data.azapi_resource.function_app_slot_for_hybrid_connection[each.key].output.properties.serverFarmId
+}
+
 resource "azapi_resource" "function_app_slot_hybrid_connection" {
   for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
 
@@ -39,6 +54,15 @@ resource "azapi_resource" "function_app_slot_hybrid_connection" {
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+
+  lifecycle {
+    precondition {
+      condition = !contains([
+        "Y1", "EP1", "EP2", "EP3", "FC1"
+      ], try(data.azapi_resource.function_app_service_plan_for_slot_hybrid_connection[each.key].output.sku.name, ""))
+      error_message = "Unsupported plan type. Hybrid Connections are not supported on Consumption or Elastic service plans."
+    }
+  }
 
   depends_on = [
     azurerm_linux_function_app_slot.this,
@@ -68,6 +92,21 @@ data "azapi_resource_action" "web_app_slot_relay_hybrid_connection_keys" {
   response_export_values = ["*"]
 }
 
+data "azapi_resource" "web_app_slot_for_hybrid_connection" {
+  for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
+
+  type                   = "Microsoft.Web/sites/slots@2023-01-01"
+  resource_id            = each.value.web_app_id
+  response_export_values = ["properties.serverFarmId"]
+}
+
+data "azapi_resource" "web_app_service_plan_for_slot_hybrid_connection" {
+  for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
+
+  type        = "Microsoft.Web/serverfarms@2023-01-01"
+  resource_id = data.azapi_resource.web_app_slot_for_hybrid_connection[each.key].output.properties.serverFarmId
+}
+
 resource "azapi_resource" "web_app_slot_hybrid_connection" {
   for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
 
@@ -87,6 +126,15 @@ resource "azapi_resource" "web_app_slot_hybrid_connection" {
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+
+  lifecycle {
+    precondition {
+      condition = !contains([
+        "Y1", "EP1", "EP2", "EP3", "FC1"
+      ], try(data.azapi_resource.web_app_service_plan_for_slot_hybrid_connection[each.key].output.sku.name, ""))
+      error_message = "Unsupported plan type. Hybrid Connections are not supported on Consumption or Elastic service plans."
+    }
+  }
 
   depends_on = [
     azurerm_linux_web_app_slot.this,
