@@ -1460,8 +1460,8 @@ Default: `true`
 
 Description:   A map of hybrid connection configurations for Function App slots.
 
+  - `slot_key` - (Required) The key of the deployment slot from the deployment\_slots variable.
   - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
-  - `function_app_id` - (Required) The ID of the function app slot. Changing this forces a new resource to be created.
   - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
   - `hostname` - (Required) The hostname of the endpoint.
   - `port` - (Required) The port to use for the endpoint.
@@ -1471,12 +1471,12 @@ Type:
 
 ```hcl
 map(object({
-    name            = string
-    function_app_id = string
-    relay_id        = string
-    hostname        = string
-    port            = number
-    send_key_name   = optional(string, "RootManageSharedAccessKey")
+    slot_key      = string
+    name          = string
+    relay_id      = string
+    hostname      = string
+    port          = number
+    send_key_name = optional(string, "RootManageSharedAccessKey")
   }))
 ```
 
@@ -2211,8 +2211,8 @@ Default: `false`
 
 Description:   A map of hybrid connection configurations for Web App slots.
 
+  - `slot_key` - (Required) The key of the deployment slot from the deployment\_slots variable.
   - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
-  - `web_app_id` - (Required) The ID of the web app slot. Changing this forces a new resource to be created.
   - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
   - `hostname` - (Required) The hostname of the endpoint.
   - `port` - (Required) The port to use for the endpoint.
@@ -2222,8 +2222,8 @@ Type:
 
 ```hcl
 map(object({
+    slot_key      = string
     name          = string
-    web_app_id    = string
     relay_id      = string
     hostname      = string
     port          = number

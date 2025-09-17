@@ -23,8 +23,8 @@ data "azapi_resource_action" "function_app_slot_relay_hybrid_connection_keys" {
 data "azapi_resource" "function_app_slot_for_hybrid_connection" {
   for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
 
-  type                   = "Microsoft.Web/sites/slots@2023-01-01"
   resource_id            = local.function_app_slot_ids[each.value.slot_key]
+  type                   = "Microsoft.Web/sites/slots@2023-01-01"
   response_export_values = ["properties.serverFarmId"]
 }
 
@@ -95,8 +95,8 @@ data "azapi_resource_action" "web_app_slot_relay_hybrid_connection_keys" {
 data "azapi_resource" "web_app_slot_for_hybrid_connection" {
   for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
 
-  type                   = "Microsoft.Web/sites/slots@2023-01-01"
   resource_id            = local.web_app_slot_ids[each.value.slot_key]
+  type                   = "Microsoft.Web/sites/slots@2023-01-01"
   response_export_values = ["properties.serverFarmId"]
 }
 

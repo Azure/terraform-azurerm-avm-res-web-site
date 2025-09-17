@@ -11,14 +11,6 @@ locals {
       for key, slot in azurerm_linux_function_app_slot.this : key => slot.id
     }
   ) : {}
-  # Web app slot references for hybrid connections
-  web_app_slot_ids = var.kind == "webapp" ? (
-    var.os_type == "Windows" ? {
-      for key, slot in azurerm_windows_web_app_slot.this : key => slot.id
-      } : {
-      for key, slot in azurerm_linux_web_app_slot.this : key => slot.id
-    }
-  ) : {}
   function_app_slot_send_key_values = var.kind == "functionapp" ? {
     for key, value in var.function_app_slot_hybrid_connections :
     key => value.send_key_name == "RootManageSharedAccessKey" ?
@@ -100,6 +92,14 @@ locals {
       }
     ]
   ]) : "${ra.slot_key}-${ra.ra_key}" => ra }
+  # Web app slot references for hybrid connections
+  web_app_slot_ids = var.kind == "webapp" ? (
+    var.os_type == "Windows" ? {
+      for key, slot in azurerm_windows_web_app_slot.this : key => slot.id
+      } : {
+      for key, slot in azurerm_linux_web_app_slot.this : key => slot.id
+    }
+  ) : {}
   web_app_slot_send_key_values = var.kind == "webapp" ? {
     for key, value in var.web_app_slot_hybrid_connections :
     key => value.send_key_name == "RootManageSharedAccessKey" ?
