@@ -24,7 +24,7 @@ data "azapi_resource" "function_app_slot_for_hybrid_connection" {
   for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
 
   type                   = "Microsoft.Web/sites/slots@2023-01-01"
-  resource_id            = each.value.function_app_id
+  resource_id            = local.function_app_slot_ids[each.value.slot_key]
   response_export_values = ["properties.serverFarmId"]
 }
 
@@ -39,7 +39,7 @@ resource "azapi_resource" "function_app_slot_hybrid_connection" {
   for_each = var.kind == "functionapp" ? var.function_app_slot_hybrid_connections : {}
 
   name      = each.value.name
-  parent_id = "${each.value.function_app_id}/hybridConnectionNamespaces/${split("/", each.value.relay_id)[8]}"
+  parent_id = "${local.function_app_slot_ids[each.value.slot_key]}/hybridConnectionNamespaces/${split("/", each.value.relay_id)[8]}"
   type      = "Microsoft.Web/sites/slots/hybridConnectionNamespaces/relays@2023-01-01"
   body = {
     properties = {
@@ -96,7 +96,7 @@ data "azapi_resource" "web_app_slot_for_hybrid_connection" {
   for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
 
   type                   = "Microsoft.Web/sites/slots@2023-01-01"
-  resource_id            = each.value.web_app_id
+  resource_id            = local.web_app_slot_ids[each.value.slot_key]
   response_export_values = ["properties.serverFarmId"]
 }
 
@@ -111,7 +111,7 @@ resource "azapi_resource" "web_app_slot_hybrid_connection" {
   for_each = var.kind == "webapp" ? var.web_app_slot_hybrid_connections : {}
 
   name      = each.value.name
-  parent_id = "${each.value.web_app_id}/hybridConnectionNamespaces/${split("/", each.value.relay_id)[8]}"
+  parent_id = "${local.web_app_slot_ids[each.value.slot_key]}/hybridConnectionNamespaces/${split("/", each.value.relay_id)[8]}"
   type      = "Microsoft.Web/sites/slots/hybridConnectionNamespaces/relays@2023-01-01"
   body = {
     properties = {

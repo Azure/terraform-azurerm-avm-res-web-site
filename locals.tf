@@ -3,6 +3,22 @@ locals {
   custom_domain_verification_id = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].custom_domain_verification_id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].custom_domain_verification_id : azurerm_linux_function_app.this[0].custom_domain_verification_id)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].custom_domain_verification_id : azurerm_linux_web_app.this[0].custom_domain_verification_id)) : null
   # Checks if there are deployment slots, and grabs keys of slots
   deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
+  # Function app slot references for hybrid connections
+  function_app_slot_ids = var.kind == "functionapp" ? (
+    var.os_type == "Windows" ? {
+      for key, slot in azurerm_windows_function_app_slot.this : key => slot.id
+      } : {
+      for key, slot in azurerm_linux_function_app_slot.this : key => slot.id
+    }
+  ) : {}
+  # Web app slot references for hybrid connections
+  web_app_slot_ids = var.kind == "webapp" ? (
+    var.os_type == "Windows" ? {
+      for key, slot in azurerm_windows_web_app_slot.this : key => slot.id
+      } : {
+      for key, slot in azurerm_linux_web_app_slot.this : key => slot.id
+    }
+  ) : {}
   function_app_slot_send_key_values = var.kind == "functionapp" ? {
     for key, value in var.function_app_slot_hybrid_connections :
     key => value.send_key_name == "RootManageSharedAccessKey" ?

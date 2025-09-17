@@ -1,18 +1,18 @@
 variable "function_app_slot_hybrid_connections" {
   type = map(object({
-    name            = string
-    function_app_id = string
-    relay_id        = string
-    hostname        = string
-    port            = number
-    send_key_name   = optional(string, "RootManageSharedAccessKey")
+    slot_key      = string
+    name          = string
+    relay_id      = string
+    hostname      = string
+    port          = number
+    send_key_name = optional(string, "RootManageSharedAccessKey")
   }))
   default     = {}
   description = <<DESCRIPTION
   A map of hybrid connection configurations for Function App slots.
   
+  - `slot_key` - (Required) The key of the deployment slot from the deployment_slots variable.
   - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
-  - `function_app_id` - (Required) The ID of the function app slot. Changing this forces a new resource to be created.
   - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
   - `hostname` - (Required) The hostname of the endpoint.
   - `port` - (Required) The port to use for the endpoint.
@@ -44,12 +44,18 @@ variable "function_app_slot_hybrid_connections" {
     ])
     error_message = "Port must be a valid port number between 1 and 65535."
   }
+  validation {
+    condition = alltrue([
+      for config in var.function_app_slot_hybrid_connections : contains(keys(var.deployment_slots), config.slot_key)
+    ])
+    error_message = "The slot_key must reference an existing slot in the deployment_slots variable."
+  }
 }
 
 variable "web_app_slot_hybrid_connections" {
   type = map(object({
+    slot_key      = string
     name          = string
-    web_app_id    = string
     relay_id      = string
     hostname      = string
     port          = number
@@ -59,8 +65,8 @@ variable "web_app_slot_hybrid_connections" {
   description = <<DESCRIPTION
   A map of hybrid connection configurations for Web App slots.
   
+  - `slot_key` - (Required) The key of the deployment slot from the deployment_slots variable.
   - `name` - (Required) The name of the hybrid connection. Changing this forces a new resource to be created.
-  - `web_app_id` - (Required) The ID of the web app slot. Changing this forces a new resource to be created.
   - `relay_id` - (Required) The ID of the Azure Relay hybrid connection to use. Changing this forces a new resource to be created.
   - `hostname` - (Required) The hostname of the endpoint.
   - `port` - (Required) The port to use for the endpoint.
@@ -91,5 +97,11 @@ variable "web_app_slot_hybrid_connections" {
       for config in var.web_app_slot_hybrid_connections : config.port >= 1 && config.port <= 65535
     ])
     error_message = "Port must be a valid port number between 1 and 65535."
+  }
+  validation {
+    condition = alltrue([
+      for config in var.web_app_slot_hybrid_connections : contains(keys(var.deployment_slots), config.slot_key)
+    ])
+    error_message = "The slot_key must reference an existing slot in the deployment_slots variable."
   }
 }
