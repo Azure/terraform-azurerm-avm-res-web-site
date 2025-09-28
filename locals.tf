@@ -3,6 +3,23 @@ locals {
   custom_domain_verification_id = (var.kind == "functionapp" || var.kind == "webapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].custom_domain_verification_id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].custom_domain_verification_id : azurerm_linux_function_app.this[0].custom_domain_verification_id)) : (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].custom_domain_verification_id : azurerm_linux_web_app.this[0].custom_domain_verification_id)) : null
   # Checks if there are deployment slots, and grabs keys of slots
   deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
+  # Function app slot references for hybrid connections
+  function_app_slot_ids = var.kind == "functionapp" ? (
+    var.os_type == "Windows" ? {
+      for key, slot in azurerm_windows_function_app_slot.this : key => slot.id
+      } : {
+      for key, slot in azurerm_linux_function_app_slot.this : key => slot.id
+    }
+  ) : {}
+  function_app_slot_send_key_values = var.kind == "functionapp" ? {
+    for key, value in var.function_app_slot_hybrid_connections :
+    key => value.send_key_name == "RootManageSharedAccessKey" ?
+    data.azapi_resource_action.function_app_slot_relay_namespace_keys[key].output.primaryKey :
+    coalesce(
+      try(data.azapi_resource_action.function_app_slot_relay_namespace_keys[key].output.primaryKey, null),
+      try(data.azapi_resource_action.function_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null)
+    )
+  } : {}
   # Managed identities
   managed_identities = {
     system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {
@@ -75,6 +92,23 @@ locals {
       }
     ]
   ]) : "${ra.slot_key}-${ra.ra_key}" => ra }
+  # Web app slot references for hybrid connections
+  web_app_slot_ids = var.kind == "webapp" ? (
+    var.os_type == "Windows" ? {
+      for key, slot in azurerm_windows_web_app_slot.this : key => slot.id
+      } : {
+      for key, slot in azurerm_linux_web_app_slot.this : key => slot.id
+    }
+  ) : {}
+  web_app_slot_send_key_values = var.kind == "webapp" ? {
+    for key, value in var.web_app_slot_hybrid_connections :
+    key => value.send_key_name == "RootManageSharedAccessKey" ?
+    data.azapi_resource_action.web_app_slot_relay_namespace_keys[key].output.primaryKey :
+    coalesce(
+      try(data.azapi_resource_action.web_app_slot_relay_namespace_keys[key].output.primaryKey, null),
+      try(data.azapi_resource_action.web_app_slot_relay_hybrid_connection_keys[key].output.primaryKey, null)
+    )
+  } : {}
   webapp_alk                  = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
   webapp_application_logs_key = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null # Helps with identifying local `webapp_alk`
   # Stores useful key information about the `logs` object for the main webapp
