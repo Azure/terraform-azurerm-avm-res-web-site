@@ -451,7 +451,7 @@ resource "azurerm_windows_web_app" "this" {
     # Emit logs when file system logging is enabled or when blob logging is configured.
     for_each = local.webapp_keys.alk != null ? [
       for x in var.logs :
-      x if (
+      x if(
         (
           x.application_logs[local.webapp_keys.alk].file_system_level != null &&
           x.application_logs[local.webapp_keys.alk].file_system_level != "Off"
@@ -968,7 +968,7 @@ resource "azurerm_linux_web_app" "this" {
     # Emit logs when file system logging is enabled or when blob logging is configured.
     for_each = local.webapp_keys.alk != null ? [
       for x in var.logs :
-      x if (
+      x if(
         (
           x.application_logs[local.webapp_keys.alk].file_system_level != null &&
           x.application_logs[local.webapp_keys.alk].file_system_level != "Off"

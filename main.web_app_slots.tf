@@ -440,7 +440,7 @@ resource "azurerm_windows_web_app_slot" "this" {
   dynamic "logs" {
     # Emit logs when file system logging is enabled or when blob logging is configured.
     for_each = contains(local.webapp_slots_with_logs_keys, each.key) ? {
-      for k, v in each.value.logs : k => v if (
+      for k, v in each.value.logs : k => v if(
         (
           v.application_logs[local.webapp_slot_lk[each.key].file_system_level_key].file_system_level != null &&
           lower(v.application_logs[local.webapp_slot_lk[each.key].file_system_level_key].file_system_level) != "off"
@@ -944,7 +944,7 @@ resource "azurerm_linux_web_app_slot" "this" {
   dynamic "logs" {
     # Emit logs when file system logging is enabled or when blob logging is configured.
     for_each = contains(local.webapp_slots_with_logs_keys, each.key) ? {
-      for k, v in each.value.logs : k => v if (
+      for k, v in each.value.logs : k => v if(
         (
           v.application_logs[local.webapp_slot_lk[each.key].file_system_level_key].file_system_level != null &&
           lower(v.application_logs[local.webapp_slot_lk[each.key].file_system_level_key].file_system_level) != "off"
