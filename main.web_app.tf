@@ -448,8 +448,17 @@ resource "azurerm_windows_web_app" "this" {
   dynamic "logs" {
     # If the `application_logs` key is not null... means that if `application_logs` is populated
     # For each log object in var.logs (there should only ever be one in practice...)
-    # Check if instance of `logs` where the `application_logs` key is <key_value> and if file_system_level is not configured to "Off" or null
-    for_each = local.webapp_keys.alk != null ? [for x in var.logs : x if(x.application_logs[local.webapp_keys.alk].file_system_level != "Off" && x.application_logs[local.webapp_keys.alk].file_system_level != null)] : []
+    # Emit logs when file system logging is enabled or when blob logging is configured.
+    for_each = local.webapp_keys.alk != null ? [
+      for x in var.logs :
+      x if (
+        (
+          x.application_logs[local.webapp_keys.alk].file_system_level != null &&
+          x.application_logs[local.webapp_keys.alk].file_system_level != "Off"
+        ) ||
+        x.application_logs[local.webapp_keys.alk].azure_blob_storage != null
+      )
+    ] : []
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages
@@ -956,8 +965,17 @@ resource "azurerm_linux_web_app" "this" {
   dynamic "logs" {
     # If the `application_logs` key is not null... means that if `application_logs` is populated
     # For each log object in var.logs (there should only ever be one in practice...)
-    # Check if instance of `logs` where the `application_logs` key is <key_value> and if file_system_level is not configured to "Off" or null
-    for_each = local.webapp_keys.alk != null ? [for x in var.logs : x if(x.application_logs[local.webapp_keys.alk].file_system_level != "Off" && x.application_logs[local.webapp_keys.alk].file_system_level != null)] : []
+    # Emit logs when file system logging is enabled or when blob logging is configured.
+    for_each = local.webapp_keys.alk != null ? [
+      for x in var.logs :
+      x if (
+        (
+          x.application_logs[local.webapp_keys.alk].file_system_level != null &&
+          x.application_logs[local.webapp_keys.alk].file_system_level != "Off"
+        ) ||
+        x.application_logs[local.webapp_keys.alk].azure_blob_storage != null
+      )
+    ] : []
 
     content {
       detailed_error_messages = logs.value.detailed_error_messages
