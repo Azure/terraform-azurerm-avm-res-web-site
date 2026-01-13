@@ -1323,7 +1323,7 @@ variable "site_config" {
  - `java_version` - (Optional) The Version of Java to use. Supported versions include `8`, `11` & `17`.
  - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
  - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
- - `python_version` - (Optional) The version of Python to run. Possible values are `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
+ - `python_version` - (Optional) The version of Python to run. Possible values are `3.13`, `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
  - `go_version` - (Optional) The version of Go to use. Possible values are `1.18`, and `1.19`.
  - `ruby_version` - (Optional) The version of Ruby to use. Possible values are `2.6`, and `2.7`.
  - `java_server` - (Optional) The Java server type. Possible values are `JAVA`, `TOMCAT`, and `JBOSSEAP`.
