@@ -128,6 +128,32 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_always_ready"></a> [always\_ready](#input\_always\_ready)
+
+Description:   A map of choosing instances that are always running and assigned to each of your per-function scale groups or functions.
+  - `name`: The name of the always-ready trigger type or function app name. Required if using `always_ready`. Valid values are: `http`, `blob`, `durable`, and `function:<target-function-app-name>`.
+  - `instance_count`: The number of always-ready instances to maintain. Defaults to `0`.
+
+  ```terraform
+  always_ready = {
+    http = {
+      name           = "http"
+      instance_count = 3
+    }
+  }
+```
+
+Type:
+
+```hcl
+map(object({
+    name           = optional(string)
+    instance_count = optional(number, 0)
+  }))
+```
+
+Default: `{}`
+
 ### <a name="input_app_service_active_slot"></a> [app\_service\_active\_slot](#input\_app\_service\_active\_slot)
 
 Description:   Object that sets the active slot for the App Service.

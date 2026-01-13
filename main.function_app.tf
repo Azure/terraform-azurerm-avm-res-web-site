@@ -993,6 +993,14 @@ resource "azurerm_function_app_flex_consumption" "this" {
       }
     }
   }
+  dynamic "always_ready" {
+    for_each = var.always_ready
+
+    content {
+      name           = always_ready.value.name
+      instance_count = always_ready.value.instance_count
+    }
+  }
   dynamic "auth_settings" {
     for_each = var.auth_settings
 
