@@ -67,6 +67,30 @@ variable "all_child_resources_inherit_tags" {
 }
 
 # Optional Inputs
+variable "always_ready" {
+  type = map(object({
+    name           = optional(string)
+    instance_count = optional(number, 0)
+  }))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of choosing instances that are always running and assigned to each of your per-function scale groups or functions.
+  - `name`: The name of the always-ready trigger type or function app name. Required if using `always_ready`. Valid values are: `http`, `blob`, `durable`, and `function:<target-function-app-name>`.
+  - `instance_count`: The number of always-ready instances to maintain. Defaults to `0`.
+
+  ```terraform
+  always_ready = {
+    http = {
+      name           = "http"
+      instance_count = 3
+    }
+  }
+  ```
+  DESCRIPTION
+}
+
 variable "app_settings" {
   type = map(string)
   default = {
