@@ -15,7 +15,7 @@ variable "app_service_active_slot" {
 variable "deployment_slots" {
   type = map(object({
     name                                     = optional(string)
-    app_settings                             = optional(map(string))
+    # app_settings                             = optional(map(string))
     builtin_logging_enabled                  = optional(bool, true)
     content_share_force_disabled             = optional(bool, false)
     client_affinity_enabled                  = optional(bool, false)
@@ -421,15 +421,7 @@ variable "deployment_slots" {
           virtual_path  = optional(string)
         })), {})
         virtual_path = optional(string, "/")
-        })),
-        {
-          default = {
-            physical_path   = "site\\wwwroot"
-            preload_enabled = false
-            virtual_path    = "/"
-          }
-        }
-      )
+        })), {})
     }), {})
 
     timeouts = optional(object({
@@ -460,6 +452,17 @@ variable "deployment_slots_inherit_lock" {
   type        = bool
   default     = true
   description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
+}
+
+variable slot_app_settings {
+  type = map(map(string))
+  default = {
+
+  }
+  description = <<DESCRIPTION
+  A map of app settings to apply to the deployment slot(s). The key is the slot key, and the value is a map of app setting key-value pairs.
+  DESCRIPTION
+  sensitive = true
 }
 
 variable "slot_application_insights" {
