@@ -14,7 +14,7 @@ variable "app_service_active_slot" {
 
 variable "deployment_slots" {
   type = map(object({
-    name                                     = optional(string)
+    name = optional(string)
     # app_settings                             = optional(map(string))
     builtin_logging_enabled                  = optional(bool, true)
     content_share_force_disabled             = optional(bool, false)
@@ -421,7 +421,7 @@ variable "deployment_slots" {
           virtual_path  = optional(string)
         })), {})
         virtual_path = optional(string, "/")
-        })), {})
+      })), {})
     }), {})
 
     timeouts = optional(object({
@@ -462,7 +462,7 @@ variable slot_app_settings {
   description = <<DESCRIPTION
   A map of app settings to apply to the deployment slot(s). The key is the slot key, and the value is a map of app setting key-value pairs.
   DESCRIPTION
-  sensitive = true
+  sensitive   = true
 }
 
 variable "slot_application_insights" {

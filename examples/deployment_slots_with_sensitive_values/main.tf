@@ -54,24 +54,12 @@ resource "azurerm_service_plan" "example" {
 module "avm_res_web_site" {
   source = "../.."
 
-  enable_telemetry = var.enable_telemetry
-
   kind                     = "webapp"
   location                 = azurerm_resource_group.example.location
   name                     = module.naming.app_service.name_unique
   os_type                  = "Windows"
   resource_group_name      = azurerm_resource_group.example.name
   service_plan_resource_id = azurerm_service_plan.example.id
-  site_config = {
-    application_stack = {
-      dotnet = {
-        current_stack               = "dotnet"
-        dotnet_version              = "v8.0"
-        use_custom_runtime          = false
-        use_dotnet_isolated_runtime = true
-      }
-    }
-  }
   # Deployment slots with SENSITIVE values
   deployment_slots = {
     staging = {
@@ -103,7 +91,17 @@ module "avm_res_web_site" {
       }
     }
   }
-
+  enable_telemetry = var.enable_telemetry
+  site_config = {
+    application_stack = {
+      dotnet = {
+        current_stack               = "dotnet"
+        dotnet_version              = "v8.0"
+        use_custom_runtime          = false
+        use_dotnet_isolated_runtime = true
+      }
+    }
+  }
   slot_app_settings = {
     staging = {
       "ASPNETCORE_ENVIRONMENT"     = "Staging"
@@ -121,11 +119,9 @@ module "avm_res_web_site" {
       "FEATURE_FLAG_NEW_UI"        = "false"
     }
   }
-
-
   tags = {
-    example     = "deployment-slots-with-sensitive-values"
-    environment = "demo"
+    example         = "deployment-slots-with-sensitive-values"
+    environment     = "demo"
     SecurityControl = "Ignore"
   }
 }
