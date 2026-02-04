@@ -1,5 +1,5 @@
 resource "azurerm_windows_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null }
+  for_each = nonsensitive({ for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null })
 
   app_service_id                                 = azurerm_windows_web_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
@@ -521,7 +521,7 @@ resource "azurerm_windows_web_app_slot" "this" {
 }
 
 resource "azurerm_linux_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.deployment_slots != null }
+  for_each = nonsensitive({ for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.deployment_slots != null })
 
   app_service_id                                 = azurerm_linux_web_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
