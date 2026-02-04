@@ -51,7 +51,7 @@ resource "azurerm_management_lock" "pe" {
 # }
 
 resource "azurerm_management_lock" "slot" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if(((var.all_child_resources_inherit_lock || var.deployment_slots_inherit_lock) && var.lock != null) || (slot_values.lock != null)) }
+  for_each = nonsensitive({ for slot, slot_values in var.deployment_slots : slot => slot_values if(((var.all_child_resources_inherit_lock || var.deployment_slots_inherit_lock) && var.lock != null) || (slot_values.lock != null)) })
 
   lock_level = ((var.all_child_resources_inherit_lock || var.deployment_slots_inherit_lock) && var.lock != null) ? var.lock.kind : each.value.lock.kind
   name       = "lock-${coalesce(each.value.name, "slot-${var.name}")}"
