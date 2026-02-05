@@ -1,9 +1,9 @@
 resource "azurerm_windows_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Windows" }
 
   app_service_id                                 = azurerm_windows_web_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) : coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)) }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) : coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)) }, each.value.app_settings) : each.value.app_settings
+  app_settings                                   = local.slot_app_settings[each.key]
   client_affinity_enabled                        = each.value.client_affinity_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
   client_certificate_exclusion_paths             = each.value.client_certificate_exclusion_paths
@@ -521,11 +521,11 @@ resource "azurerm_windows_web_app_slot" "this" {
 }
 
 resource "azurerm_linux_web_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" && var.deployment_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "webapp" && var.os_type == "Linux" }
 
   app_service_id                                 = azurerm_linux_web_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
-  app_settings                                   = var.enable_application_insights ? merge({ "APPLICATIONINSIGHTS_CONNECTION_STRING" = (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) : coalesce(each.value.site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)) }, { "APPINSIGHTS_INSTRUMENTATIONKEY" = (each.value.site_config.slot_application_insights_object_key != null ? coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.slot[each.value.site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) : coalesce(each.value.site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)) }, each.value.app_settings) : each.value.app_settings
+  app_settings                                   = local.slot_app_settings[each.key]
   client_affinity_enabled                        = each.value.client_affinity_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
   client_certificate_exclusion_paths             = each.value.client_certificate_exclusion_paths

@@ -87,7 +87,7 @@ locals {
   webapp_lk = local.webapp_logs_key != null ? local.webapp_logs_key[0] : null
   # Grabs the key for the `logs` object
   webapp_logs_key = length(var.logs) == 1 ? keys(var.logs) : null
-  # Creates a map of webapp slots that have logs, identifies key(s) and stores some infomation about the configuration
+  # Creates a map of webapp slots that have logs, identifies key(s) and stores some information about the configuration
   webapp_slot_lk = local.webapp_slots_with_logs_keys != null ? { for x in local.webapp_slots_with_logs_keys : x =>
     {
       keys = keys(var.deployment_slots[x].logs)
@@ -99,4 +99,22 @@ locals {
   } : null
   # Checks is there are deployment slots, and grabs keys of slots that have logs
   webapp_slots_with_logs_keys = local.deployment_slot_keys != null ? [for x in local.deployment_slot_keys : x if length(var.deployment_slots[x].logs) == 1] : null
+}
+
+# Deployment slot app settings - Merges app settings from variable with application insights connection string and instrumentation key if applicable, and if the slot has application insights configuration
+locals {
+  slot_app_settings = { for slot_key, slot_value in var.deployment_slots : slot_key => merge((var.enable_application_insights && var.kind == "webapp" ?
+    {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING" = (
+        var.deployment_slots[slot_key].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_connection_string, azurerm_application_insights.slot[var.deployment_slots[slot_key].site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) :
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)
+      )
+      "APPINSIGHTS_INSTRUMENTATIONKEY" = (
+        var.deployment_slots[slot_key].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_key, azurerm_application_insights.slot[var.deployment_slots[slot_key].site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) :
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)
+      )
+    } : {}), lookup(var.slot_app_settings, slot_key, {})
+  ) }
 }
