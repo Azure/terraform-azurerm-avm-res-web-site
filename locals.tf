@@ -103,18 +103,18 @@ locals {
 
 # Deployment slot app settings - Merges app settings from variable with application insights connection string and instrumentation key if applicable, and if the slot has application insights configuration
 locals {
-  slot_app_settings = { for slot_k, slot_v in var.deployment_slots : slot_k => merge((var.enable_application_insights && var.kind == "webapp" ?
+  slot_app_settings = { for slot_key, slot_value in var.deployment_slots : slot_key => merge((var.enable_application_insights && var.kind == "webapp" ?
     {
       "APPLICATIONINSIGHTS_CONNECTION_STRING" = (
-        var.deployment_slots[slot].site_config.slot_application_insights_object_key != null ?
-        coalesce(var.deployment_slots[slot].site_config.application_insights_connection_string, azurerm_application_insights.slot[var.deployment_slots[slot].site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) :
-        coalesce(var.deployment_slots[slot].site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)
+        var.deployment_slots[slot_key].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_connection_string, azurerm_application_insights.slot[var.deployment_slots[slot_key].site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) :
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)
       )
       "APPINSIGHTS_INSTRUMENTATIONKEY" = (
-        var.deployment_slots[slot].site_config.slot_application_insights_object_key != null ?
-        coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.slot[var.deployment_slots[slot].site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) :
-        coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)
+        var.deployment_slots[slot_key].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_key, azurerm_application_insights.slot[var.deployment_slots[slot_key].site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) :
+        coalesce(var.deployment_slots[slot_key].site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)
       )
-    } : {}), lookup(var.slot_app_settings, slot_k, {})
+    } : {}), lookup(var.slot_app_settings, slot_key, {})
   ) }
 }

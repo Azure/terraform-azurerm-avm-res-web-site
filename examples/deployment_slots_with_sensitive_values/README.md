@@ -69,6 +69,20 @@ module "avm_res_web_site" {
   service_plan_resource_id = azurerm_service_plan.example.id
   # Deployment slots with SENSITIVE values
   deployment_slots = {
+    test = {
+      name = "test"
+      site_config = {
+        always_on = true
+        application_stack = {
+          dotnet = {
+            current_stack               = "dotnet"
+            dotnet_version              = "v8.0"
+            use_custom_runtime          = false
+            use_dotnet_isolated_runtime = true
+          }
+        }
+      }
+    }
     staging = {
       name = "staging"
       site_config = {
