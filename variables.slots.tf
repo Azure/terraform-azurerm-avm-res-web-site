@@ -431,9 +431,7 @@ variable "deployment_slots" {
     }), null)
 
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
   > NOTE: If you plan to use the attribute reference of an external Application Insights instance for `application_insights_connection_string` and `application_insights_key`, you will likely need to remove the sensitivity level. For example, using the `nonsensitive` function.
 
@@ -445,6 +443,7 @@ variable "deployment_slots" {
     - `mount_path` - The path where the share will be mounted in the Function App.
     - `type` - The type of mount, defaults to "AzureFiles".
   DESCRIPTION
+  nullable    = false
 }
 
 variable "deployment_slots_inherit_lock" {
@@ -459,6 +458,7 @@ variable slot_app_settings {
   description = <<DESCRIPTION
   A map of app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key, and the value is a map of app setting key-value pairs.
   DESCRIPTION
+  nullable    = false
   sensitive   = true
 }
 

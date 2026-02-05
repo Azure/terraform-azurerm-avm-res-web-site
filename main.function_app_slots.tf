@@ -1,9 +1,9 @@
 resource "azurerm_windows_function_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "functionapp" && var.os_type == "Windows" && var.deployment_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "functionapp" && var.os_type == "Windows" }
 
   function_app_id                                = azurerm_windows_function_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
-  app_settings                                   = contains(local.slots_with_app_settings_keys, each.key) ? var.slot_app_settings[each.key] : {}
+  app_settings                                   = local.slot_app_settings[each.key]
   builtin_logging_enabled                        = each.value.builtin_logging_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
   client_certificate_exclusion_paths             = each.value.client_certificate_exclusion_paths
@@ -406,11 +406,11 @@ resource "azurerm_windows_function_app_slot" "this" {
 }
 
 resource "azurerm_linux_function_app_slot" "this" {
-  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "functionapp" && var.os_type == "Linux" && var.deployment_slots != null }
+  for_each = { for slot, slot_values in var.deployment_slots : slot => slot_values if var.kind == "functionapp" && var.os_type == "Linux" }
 
   function_app_id                                = azurerm_linux_function_app.this[0].id
   name                                           = coalesce(each.value.name, each.key)
-  app_settings                                   = contains(local.slots_with_app_settings_keys, each.key) ? var.slot_app_settings[each.key] : {}
+  app_settings                                   = local.slot_app_settings[each.key]
   builtin_logging_enabled                        = each.value.builtin_logging_enabled
   client_certificate_enabled                     = each.value.client_certificate_enabled
   client_certificate_exclusion_paths             = each.value.client_certificate_exclusion_paths

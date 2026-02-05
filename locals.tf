@@ -75,9 +75,8 @@ locals {
       }
     ]
   ]) : "${ra.slot_key}-${ra.ra_key}" => ra }
-  slots_with_app_settings_keys = var.slot_app_settings != null ? keys(var.slot_app_settings) : null
-  webapp_alk                   = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
-  webapp_application_logs_key  = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null # Helps with identifying local `webapp_alk`
+  webapp_alk                  = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
+  webapp_application_logs_key = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null # Helps with identifying local `webapp_alk`
   # Stores useful key information about the `logs` object for the main webapp
   webapp_keys = {
     logs_key             = local.webapp_logs_key
@@ -88,7 +87,7 @@ locals {
   webapp_lk = local.webapp_logs_key != null ? local.webapp_logs_key[0] : null
   # Grabs the key for the `logs` object
   webapp_logs_key = length(var.logs) == 1 ? keys(var.logs) : null
-  # Creates a map of webapp slots that have logs, identifies key(s) and stores some infomation about the configuration
+  # Creates a map of webapp slots that have logs, identifies key(s) and stores some information about the configuration
   webapp_slot_lk = local.webapp_slots_with_logs_keys != null ? { for x in local.webapp_slots_with_logs_keys : x =>
     {
       keys = keys(var.deployment_slots[x].logs)
@@ -100,4 +99,23 @@ locals {
   } : null
   # Checks is there are deployment slots, and grabs keys of slots that have logs
   webapp_slots_with_logs_keys = local.deployment_slot_keys != null ? [for x in local.deployment_slot_keys : x if length(var.deployment_slots[x].logs) == 1] : null
+}
+
+# Deployment slot app settings - Merges app settings from variable with application insights connection string and instrumentation key if applicable, and if the slot has application insights configuration
+locals {
+  slot_app_settings = { for slot_k, slot_v in var.deployment_slots : slot_k => lookup(var.slot_app_settings, slot_k, {}) }
+  slot_app_settings_final = { for slot, settings in local.slot_app_settings : slot => var.enable_application_insights && var.kind == "webapp" ? merge(
+    {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING" = (
+        var.deployment_slots[slot].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot].site_config.application_insights_connection_string, azurerm_application_insights.slot[var.deployment_slots[slot].site_config.slot_application_insights_object_key].connection_string, azurerm_application_insights.this[0].connection_string) :
+        coalesce(var.deployment_slots[slot].site_config.application_insights_connection_string, azurerm_application_insights.this[0].connection_string)
+      )
+      "APPINSIGHTS_INSTRUMENTATIONKEY" = (
+        var.deployment_slots[slot].site_config.slot_application_insights_object_key != null ?
+        coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.slot[var.deployment_slots[slot].site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) :
+        coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)
+      )
+    }, settings
+  ) : settings }
 }
