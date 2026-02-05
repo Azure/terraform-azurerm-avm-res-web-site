@@ -15,7 +15,6 @@ variable "app_service_active_slot" {
 variable "deployment_slots" {
   type = map(object({
     name = optional(string)
-    # app_settings                             = optional(map(string))
     builtin_logging_enabled                  = optional(bool, true)
     content_share_force_disabled             = optional(bool, false)
     client_affinity_enabled                  = optional(bool, false)
@@ -456,11 +455,9 @@ variable "deployment_slots_inherit_lock" {
 
 variable slot_app_settings {
   type = map(map(string))
-  default = {
-
-  }
+  default = {}
   description = <<DESCRIPTION
-  A map of app settings to apply to the deployment slot(s). The key is the slot key, and the value is a map of app setting key-value pairs.
+  A map of app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key, and the value is a map of app setting key-value pairs.
   DESCRIPTION
   sensitive   = true
 }

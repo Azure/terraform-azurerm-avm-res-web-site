@@ -33,6 +33,7 @@ locals {
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
+  slots_with_app_settings_keys = var.slot_app_settings != null ? keys(var.slot_app_settings) : null
   # Deployment slot private endpoints
   slot_pe = { for pe in flatten([
     for slot_k, slot_v in var.deployment_slots : [
