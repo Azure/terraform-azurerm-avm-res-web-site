@@ -103,8 +103,7 @@ locals {
 
 # Deployment slot app settings - Merges app settings from variable with application insights connection string and instrumentation key if applicable, and if the slot has application insights configuration
 locals {
-  slot_app_settings = { for slot_k, slot_v in var.deployment_slots : slot_k => lookup(var.slot_app_settings, slot_k, {}) }
-  slot_app_settings_final = { for slot, settings in local.slot_app_settings : slot => var.enable_application_insights && var.kind == "webapp" ? merge(
+  slot_app_settings = { for slot_k, slot_v in var.deployment_slots : slot_k => merge((var.enable_application_insights && var.kind == "webapp" ?
     {
       "APPLICATIONINSIGHTS_CONNECTION_STRING" = (
         var.deployment_slots[slot].site_config.slot_application_insights_object_key != null ?
@@ -116,6 +115,6 @@ locals {
         coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.slot[var.deployment_slots[slot].site_config.slot_application_insights_object_key].instrumentation_key, azurerm_application_insights.this[0].instrumentation_key) :
         coalesce(var.deployment_slots[slot].site_config.application_insights_key, azurerm_application_insights.this[0].instrumentation_key)
       )
-    }, settings
-  ) : settings }
+    } : {}), lookup(var.slot_app_settings, slot_k, {})
+  ) }
 }
