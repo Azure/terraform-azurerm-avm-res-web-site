@@ -33,7 +33,6 @@ locals {
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
-  slots_with_app_settings_keys = var.slot_app_settings != null ? keys(var.slot_app_settings) : null
   # Deployment slot private endpoints
   slot_pe = { for pe in flatten([
     for slot_k, slot_v in var.deployment_slots : [
@@ -76,8 +75,9 @@ locals {
       }
     ]
   ]) : "${ra.slot_key}-${ra.ra_key}" => ra }
-  webapp_alk                  = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
-  webapp_application_logs_key = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null # Helps with identifying local `webapp_alk`
+  slots_with_app_settings_keys = var.slot_app_settings != null ? keys(var.slot_app_settings) : null
+  webapp_alk                   = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null             # Grabs the key for the `application_logs` object
+  webapp_application_logs_key  = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null # Helps with identifying local `webapp_alk`
   # Stores useful key information about the `logs` object for the main webapp
   webapp_keys = {
     logs_key             = local.webapp_logs_key

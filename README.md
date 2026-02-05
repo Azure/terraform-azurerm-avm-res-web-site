@@ -945,8 +945,7 @@ Type:
 
 ```hcl
 map(object({
-    name = optional(string)
-    # app_settings                             = optional(map(string))
+    name                                     = optional(string)
     builtin_logging_enabled                  = optional(bool, true)
     content_share_force_disabled             = optional(bool, false)
     client_affinity_enabled                  = optional(bool, false)
@@ -1941,7 +1940,7 @@ Default: `{}`
 
 ### <a name="input_slot_app_settings"></a> [slot\_app\_settings](#input\_slot\_app\_settings)
 
-Description:   A map of app settings to apply to the deployment slot(s). The key is the slot key, and the value is a map of app setting key-value pairs.
+Description:   A map of app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key, and the value is a map of app setting key-value pairs.
 
 Type: `map(map(string))`
 
