@@ -70,8 +70,6 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_client_config" "this" {}
-
 resource "random_uuid" "role_assignment" {}
 
 # Storage Blob Data Owner role definition ID: b7e6dc6d-f1e8-4753-8033-0f276bb0955b
@@ -133,7 +131,6 @@ The following resources are used by this module:
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_uuid.role_assignment](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
-- [azapi_client_config.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

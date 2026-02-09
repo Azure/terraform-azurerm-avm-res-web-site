@@ -63,8 +63,6 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_client_config" "this" {}
-
 resource "random_uuid" "role_assignment" {}
 
 # Storage Blob Data Owner role definition ID: b7e6dc6d-f1e8-4753-8033-0f276bb0955b
