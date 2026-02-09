@@ -1,8 +1,9 @@
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+  is_recommended = true
 }
 
 # This allows us to randomize the region for the resource group.
@@ -139,7 +140,7 @@ module "avm_res_web_site" {
   name     = "${module.naming.function_app.name_unique}-existing-resources"
   # Uses an existing app service plan
   os_type                  = "Linux"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azapi_resource.application_insights.output.properties.ConnectionString

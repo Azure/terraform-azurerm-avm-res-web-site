@@ -72,9 +72,9 @@ variable "os_type" {
   }
 }
 
-variable "resource_group_name" {
+variable "parent_id" {
   type        = string
-  description = "The name of the Resource Group where the App Service will be deployed."
+  description = "The resource ID of the Resource Group where the App Service will be deployed."
 }
 
 variable "service_plan_resource_id" {

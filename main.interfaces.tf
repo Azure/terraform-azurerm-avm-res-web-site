@@ -183,7 +183,7 @@ resource "azapi_resource" "slot_private_endpoint" {
 
   location  = coalesce(each.value.pe_value.location, var.location)
   name      = coalesce(each.value.pe_value.name, "pe-${each.key}")
-  parent_id = "/subscriptions/${local.subscription_id}/resourceGroups/${coalesce(each.value.pe_value.resource_group_name, var.resource_group_name)}"
+  parent_id = each.value.pe_value.resource_group_name != null ? "/subscriptions/${local.subscription_id}/resourceGroups/${each.value.pe_value.resource_group_name}" : var.parent_id
   type      = "Microsoft.Network/privateEndpoints@2024-05-01"
   body = {
     properties = {

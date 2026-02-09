@@ -7,7 +7,7 @@ resource "azapi_resource" "application_insights" {
 
   location  = coalesce(var.application_insights.location, var.location)
   name      = coalesce(var.application_insights.name, "ai-${var.name}")
-  parent_id = "/subscriptions/${local.subscription_id}/resourceGroups/${coalesce(var.application_insights.resource_group_name, var.resource_group_name)}"
+  parent_id = var.application_insights.resource_group_name != null ? "/subscriptions/${local.subscription_id}/resourceGroups/${var.application_insights.resource_group_name}" : var.parent_id
   type      = "Microsoft.Insights/components@2020-02-02"
   body = {
     kind = var.application_insights.application_type
@@ -44,7 +44,7 @@ resource "azapi_resource" "slot_application_insights" {
 
   location  = coalesce(each.value.location, var.location)
   name      = coalesce(each.value.name, "ai-${var.name}-${each.key}")
-  parent_id = "/subscriptions/${local.subscription_id}/resourceGroups/${coalesce(each.value.resource_group_name, var.resource_group_name)}"
+  parent_id = each.value.resource_group_name != null ? "/subscriptions/${local.subscription_id}/resourceGroups/${each.value.resource_group_name}" : var.parent_id
   type      = "Microsoft.Insights/components@2020-02-02"
   body = {
     kind = each.value.application_type

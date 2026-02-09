@@ -19,11 +19,11 @@ locals {
   is_logic_app = var.kind == "logicapp"
   # Whether this is a Web App
   is_web_app = var.kind == "webapp"
-  # Resource group ID constructed from subscription and resource group name
-  resource_group_id = "/subscriptions/${local.subscription_id}/resourceGroups/${var.resource_group_name}"
+  # Resource group ID
+  resource_group_id = var.parent_id
 }
 
-# Data source for subscription info (unconditional, needed for resource_group_id)
+# Data source for subscription info
 data "azapi_client_config" "this" {}
 
 locals {

@@ -1,8 +1,9 @@
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+  is_recommended = true
 }
 
 # This allows us to randomize the region for the resource group.
@@ -76,7 +77,7 @@ module "avm_res_web_site" {
   location                 = azapi_resource.resource_group.location
   name                     = module.naming.app_service.name_unique
   os_type                  = "Windows"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   # Deployment slots with SENSITIVE values
   deployment_slots = {
