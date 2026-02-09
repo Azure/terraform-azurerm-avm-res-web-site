@@ -25,39 +25,66 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "app"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved = false
+    }
+  }
   tags = {
     app = module.naming.function_app.name_unique
   }
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "ZRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
-
-  network_rules {
-    default_action = "Allow"
-    bypass         = ["AzureServices"]
+resource "azapi_resource" "storage_account" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.storage_account.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+  body = {
+    kind = "StorageV2"
+    sku = {
+      name = "Standard_ZRS"
+    }
+    properties = {
+      networkAcls = {
+        defaultAction = "Allow"
+        bypass        = "AzureServices"
+      }
+    }
   }
 }
 
-resource "azurerm_role_assignment" "example" {
-  principal_id         = module.avm_res_web_site.identity_principal_id
-  scope                = azurerm_storage_account.example.id
-  role_definition_name = "Storage Blob Data Owner"
+data "azapi_client_config" "this" {}
+
+resource "random_uuid" "role_assignment" {}
+
+# Storage Blob Data Owner role definition ID: b7e6dc6d-f1e8-4753-8033-0f276bb0955b
+resource "azapi_resource" "role_assignment" {
+  name      = random_uuid.role_assignment.result
+  parent_id = azapi_resource.storage_account.id
+  type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
+  body = {
+    properties = {
+      roleDefinitionId = "${azapi_resource.resource_group.id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+      principalId      = module.avm_res_web_site.identity_principal_id
+    }
+  }
 }
 
 # This is the module call
@@ -65,18 +92,18 @@ module "avm_res_web_site" {
   source = "../../"
 
   kind     = "functionapp"
-  location = azurerm_resource_group.example.location
+  location = azapi_resource.resource_group.location
   name     = module.naming.function_app.name_unique
   # Uses an existing app service plan
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  os_type                  = "Windows"
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   enable_telemetry         = var.enable_telemetry
   managed_identities = {
     system_assigned = true
   }
   # Uses an existing storage account
-  storage_account_name          = azurerm_storage_account.example.name
+  storage_account_name          = azapi_resource.storage_account.name
   storage_uses_managed_identity = true
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
@@ -92,7 +119,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -100,11 +127,13 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_role_assignment.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
-- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [random_uuid.role_assignment](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
+- [azapi_client_config.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -149,33 +178,13 @@ Description: The ID of the app service
 
 Description: Full output of service plan created
 
-### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
-
-Description: The number of workers
-
 ### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
 
 Description: The ID of the storage account
 
-### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
-
-Description: The kind of storage account
-
 ### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
 
 Description: Full output of storage account created
-
-### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
-
-Description: The kind of storage account
-
-### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
-
-Description: The number of workers
-
-### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
-
-Description: The number of workers
 
 ## Modules
 

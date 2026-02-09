@@ -25,52 +25,90 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "linux"
+    sku = {
+      name = "S1"
+    }
+    properties = {
+      reserved = true
+    }
+  }
   tags = {
     app = "${module.naming.app_service.name_unique}-app-stack"
   }
 }
 
-resource "azurerm_application_insights" "example_staging" {
-  application_type    = "web"
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.application_insights.name_unique}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
+resource "azapi_resource" "log_analytics_workspace_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_production" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-production"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "application_insights_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_staging.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
-resource "azurerm_log_analytics_workspace" "example_staging" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_development" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-development"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
 # This is the module call
@@ -78,13 +116,13 @@ module "avm_res_web_site" {
   source = "../.."
 
   kind                     = "webapp"
-  location                 = azurerm_resource_group.example.location
+  location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-app-stack"
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  os_type                  = "Linux"
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
-    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
+    workspace_resource_id = azapi_resource.log_analytics_workspace_production.id
   }
   deployment_slots = {
     slot1 = {
@@ -106,8 +144,8 @@ module "avm_res_web_site" {
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
         # Uses existing application insights
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
+        application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
           python = {
             python_version = "3.13"
@@ -128,7 +166,7 @@ module "avm_res_web_site" {
   slot_application_insights = {
     development = {
       name                  = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azurerm_log_analytics_workspace.example_development.id
+      workspace_resource_id = azapi_resource.log_analytics_workspace_development.id
       inherit_tags          = true
     }
   }
@@ -146,7 +184,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -154,12 +192,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_application_insights.example_staging](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
-- [azurerm_log_analytics_workspace.example_development](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_log_analytics_workspace.example_production](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_log_analytics_workspace.example_staging](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
+- [azapi_resource.application_insights_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace_development](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace_production](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -204,18 +242,6 @@ Description: The ID of the app service
 ### <a name="output_service_plan_name"></a> [service\_plan\_name](#output\_service\_plan\_name)
 
 Description: Full output of service plan created
-
-### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
-
-Description: The number of workers
-
-### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
-
-Description: The number of workers
-
-### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
-
-Description: The number of workers
 
 ## Modules
 

@@ -18,113 +18,189 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "app"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved = false
+    }
+  }
   tags = {
     app = "${module.naming.function_app.name_unique}-slots"
   }
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "ZRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = "${module.naming.storage_account.name_unique}dmv"
-  resource_group_name      = azurerm_resource_group.example.name
-
-  network_rules {
-    default_action = "Allow"
-    bypass         = ["AzureServices"]
+resource "azapi_resource" "storage_account" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.storage_account.name_unique}dmv"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+  body = {
+    kind = "StorageV2"
+    sku = {
+      name = "Standard_ZRS"
+    }
+    properties = {
+      networkAcls = {
+        defaultAction = "Allow"
+        bypass        = "AzureServices"
+      }
+    }
   }
 }
 
-resource "azurerm_virtual_network" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.virtual_network.name_unique
-  resource_group_name = azurerm_resource_group.example.name
-  address_space       = ["192.168.0.0/24"]
+data "azapi_resource_action" "storage_keys" {
+  action                 = "listKeys"
+  method                 = "POST"
+  resource_id            = azapi_resource.storage_account.id
+  type                   = "Microsoft.Storage/storageAccounts@2023-05-01"
+  response_export_values = ["keys"]
 }
 
-resource "azurerm_subnet" "example" {
-  address_prefixes     = ["192.168.0.0/24"]
-  name                 = module.naming.subnet.name_unique
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
+resource "azapi_resource" "virtual_network" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.virtual_network.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Network/virtualNetworks@2024-05-01"
+  body = {
+    properties = {
+      addressSpace = {
+        addressPrefixes = ["192.168.0.0/24"]
+      }
+    }
+  }
 }
 
-resource "azurerm_private_dns_zone" "example" {
-  name                = local.azurerm_private_dns_zone_resource_name
-  resource_group_name = azurerm_resource_group.example.name
+resource "azapi_resource" "subnet" {
+  name      = module.naming.subnet.name_unique
+  parent_id = azapi_resource.virtual_network.id
+  type      = "Microsoft.Network/virtualNetworks/subnets@2024-05-01"
+  body = {
+    properties = {
+      addressPrefix = "192.168.0.0/24"
+    }
+  }
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "example" {
-  name                  = "${azurerm_virtual_network.example.name}-link"
-  private_dns_zone_name = azurerm_private_dns_zone.example.name
-  resource_group_name   = azurerm_resource_group.example.name
-  virtual_network_id    = azurerm_virtual_network.example.id
+resource "azapi_resource" "private_dns_zone" {
+  location  = "global"
+  name      = local.azurerm_private_dns_zone_resource_name
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Network/privateDnsZones@2024-06-01"
+  body      = {}
 }
 
-resource "azurerm_application_insights" "example_staging" {
-  application_type    = "web"
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.application_insights.name_unique}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
+resource "azapi_resource" "private_dns_zone_virtual_network_link" {
+  location  = "global"
+  name      = "${azapi_resource.virtual_network.name}-link"
+  parent_id = azapi_resource.private_dns_zone.id
+  type      = "Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01"
+  body = {
+    properties = {
+      virtualNetwork = {
+        id = azapi_resource.virtual_network.id
+      }
+      registrationEnabled = false
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_production" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-prod"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "application_insights_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_staging.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
-resource "azurerm_log_analytics_workspace" "example_staging" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-prod"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_development" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-development"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_user_assigned_identity" "user" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.user_assigned_identity.name_unique
-  resource_group_name = azurerm_resource_group.example.name
+resource "azapi_resource" "log_analytics_workspace_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "user_assigned_identity" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.user_assigned_identity.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31"
+  body      = {}
 }
 
 module "avm_res_web_site" {
   source = "../../"
 
   kind     = "functionapp"
-  location = azurerm_resource_group.example.location
+  location = azapi_resource.resource_group.location
   name     = "${module.naming.function_app.name_unique}-slots"
   # Uses an existing app service plan
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  os_type                  = "Windows"
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   # Creates application insights
   application_insights = {
     name                  = "${module.naming.application_insights.name_unique}-production"
-    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
+    workspace_resource_id = azapi_resource.log_analytics_workspace_production.id
   }
   deployment_slots = {
     slot1 = {
@@ -144,8 +220,8 @@ module "avm_res_web_site" {
       name = "staging-env"
       site_config = {
         # Uses existing application insights
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
+        application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
           dotnet = {
             dotnet_version              = "v8.0"
@@ -163,11 +239,11 @@ module "avm_res_web_site" {
       private_endpoints = {
         slot_primary = {
           name                          = "slot-primary"
-          private_dns_zone_resource_ids = [azurerm_private_dns_zone.example.id]
-          subnet_resource_id            = azurerm_subnet.example.id
+          private_dns_zone_resource_ids = [azapi_resource.private_dns_zone.id]
+          subnet_resource_id            = azapi_resource.subnet.id
           ip_configurations = {
             primary = {
-              name               = "api.${azurerm_private_dns_zone.example.name}"
+              name               = "api.${azapi_resource.private_dns_zone.name}"
               private_ip_address = "192.168.0.4"
             }
           }
@@ -183,7 +259,7 @@ module "avm_res_web_site" {
     # Identities can only be used with the Standard SKU
     system_assigned = true
     user_assigned_resource_ids = [
-      azurerm_user_assigned_identity.user.id
+      azapi_resource.user_assigned_identity.id
     ]
   }
   site_config = {
@@ -199,17 +275,15 @@ module "avm_res_web_site" {
   slot_application_insights = {
     development = {
       name                  = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azurerm_log_analytics_workspace.example_development.id
+      workspace_resource_id = azapi_resource.log_analytics_workspace_development.id
       inherit_tags          = true
     }
   }
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
   # Uses an existing storage account
-  storage_account_name = azurerm_storage_account.example.name
+  storage_account_name = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
   }
 }
-
-

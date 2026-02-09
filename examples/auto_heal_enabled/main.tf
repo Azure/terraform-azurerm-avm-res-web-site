@@ -18,41 +18,58 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "linux"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved = true
+    }
+  }
   tags = {
     app = "${module.naming.app_service.name_unique}-default"
   }
 }
 
-resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-auto-heal"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-auto-heal"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
 module "avm_res_web_site" {
   source = "../../"
 
   kind                     = "webapp"
-  location                 = azurerm_resource_group.example.location
+  location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-auto-heal"
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  os_type                  = "Linux"
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
-    workspace_resource_id = azurerm_log_analytics_workspace.example.id
+    workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
   auto_heal_setting = {
     setting_1 = {

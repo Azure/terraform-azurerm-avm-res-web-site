@@ -18,33 +18,51 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "app"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved = false
+    }
+  }
   tags = {
     example = "deployment-slots-sensitive"
   }
 }
 
-# resource "azurerm_storage_account" "example" {
-#   account_replication_type = "LRS"
-#   account_tier             = "Standard"
-#   location                 = azurerm_resource_group.example.location
-#   name                     = "${module.naming.storage_account.name_unique}sens"
-#   resource_group_name      = azurerm_resource_group.example.name
-
-#   network_rules {
-#     default_action = "Allow"
-#     bypass         = ["AzureServices"]
+# resource "azapi_resource" "storage_account" {
+#   type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+#   name      = "${module.naming.storage_account.name_unique}sens"
+#   location  = azapi_resource.resource_group.location
+#   parent_id = azapi_resource.resource_group.id
+#
+#   body = {
+#     kind = "StorageV2"
+#     sku = {
+#       name = "Standard_LRS"
+#     }
+#     properties = {
+#       networkAcls = {
+#         defaultAction = "Allow"
+#         bypass        = "AzureServices"
+#       }
+#     }
 #   }
+#
 #   tags = {
 #     SecurityControl = "Ignore"
 #   }
@@ -55,11 +73,11 @@ module "avm_res_web_site" {
   source = "../.."
 
   kind                     = "webapp"
-  location                 = azurerm_resource_group.example.location
+  location                 = azapi_resource.resource_group.location
   name                     = module.naming.app_service.name_unique
   os_type                  = "Windows"
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   # Deployment slots with SENSITIVE values
   deployment_slots = {
     test = {

@@ -25,80 +25,132 @@ module "naming" {
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  body     = {}
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  body = {
+    kind = "linux"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved = true
+    }
+  }
   tags = {
     app = "${module.naming.function_app.name_unique}-default"
   }
 }
 
-resource "azurerm_storage_account" "example" {
-  account_replication_type = "ZRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
-
-  network_rules {
-    default_action = "Allow"
-    bypass         = ["AzureServices"]
+resource "azapi_resource" "storage_account" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.storage_account.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+  body = {
+    kind = "StorageV2"
+    sku = {
+      name = "Standard_ZRS"
+    }
+    properties = {
+      networkAcls = {
+        defaultAction = "Allow"
+        bypass        = "AzureServices"
+      }
+    }
   }
 }
 
-resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-existing-resources"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+data "azapi_resource_action" "storage_keys" {
+  action                 = "listKeys"
+  method                 = "POST"
+  resource_id            = azapi_resource.storage_account.id
+  type                   = "Microsoft.Storage/storageAccounts@2023-05-01"
+  response_export_values = ["keys"]
 }
 
-resource "azurerm_application_insights" "example" {
-  application_type    = "web"
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.application_insights.name_unique}-existing-resources"
-  resource_group_name = azurerm_resource_group.example.name
-  workspace_id        = azurerm_log_analytics_workspace.example.id
+resource "azapi_resource" "log_analytics_workspace" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-existing-resources"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_staging" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-existing-resources-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-existing-resources"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
-resource "azurerm_application_insights" "example_staging" {
-  application_type    = "web"
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.application_insights.name_unique}-existing-resources-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
+resource "azapi_resource" "log_analytics_workspace_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-existing-resources-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-existing-resources-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_staging.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
 module "avm_res_web_site" {
   source = "../../"
 
   kind     = "webapp"
-  location = azurerm_resource_group.example.location
+  location = azapi_resource.resource_group.location
   name     = "${module.naming.function_app.name_unique}-existing-resources"
   # Uses an existing app service plan
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
+  os_type                  = "Linux"
+  resource_group_name      = azapi_resource.resource_group.name
+  service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = nonsensitive(azurerm_application_insights.example.connection_string)
-    "APPINSIGHTS_INSTRUMENTATIONKEY"        = nonsensitive(azurerm_application_insights.example.instrumentation_key)
+    "APPLICATIONINSIGHTS_CONNECTION_STRING" = azapi_resource.application_insights.output.properties.ConnectionString
+    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azapi_resource.application_insights.output.properties.InstrumentationKey
   }
   deployment_slots = {
     slot2 = {
@@ -107,8 +159,8 @@ module "avm_res_web_site" {
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
         # Uses existing application insights
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
+        application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
           dotnet = {
             dotnet_version              = "8.0"
@@ -131,9 +183,9 @@ module "avm_res_web_site" {
       }
     }
   }
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
   # Uses an existing storage account
-  storage_account_name = azurerm_storage_account.example.name
+  storage_account_name = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.19.1"
@@ -149,7 +201,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -157,14 +209,15 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
-- [azurerm_application_insights.example_staging](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
-- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_log_analytics_workspace.example_staging](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) (resource)
-- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.application_insights_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [azapi_resource_action.storage_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -209,33 +262,13 @@ Description: The ID of the app service
 
 Description: Full output of service plan created
 
-### <a name="output_sku_name"></a> [sku\_name](#output\_sku\_name)
-
-Description: The number of workers
-
 ### <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id)
 
 Description: The ID of the storage account
 
-### <a name="output_storage_account_kind"></a> [storage\_account\_kind](#output\_storage\_account\_kind)
-
-Description: The kind of storage account
-
 ### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
 
 Description: Full output of storage account created
-
-### <a name="output_storage_account_replication_type"></a> [storage\_account\_replication\_type](#output\_storage\_account\_replication\_type)
-
-Description: The kind of storage account
-
-### <a name="output_worker_count"></a> [worker\_count](#output\_worker\_count)
-
-Description: The number of workers
-
-### <a name="output_zone_redundant"></a> [zone\_redundant](#output\_zone\_redundant)
-
-Description: The number of workers
 
 ## Modules
 

@@ -1,12 +1,12 @@
 output "active_slot" {
   description = "ID of active slot"
-  value       = module.avm_res_web_site.web_app_active_slot
+  value       = module.avm_res_web_site.active_slot
 }
 
 output "deployment_slots" {
   description = "Full output of deployment slots created"
   sensitive   = true
-  value       = module.avm_res_web_site.web_app_deployment_slots
+  value       = module.avm_res_web_site.deployment_slots
 }
 
 output "location" {
@@ -27,25 +27,10 @@ output "resource_id" {
 
 output "service_plan_id" {
   description = "The ID of the app service"
-  value       = azurerm_service_plan.example.id
+  value       = azapi_resource.service_plan.id
 }
 
 output "service_plan_name" {
   description = "Full output of service plan created"
-  value       = azurerm_service_plan.example.name
-}
-
-output "sku_name" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.sku_name
-}
-
-output "worker_count" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.worker_count
-}
-
-output "zone_redundant" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.zone_balancing_enabled
+  value       = azapi_resource.service_plan.name
 }
