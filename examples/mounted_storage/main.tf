@@ -1,19 +1,14 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
   is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -129,7 +124,6 @@ module "avm_res_web_site" {
   kind     = "webapp"
   location = azapi_resource.resource_group.location
   name     = module.naming.app_service.name_unique
-  # Uses an existing app service plan
   os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
@@ -154,7 +148,6 @@ module "avm_res_web_site" {
         dev_content = {
           name         = "dev-content"
           account_name = azapi_resource.storage_account.name
-          # access_key   = ...
           share_name = azapi_resource.storage_share_content.name
           mount_path = "/mounts/${azapi_resource.storage_share_dev_content.name}"
         }
@@ -163,7 +156,6 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
-  # Creates application insights for slot
   slot_application_insights = {
     development = {
       name                  = "${module.naming.application_insights.name_unique}-development-env"

@@ -1,4 +1,3 @@
-## Section to provide a random Azure region for the resource group
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
@@ -9,7 +8,6 @@ resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -61,10 +59,7 @@ resource "azapi_resource" "storage_account" {
       }
     }
   }
-  response_export_values = [
-    "properties.primaryEndpoints",
-    "listKeys",
-  ]
+  response_export_values = []
 }
 
 data "azapi_resource_action" "storage_keys" {
@@ -81,13 +76,11 @@ module "avm_res_web_site" {
   kind     = "functionapp"
   location = azapi_resource.resource_group.location
   name     = "${module.naming.function_app.name_unique}-default"
-  # Uses an existing app service plan
   os_type                    = "Windows"
   parent_id                  = azapi_resource.resource_group.id
   service_plan_resource_id   = azapi_resource.service_plan.id
   enable_telemetry           = var.enable_telemetry
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  # Uses an existing storage account
   storage_account_name = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"

@@ -1,4 +1,3 @@
-# Application Insights resource (Microsoft.Insights/components)
 # schema_validation_enabled = false is needed because Cap_DailyDataVolumeInGB and
 # Cap_DailyDataVolumeNotificationDisabled are valid ARM properties but not in the
 # azapi provider's embedded schema for the 2020-02-02 API version.
@@ -38,7 +37,6 @@ resource "azapi_resource" "application_insights" {
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Slot Application Insights resources
 resource "azapi_resource" "slot_application_insights" {
   for_each = { for k, v in var.slot_application_insights : k => v }
 
@@ -65,11 +63,8 @@ resource "azapi_resource" "slot_application_insights" {
   }
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = [
-    "properties.ConnectionString",
-    "properties.InstrumentationKey",
-  ]
+  read_headers              = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values    = []
   schema_validation_enabled = false
   tags                      = each.value.inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

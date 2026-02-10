@@ -1,19 +1,14 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
   is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -105,7 +100,6 @@ resource "azapi_resource" "log_analytics_workspace_development" {
   }
 }
 
-# This is the module call
 module "avm_res_web_site" {
   source = "../.."
 
@@ -156,7 +150,6 @@ module "avm_res_web_site" {
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        # Uses existing application insights
         application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
         application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
@@ -218,7 +211,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  # Creates application insights for slot
   slot_application_insights = {
     development = {
       name                  = "${module.naming.application_insights.name_unique}-development"

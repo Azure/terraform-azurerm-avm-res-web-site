@@ -1,12 +1,8 @@
-# AVM Interfaces Module
-# Provides standardized lock, role assignment, private endpoint, and diagnostic settings
-# outputs formatted for azapi_resource consumption.
-
 module "avm_interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
   version = "0.5.0"
 
-  diagnostic_settings                     = var.diagnostic_settings
+  diagnostic_settings_v2                     = var.diagnostic_settings
   lock                                    = var.lock
   managed_identities                      = var.managed_identities
   private_endpoints                       = var.private_endpoints
@@ -16,9 +12,6 @@ module "avm_interfaces" {
   role_assignments                        = var.role_assignments
 }
 
-# ──────────────────────────────────────────────
-# Resource Lock
-# ──────────────────────────────────────────────
 resource "azapi_resource" "lock" {
   for_each = module.avm_interfaces.lock_azapi
 
@@ -29,12 +22,10 @@ resource "azapi_resource" "lock" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# ──────────────────────────────────────────────
-# Role Assignments
-# ──────────────────────────────────────────────
 resource "azapi_resource" "role_assignment" {
   for_each = module.avm_interfaces.role_assignments_azapi
 
@@ -45,12 +36,10 @@ resource "azapi_resource" "role_assignment" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# ──────────────────────────────────────────────
-# Private Endpoints
-# ──────────────────────────────────────────────
 resource "azapi_resource" "private_endpoint" {
   for_each = module.avm_interfaces.private_endpoints_azapi
 
@@ -62,11 +51,11 @@ resource "azapi_resource" "private_endpoint" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   tags           = each.value.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Private DNS zone groups for private endpoints
 resource "azapi_resource" "private_dns_zone_group" {
   for_each = module.avm_interfaces.private_dns_zone_groups_azapi
 
@@ -77,10 +66,10 @@ resource "azapi_resource" "private_dns_zone_group" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Locks on private endpoints
 resource "azapi_resource" "lock_private_endpoint" {
   for_each = module.avm_interfaces.lock_private_endpoint_azapi
 
@@ -91,10 +80,10 @@ resource "azapi_resource" "lock_private_endpoint" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Role assignments on private endpoints
 resource "azapi_resource" "role_assignment_private_endpoint" {
   for_each = module.avm_interfaces.role_assignments_private_endpoint_azapi
 
@@ -105,14 +94,12 @@ resource "azapi_resource" "role_assignment_private_endpoint" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# ──────────────────────────────────────────────
-# Diagnostic Settings
-# ──────────────────────────────────────────────
 resource "azapi_resource" "diagnostic_setting" {
-  for_each = module.avm_interfaces.diagnostic_settings_azapi
+  for_each = module.avm_interfaces.diagnostic_settings_azapi_v2
 
   name           = each.value.name
   parent_id      = azapi_resource.this.id
@@ -121,12 +108,11 @@ resource "azapi_resource" "diagnostic_setting" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  ignore_null_property   = true
 }
 
-# ──────────────────────────────────────────────
-# Deployment Slot Locks
-# ──────────────────────────────────────────────
 resource "azapi_resource" "slot_lock" {
   for_each = {
     for slot_key, slot_value in var.deployment_slots : slot_key => slot_value.lock != null ? slot_value.lock : (
@@ -146,12 +132,10 @@ resource "azapi_resource" "slot_lock" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# ──────────────────────────────────────────────
-# Deployment Slot Role Assignments
-# ──────────────────────────────────────────────
 resource "azapi_resource" "slot_role_assignment" {
   for_each = local.slot_ra
 
@@ -172,12 +156,10 @@ resource "azapi_resource" "slot_role_assignment" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# ──────────────────────────────────────────────
-# Deployment Slot Private Endpoints
-# ──────────────────────────────────────────────
 resource "azapi_resource" "slot_private_endpoint" {
   for_each = local.slot_pe
 
@@ -213,11 +195,11 @@ resource "azapi_resource" "slot_private_endpoint" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   tags           = each.value.pe_value.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Slot PE DNS zone groups
 resource "azapi_resource" "slot_private_dns_zone_group" {
   for_each = {
     for k, v in local.slot_pe : k => v
@@ -240,10 +222,10 @@ resource "azapi_resource" "slot_private_dns_zone_group" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Slot PE locks
 resource "azapi_resource" "slot_pe_lock" {
   for_each = {
     for k, v in local.slot_pe : k => v
@@ -261,10 +243,10 @@ resource "azapi_resource" "slot_pe_lock" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Slot PE role assignments
 resource "azapi_resource" "slot_pe_role_assignment" {
   for_each = local.slot_pe_role_assignments
 
@@ -284,5 +266,6 @@ resource "azapi_resource" "slot_pe_role_assignment" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }

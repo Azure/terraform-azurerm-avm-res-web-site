@@ -1,5 +1,4 @@
 locals {
-  # Compute the ARM 'kind' property from var.kind and var.os_type
   # ARM API uses: "app" (Windows webapp), "app,linux" (Linux webapp),
   # "functionapp" (Windows func), "functionapp,linux" (Linux func),
   # "functionapp,linux,container,workflowapp" (Logic App on Linux)
@@ -9,21 +8,14 @@ locals {
     var.kind == "logicapp" ? "functionapp,linux,container,workflowapp" :
     "app"
   )
-  # Deployment slot keys
   deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
-  # Whether this is a Function App
   is_function_app = var.kind == "functionapp"
-  # Whether the site is Linux
   is_linux = var.os_type == "Linux"
-  # Whether this is a Logic App
   is_logic_app = var.kind == "logicapp"
-  # Whether this is a Web App
   is_web_app = var.kind == "webapp"
-  # Resource group ID
   resource_group_id = var.parent_id
 }
 
-# Data source for subscription info
 data "azapi_client_config" "this" {}
 
 locals {
@@ -31,7 +23,6 @@ locals {
   tenant_id       = data.azapi_client_config.this.tenant_id
 }
 
-# Managed identity mapping for the ARM identity block
 locals {
   has_identity = local.managed_identity_type != null
   identity_block = local.has_identity ? {
@@ -46,7 +37,6 @@ locals {
   )
 }
 
-# IP restrictions mapping to ARM format
 locals {
   ip_security_restrictions = [for rule in var.site_config.ip_restriction : {
     action               = rule.action
@@ -80,7 +70,6 @@ locals {
   }]
 }
 
-# Virtual applications mapping (Windows only)
 locals {
   virtual_applications = var.os_type == "Windows" && local.is_web_app ? [for va in var.site_config.virtual_application : {
     physicalPath   = va.physical_path
@@ -93,7 +82,6 @@ locals {
   }] : null
 }
 
-# CORS mapping
 locals {
   cors = var.site_config.cors != null ? {
     allowedOrigins     = var.site_config.cors.allowed_origins
@@ -101,10 +89,8 @@ locals {
   } : null
 }
 
-# Application stack mapping to ARM siteConfig properties
 locals {
   app_stack = var.site_config.application_stack
-  # Windows currentStack metadata (used by portal, set via WEBSITE_STACK app setting or siteConfig metadata)
   current_stack          = !local.is_linux && local.app_stack != null ? try(local.app_stack.dotnet.current_stack, null) : null
   java_container         = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container, null) : null
   java_container_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null
@@ -135,14 +121,12 @@ locals {
   php_version        = !local.is_linux && local.app_stack != null ? try(local.app_stack.php.php_version, null) : null
   powershell_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.powershell.powershell_version, null) : null
   python_version     = !local.is_linux && local.app_stack != null ? try(local.app_stack.python.python_version, null) : null
-  # Windows uses individual version properties or windowsFxVersion for containers
   windows_fx_version = !local.is_linux && local.app_stack != null ? try(
     local.app_stack.docker != null ? "DOCKER|${trimprefix(coalesce(local.app_stack.docker.docker_registry_url, ""), "https://")}/${local.app_stack.docker.docker_image_name}:${local.app_stack.docker.docker_image_tag}" : null,
     null
   ) : null
 }
 
-# Function App specific app settings
 locals {
   function_app_settings = local.is_function_app ? merge(
     {
@@ -186,7 +170,6 @@ locals {
       WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     } : {},
   ) : {}
-  # Merge all app settings: user-provided + framework-specific
   merged_app_settings = merge(
     var.app_settings,
     local.is_function_app ? local.function_app_settings : {},
@@ -194,7 +177,6 @@ locals {
   )
 }
 
-# Auto heal rules mapping to ARM format
 locals {
   auto_heal_rules = length(var.auto_heal_setting) > 0 ? {
     for k, v in var.auto_heal_setting : k => {
@@ -255,7 +237,6 @@ locals {
   }[keys(var.auto_heal_setting)[0]] : null
 }
 
-# Site config body for ARM API siteConfig property
 locals {
   site_config_body = {
     alwaysOn                               = var.site_config.always_on
@@ -287,7 +268,6 @@ locals {
     virtualApplications                    = local.virtual_applications
     vnetRouteAllEnabled                    = var.site_config.vnet_route_all_enabled
     webSocketsEnabled                      = var.site_config.websockets_enabled
-    # Application stack properties
     linuxFxVersion       = local.linux_fx_version
     windowsFxVersion     = local.windows_fx_version
     netFrameworkVersion  = local.net_framework_version
@@ -298,24 +278,17 @@ locals {
     javaContainer        = local.java_container
     javaContainerVersion = local.java_container_version
     powerShellVersion    = local.powershell_version
-    # Function App specific
     functionsRuntimeScaleMonitoringEnabled = local.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
     minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
-    # Logic App specific
     scmType = local.is_logic_app ? var.site_config.scm_type : null
-    # Container registry
     acrUseManagedIdentityCreds = var.site_config.container_registry_use_managed_identity
     acrUserManagedIdentityID   = var.site_config.container_registry_managed_identity_client_id
-    # App scale limit (function app)
     functionAppScaleLimit = local.is_function_app ? var.site_config.app_scale_limit : null
-    # Local MySQL (web app)
     localMySqlEnabled = local.is_web_app ? var.site_config.local_mysql_enabled : null
-    # Auto swap
     autoSwapSlotName = var.site_config.auto_swap_slot_name
   }
 }
 
-# Storage mounts (azureStorageAccounts config sub-resource)
 locals {
   storage_mounts = { for k, v in var.storage_shares_to_mount : v.name => {
     type        = v.type
@@ -326,7 +299,6 @@ locals {
   } }
 }
 
-# The main body for the Microsoft.Web/sites resource
 locals {
   body = {
     kind = local.arm_kind
@@ -348,7 +320,6 @@ locals {
         vnetContentShareEnabled   = var.vnet_content_share_enabled
         vnetImagePullEnabled      = var.vnet_image_pull_enabled
       },
-      # Function App specific: Flex Consumption properties
       var.function_app_uses_fc1 ? {
         functionAppConfig = {
           deployment = {
@@ -373,7 +344,6 @@ locals {
           }
         }
       } : {},
-      # Function App (non-FC1): dailyMemoryTimeQuota
       local.is_function_app && !var.function_app_uses_fc1 ? {
         dailyMemoryTimeQuota = var.daily_memory_time_quota
       } : {},
@@ -381,7 +351,6 @@ locals {
   }
 }
 
-# Private endpoint locals
 locals {
   pe_role_assignments = { for ra in flatten([
     for pe_k, pe_v in var.private_endpoints : [
@@ -404,7 +373,6 @@ locals {
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
 
-# Deployment slot locals
 locals {
   slot_pe = { for pe in flatten([
     for slot_k, slot_v in var.deployment_slots : [
@@ -448,7 +416,6 @@ locals {
   ]) : "${ra.slot_key}-${ra.ra_key}" => ra }
 }
 
-# Application Insights app settings merge
 locals {
   slot_app_settings = { for slot_key, slot_value in var.deployment_slots : slot_key => merge(
     slot_value.app_settings,
@@ -464,7 +431,6 @@ locals {
     } : {}),
     lookup(var.slot_app_settings, slot_key, {}),
   ) }
-  # Slot application stack to ARM siteConfig property mappings
   slot_linux_fx_version = { for slot_key, slot_value in var.deployment_slots : slot_key => (
     local.is_linux && slot_value.site_config.application_stack != null ? coalesce(
       try(slot_value.site_config.application_stack.docker != null ? "DOCKER|${trimprefix(coalesce(slot_value.site_config.application_stack.docker.docker_registry_url, ""), "https://")}/${slot_value.site_config.application_stack.docker.docker_image_name}:${slot_value.site_config.application_stack.docker.docker_image_tag}" : null, null),
@@ -479,7 +445,6 @@ locals {
   ) }
 }
 
-# Logs helper locals
 locals {
   webapp_alk                  = local.webapp_logs_key != null ? local.webapp_application_logs_key[0] : null
   webapp_application_logs_key = local.webapp_logs_key != null ? keys(var.logs[local.webapp_lk].application_logs) : null

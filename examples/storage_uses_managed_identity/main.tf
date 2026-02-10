@@ -1,19 +1,14 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
   is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -79,14 +74,12 @@ resource "azapi_resource" "role_assignment" {
   }
 }
 
-# This is the module call
 module "avm_res_web_site" {
   source = "../../"
 
   kind     = "functionapp"
   location = azapi_resource.resource_group.location
   name     = module.naming.function_app.name_unique
-  # Uses an existing app service plan
   os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
@@ -94,7 +87,6 @@ module "avm_res_web_site" {
   managed_identities = {
     system_assigned = true
   }
-  # Uses an existing storage account
   storage_account_name          = azapi_resource.storage_account.name
   storage_uses_managed_identity = true
   tags = {

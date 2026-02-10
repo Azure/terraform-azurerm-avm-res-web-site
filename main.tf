@@ -1,7 +1,3 @@
-# The main App Service resource (Microsoft.Web/sites)
-# This single resource replaces azurerm_windows_web_app, azurerm_linux_web_app,
-# azurerm_windows_function_app, azurerm_linux_function_app,
-# azurerm_function_app_flex_consumption, and azurerm_logic_app_standard.
 resource "azapi_resource" "this" {
   location       = var.location
   name           = var.name
@@ -13,11 +9,7 @@ resource "azapi_resource" "this" {
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = [
     "properties.defaultHostName",
-    "properties.customDomainVerificationId",
-    "properties.outboundIpAddresses",
-    "properties.possibleOutboundIpAddresses",
     "identity.principalId",
-    "identity.tenantId",
   ]
   tags           = var.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -48,8 +40,6 @@ resource "azapi_resource" "this" {
   }
 }
 
-# App settings sub-resource (Microsoft.Web/sites/config - appsettings)
-# Only create if there are app settings to set
 resource "azapi_resource" "appsettings" {
   count = length(local.merged_app_settings) > 0 ? 1 : 0
 
@@ -62,10 +52,10 @@ resource "azapi_resource" "appsettings" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Connection strings sub-resource (Microsoft.Web/sites/config - connectionstrings)
 resource "azapi_resource" "connectionstrings" {
   count = length(var.connection_strings) > 0 ? 1 : 0
 
@@ -81,10 +71,10 @@ resource "azapi_resource" "connectionstrings" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Storage mounts sub-resource (Microsoft.Web/sites/config - azurestorageaccounts)
 resource "azapi_resource" "azurestorageaccounts" {
   count = length(var.storage_shares_to_mount) > 0 ? 1 : 0
 
@@ -97,10 +87,10 @@ resource "azapi_resource" "azurestorageaccounts" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Sticky settings sub-resource (Microsoft.Web/sites/config - slotConfigNames)
 resource "azapi_resource" "slotconfignames" {
   count = length(var.sticky_settings) > 0 ? 1 : 0
 
@@ -116,11 +106,11 @@ resource "azapi_resource" "slotconfignames" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Auth settings V1 sub-resource (Microsoft.Web/sites/config - authsettings)
-# Deprecated but kept for backward compatibility
+# Deprecated but kept for backward compatibility.
 # The ARM API uses flat property names (e.g. facebookAppId, microsoftAccountClientId)
 # rather than nested objects.
 resource "azapi_resource" "authsettings" {
@@ -188,10 +178,10 @@ resource "azapi_resource" "authsettings" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Auth settings V2 sub-resource (Microsoft.Web/sites/config - authsettingsV2)
 resource "azapi_resource" "authsettingsv2" {
   for_each = var.auth_settings_v2
 
@@ -270,10 +260,10 @@ resource "azapi_resource" "authsettingsv2" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Backup sub-resource (Microsoft.Web/sites/config - backup)
 resource "azapi_resource" "backup" {
   for_each = var.backup
 
@@ -299,10 +289,10 @@ resource "azapi_resource" "backup" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Logs sub-resource (Microsoft.Web/sites/config - logs)
 resource "azapi_resource" "logs" {
   for_each = var.logs
 
@@ -346,10 +336,10 @@ resource "azapi_resource" "logs" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Deployment slots
 resource "azapi_resource" "slot" {
   for_each = var.deployment_slots
 
@@ -394,7 +384,6 @@ resource "azapi_resource" "slot" {
         acrUserManagedIdentityID               = each.value.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = each.value.site_config.container_registry_use_managed_identity
         functionAppScaleLimit                  = local.is_function_app ? each.value.site_config.app_scale_limit : null
-        # Application stack properties for slots
         linuxFxVersion       = local.slot_linux_fx_version[each.key]
         netFrameworkVersion  = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.dotnet.dotnet_version, null) : null
         phpVersion           = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.php.php_version, null) : null
@@ -411,9 +400,7 @@ resource "azapi_resource" "slot" {
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = [
-    "properties.defaultHostName",
     "identity.principalId",
-    "identity.tenantId",
   ]
   tags           = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -428,7 +415,6 @@ resource "azapi_resource" "slot" {
   }
 }
 
-# Slot app settings
 resource "azapi_resource" "slot_appsettings" {
   for_each = { for k, v in var.deployment_slots : k => v if length(local.slot_app_settings[k]) > 0 }
 
@@ -441,10 +427,10 @@ resource "azapi_resource" "slot_appsettings" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Active slot swap
 resource "azapi_resource_action" "active_slot" {
   count = var.app_service_active_slot != null ? 1 : 0
 
@@ -460,7 +446,6 @@ resource "azapi_resource_action" "active_slot" {
   depends_on = [azapi_resource.slot]
 }
 
-# Custom domains - host name bindings
 resource "azapi_resource" "hostname_binding" {
   for_each = { for k, v in var.custom_domains : k => v if !v.slot_as_target }
 
@@ -476,10 +461,10 @@ resource "azapi_resource" "hostname_binding" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Slot hostname bindings
 resource "azapi_resource" "slot_hostname_binding" {
   for_each = { for k, v in var.custom_domains : k => v if v.slot_as_target }
 
@@ -495,10 +480,10 @@ resource "azapi_resource" "slot_hostname_binding" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Basic auth publishing credential policies - FTP
 resource "azapi_resource" "ftp_publishing_credential_policy" {
   count = !var.ftp_publish_basic_authentication_enabled ? 1 : 0
 
@@ -513,10 +498,10 @@ resource "azapi_resource" "ftp_publishing_credential_policy" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Basic auth publishing credential policies - SCM
 resource "azapi_resource" "scm_publishing_credential_policy" {
   count = !var.scm_publish_basic_authentication_enabled ? 1 : 0
 
@@ -531,10 +516,10 @@ resource "azapi_resource" "scm_publishing_credential_policy" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-# Zip deploy (if zip_deploy_file is provided)
 resource "azapi_resource_action" "zip_deploy" {
   count = var.zip_deploy_file != null ? 1 : 0
 

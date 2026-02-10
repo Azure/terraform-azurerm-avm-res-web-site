@@ -1,19 +1,14 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
   is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -88,21 +83,12 @@ data "azapi_resource_action" "storage_keys" {
   response_export_values = ["keys"]
 }
 
-/*
-data "archive_file" "function_package" {
-  type        = "zip"
-  source_file = "../zip_deploy_file/resources_for_zip_deploy/http_function.py"
-  output_path = "http_function.zip"
-}
-*/
-
 module "avm_res_web_site" {
   source = "../../"
 
   kind     = "functionapp"
   location = azapi_resource.resource_group.location
   name     = module.naming.function_app.name_unique
-  # Uses an existing app service plan
   os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
@@ -118,7 +104,6 @@ module "avm_res_web_site" {
     }
   }
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  # Uses an existing storage account
   storage_account_name = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
