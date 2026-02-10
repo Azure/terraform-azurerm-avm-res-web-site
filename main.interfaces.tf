@@ -2,10 +2,14 @@ module "avm_interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
   version = "0.5.0"
 
-  diagnostic_settings_v2                  = var.diagnostic_settings
-  lock                                    = var.lock
-  managed_identities                      = var.managed_identities
-  private_endpoints                       = var.private_endpoints
+  diagnostic_settings_v2 = var.diagnostic_settings
+  lock                   = var.lock
+  managed_identities     = var.managed_identities
+  private_endpoints = {
+    for k, v in var.private_endpoints : k => merge(v, {
+      subresource_name = "sites"
+    })
+  }
   private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
   private_endpoints_scope                 = azapi_resource.this.id
   role_assignment_definition_scope        = azapi_resource.this.id

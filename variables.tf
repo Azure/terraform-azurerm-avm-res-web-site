@@ -42,12 +42,6 @@ variable "service_plan_resource_id" {
   description = "The resource ID of the App Service Plan to deploy the App Service in."
 }
 
-variable "all_child_resources_inherit_lock" {
-  type        = bool
-  default     = true
-  description = "Should child resources inherit the lock from the parent resource? Defaults to `true`."
-}
-
 variable "all_child_resources_inherit_tags" {
   type        = bool
   default     = true
@@ -1111,7 +1105,6 @@ variable "private_endpoints" {
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = optional(string, "sites")
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -1143,7 +1136,6 @@ A map of private endpoints to create on this resource. The map key is deliberate
   - `name` - (Optional) The name of the lock.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-- `subresource_name` - (Optional) The subresource name for the private endpoint. Defaults to `sites`.
 - `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group.
 - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate.
 - `application_security_group_associations` - (Optional) A map of resource IDs of application security groups.
@@ -1467,17 +1459,6 @@ Configures the Application Insights instance(s) for the deployment slot(s).
 DESCRIPTION
 }
 
-variable "slots_storage_shares_to_mount_sensitive_values" {
-  type        = map(string)
-  default     = {}
-  description = <<DESCRIPTION
-A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the Function App.
-The key is the supplied input to `var.storage_shares_to_mount`.
-The value is the secret value (storage access key).
-DESCRIPTION
-  sensitive   = true
-}
-
 variable "sticky_settings" {
   type = map(object({
     app_setting_names       = optional(list(string))
@@ -1527,12 +1508,6 @@ variable "storage_container_type" {
   type        = string
   default     = null
   description = "The storage container type. The current supported type is `blobContainer`."
-}
-
-variable "storage_key_vault_secret_id" {
-  type        = string
-  default     = null
-  description = "The ID of the secret in the key vault to use for the Storage Account access key."
 }
 
 variable "storage_shares_to_mount" {
@@ -1619,12 +1594,6 @@ variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
   description = "Should the traffic for image pull be routed over virtual network?"
-}
-
-variable "webdeploy_publish_basic_authentication_enabled" {
-  type        = bool
-  default     = true
-  description = "Should basic authentication be enabled for web deploy?"
 }
 
 variable "zip_deploy_file" {

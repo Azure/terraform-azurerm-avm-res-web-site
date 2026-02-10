@@ -111,14 +111,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_all_child_resources_inherit_lock"></a> [all\_child\_resources\_inherit\_lock](#input\_all\_child\_resources\_inherit\_lock)
-
-Description: Should child resources inherit the lock from the parent resource? Defaults to `true`.
-
-Type: `bool`
-
-Default: `true`
-
 ### <a name="input_all_child_resources_inherit_tags"></a> [all\_child\_resources\_inherit\_tags](#input\_all\_child\_resources\_inherit\_tags)
 
 Description: Should child resources inherit tags from the parent resource? Defaults to `true`.
@@ -1251,7 +1243,6 @@ Description: A map of private endpoints to create on this resource. The map key 
   - `name` - (Optional) The name of the lock.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-- `subresource_name` - (Optional) The subresource name for the private endpoint. Defaults to `sites`.
 - `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group.
 - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate.
 - `application_security_group_associations` - (Optional) A map of resource IDs of application security groups.
@@ -1284,7 +1275,6 @@ map(object({
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = optional(string, "sites")
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -1628,16 +1618,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_slots_storage_shares_to_mount_sensitive_values"></a> [slots\_storage\_shares\_to\_mount\_sensitive\_values](#input\_slots\_storage\_shares\_to\_mount\_sensitive\_values)
-
-Description: A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the Function App.  
-The key is the supplied input to `var.storage_shares_to_mount`.  
-The value is the secret value (storage access key).
-
-Type: `map(string)`
-
-Default: `{}`
-
 ### <a name="input_sticky_settings"></a> [sticky\_settings](#input\_sticky\_settings)
 
 Description: A map of sticky settings to assign to the App Service.
@@ -1699,14 +1679,6 @@ Default: `null`
 ### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
 
 Description: The storage container type. The current supported type is `blobContainer`.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_storage_key_vault_secret_id"></a> [storage\_key\_vault\_secret\_id](#input\_storage\_key\_vault\_secret\_id)
-
-Description: The ID of the secret in the key vault to use for the Storage Account access key.
 
 Type: `string`
 
@@ -1821,14 +1793,6 @@ Description: Should the traffic for image pull be routed over virtual network?
 Type: `bool`
 
 Default: `false`
-
-### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
-
-Description: Should basic authentication be enabled for web deploy?
-
-Type: `bool`
-
-Default: `true`
 
 ### <a name="input_zip_deploy_file"></a> [zip\_deploy\_file](#input\_zip\_deploy\_file)
 

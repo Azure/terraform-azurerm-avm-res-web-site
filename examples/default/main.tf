@@ -15,8 +15,6 @@ module "naming" {
   version = "0.4.2"
 }
 
-data "azapi_client_config" "current" {}
-
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
