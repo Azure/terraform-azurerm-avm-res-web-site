@@ -5,21 +5,18 @@
 This deploys the module as a Linux Web App utilizing auto heal settings.
 
 ```hcl
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+
+  is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -73,7 +70,7 @@ module "avm_res_web_site" {
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-auto-heal"
   os_type                  = "Linux"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
@@ -210,9 +207,9 @@ Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
-Source: Azure/regions/azurerm
+Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.8.0
+Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

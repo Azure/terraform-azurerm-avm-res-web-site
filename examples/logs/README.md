@@ -5,21 +5,18 @@
 This deploys the module with a Linux Web App with logs configured on both the main app and deployment slot.
 
 ```hcl
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+
+  is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -111,7 +108,6 @@ resource "azapi_resource" "log_analytics_workspace_development" {
   }
 }
 
-# This is the module call
 module "avm_res_web_site" {
   source = "../.."
 
@@ -119,7 +115,7 @@ module "avm_res_web_site" {
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-logs"
   os_type                  = "Linux"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace_production.id
@@ -162,7 +158,6 @@ module "avm_res_web_site" {
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        # Uses existing application insights
         application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
         application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
@@ -224,7 +219,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  # Creates application insights for slot
   slot_application_insights = {
     development = {
       name                  = "${module.naming.application_insights.name_unique}-development"
@@ -323,9 +317,9 @@ Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
-Source: Azure/regions/azurerm
+Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.8.0
+Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

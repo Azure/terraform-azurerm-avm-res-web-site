@@ -5,21 +5,18 @@
 This deploys the module with a Windows Logic App in its simplest form.
 
 ```hcl
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+
+  is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -146,12 +143,11 @@ data "azapi_client_config" "this" {}
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "logicapp"
-  location = azapi_resource.resource_group.location
-  name     = module.naming.logic_app_workflow.name_unique
-  # Uses an existing app service plan
+  kind                     = "logicapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = module.naming.logic_app_workflow.name_unique
   os_type                  = "Windows"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
     FUNCTIONS_RUNTIME_WORKER     = "node"
@@ -182,8 +178,7 @@ module "avm_res_web_site" {
 
   }
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  # Uses an existing storage account
-  storage_account_name = azapi_resource.storage_account.name
+  storage_account_name       = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
@@ -287,9 +282,9 @@ Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
-Source: Azure/regions/azurerm
+Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.8.0
+Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

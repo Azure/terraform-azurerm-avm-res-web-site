@@ -5,33 +5,22 @@
 This deploys the module as a Windows Function App using some of the interfaces.
 
 ```hcl
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+
+  is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
 }
-
-# data "azapi_client_config" "this" {}
-
-# Contributor role definition ID: b24988ac-6180-42a0-ab88-20f7382dd24c
-# data "azurerm_role_definition" "example" {
-#   name = "Contributor"
-# }
 
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
@@ -155,12 +144,11 @@ resource "azapi_resource" "user_assigned_identity" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "functionapp"
-  location = azapi_resource.resource_group.location
-  name     = "${module.naming.function_app.name_unique}-interfaces"
-  # Uses an existing app service plan
+  kind                     = "functionapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = "${module.naming.function_app.name_unique}-interfaces"
   os_type                  = "Windows"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     name                  = module.naming.application_insights.name_unique
@@ -194,23 +182,6 @@ module "avm_res_web_site" {
       private_dns_zone_resource_ids = [azapi_resource.private_dns_zone.id]
       subnet_resource_id            = azapi_resource.subnet.id
 
-      # lock = {
-      #   /*
-      #   kind = "ReadOnly"
-      #   */
-
-      #   /*
-      #   kind = "CanNotDelete"
-      #   */
-      # }
-
-      # role_assignments = {
-      #   role_assignment_1 = {
-      #     role_definition_id_or_name = "/subscriptions/${data.azapi_client_config.this.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
-      #     principal_id               = data.azapi_client_config.this.object_id
-      #   }
-      # }
-
       tags = {
         webapp = "${module.naming.function_app.name_unique}-interfaces"
       }
@@ -220,36 +191,12 @@ module "avm_res_web_site" {
   }
   public_network_access_enabled = false
   storage_account_access_key    = data.azapi_resource_action.storage_keys.output.keys[0].value
-  # Uses an existing storage account
-  storage_account_name = azapi_resource.storage_account.name
+  storage_account_name          = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
   }
 }
-
-
-/*
-check "dns" {
-  data "azurerm_private_dns_a_record" "assertion" {
-    name                = local.split_subdomain[0]
-    zone_name           = azapi_resource.private_dns_zone.name
-    resource_group_name = azapi_resource.resource_group.name
-  }
-  assert {
-    condition     = one(data.azurerm_private_dns_a_record.assertion.records) == one(module.avm_res_web_site.resource_private_endpoints["primary"].private_service_connection).private_ip_address
-    error_message = "The private DNS A record for the private endpoint is not correct."
-  }
-}
-*/
-
-# VM to test private endpoint connectivity
-
-# This allows us to randomize the region for the resource group.
-# resource "random_integer" "region_index_vm" {
-#   max = length(local.azure_regions) - 1
-#   min = 0
-# }
 
 resource "random_integer" "zone_index" {
   max = length(module.regions.regions_by_name[local.azure_regions[random_integer.region_index.result]].zones)
@@ -344,60 +291,6 @@ resource "azapi_resource" "windows_virtual_machine" {
     }
   }
 }
-
-# Create the virtual machine
-# module "avm_res_compute_virtualmachine" {
-#   source  = "Azure/avm-res-compute-virtualmachine/azurerm"
-#   version = "0.16.4"
-
-#   enable_telemetry = var.enable_telemetry
-
-#   resource_group_name = azapi_resource.resource_group.name
-#   location            = azapi_resource.resource_group.location
-#   name                = "${module.naming.virtual_machine.name_unique}-tf"
-#   sku_size            = module.avm_res_compute_virtualmachine_sku_selector.sku
-#   os_type             = "Windows"
-
-#   zone = random_integer.zone_index.result
-
-#   generate_admin_password_or_ssh_key = false
-#   admin_username                     = "TestAdmin"
-#   admin_password                     = "P@ssw0rd1234!"
-
-#   source_image_reference = {
-#     publisher = "MicrosoftWindowsServer"
-#     offer     = "WindowsServer"
-#     sku       = "2019-Datacenter"
-#     version   = "latest"
-#   }
-
-#   network_interfaces = {
-#     network_interface_1 = {
-#       name = "nic-${module.naming.network_interface.name_unique}-tf"
-#       ip_configurations = {
-#         ip_configuration_1 = {
-#           name                          = "${module.naming.network_interface.name_unique}-ipconfig1-public"
-#           private_ip_subnet_resource_id = azapi_resource.subnet.id
-#           create_public_ip_address      = true
-#           public_ip_address_name        = "pip-${module.naming.virtual_machine.name_unique}-tf"
-#           is_primary_ipconfiguration    = true
-#         }
-#       }
-#     }
-#   }
-
-#   tags = {
-
-#   }
-
-# }
-
-# module "avm_res_compute_virtualmachine_sku_selector" {
-#   source  = "Azure/avm-res-compute-virtualmachine/azurerm//modules/sku_selector"
-#   version = "0.16.4"
-
-#   deployment_region = azapi_resource.resource_group.location
-# }
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -504,9 +397,9 @@ Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
-Source: Azure/regions/azurerm
+Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.8.0
+Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

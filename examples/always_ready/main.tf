@@ -1,6 +1,7 @@
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
+
   is_recommended = true
 }
 
@@ -88,9 +89,9 @@ resource "azapi_resource" "storage_container" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "functionapp"
-  location = azapi_resource.resource_group.location
-  name     = "${module.naming.function_app.name_unique}-always-ready"
+  kind                     = "functionapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = "${module.naming.function_app.name_unique}-always-ready"
   os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
@@ -120,8 +121,8 @@ module "avm_res_web_site" {
       azapi_resource.user_assigned_identity.id
     ]
   }
-  maximum_instance_count = 100
-  storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
+  maximum_instance_count            = 100
+  storage_account_access_key        = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_authentication_type       = "UserAssignedIdentity"
   storage_container_endpoint        = azapi_resource.storage_container.id
   storage_container_type            = "blobContainer"

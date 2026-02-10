@@ -1,6 +1,7 @@
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
+
   is_recommended = true
 }
 
@@ -58,9 +59,9 @@ resource "azapi_resource" "log_analytics_workspace" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "webapp"
-  location = azapi_resource.resource_group.location
-  name     = module.naming.app_service.name_unique
+  kind                     = "webapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = module.naming.app_service.name_unique
   os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id

@@ -1,6 +1,7 @@
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
+
   is_recommended = true
 }
 
@@ -78,9 +79,9 @@ resource "azapi_resource" "storage_account" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "webapp"
-  location = azapi_resource.resource_group.location
-  name     = "${module.naming.app_service.name_unique}-container"
+  kind                     = "webapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = "${module.naming.app_service.name_unique}-container"
   os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id

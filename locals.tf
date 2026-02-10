@@ -9,11 +9,11 @@ locals {
     "app"
   )
   deployment_slot_keys = length(var.deployment_slots) > 0 ? keys(var.deployment_slots) : null
-  is_function_app = var.kind == "functionapp"
-  is_linux = var.os_type == "Linux"
-  is_logic_app = var.kind == "logicapp"
-  is_web_app = var.kind == "webapp"
-  resource_group_id = var.parent_id
+  is_function_app      = var.kind == "functionapp"
+  is_linux             = var.os_type == "Linux"
+  is_logic_app         = var.kind == "logicapp"
+  is_web_app           = var.kind == "webapp"
+  resource_group_id    = var.parent_id
 }
 
 data "azapi_client_config" "this" {}
@@ -90,7 +90,7 @@ locals {
 }
 
 locals {
-  app_stack = var.site_config.application_stack
+  app_stack              = var.site_config.application_stack
   current_stack          = !local.is_linux && local.app_stack != null ? try(local.app_stack.dotnet.current_stack, null) : null
   java_container         = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container, null) : null
   java_container_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null
@@ -268,24 +268,24 @@ locals {
     virtualApplications                    = local.virtual_applications
     vnetRouteAllEnabled                    = var.site_config.vnet_route_all_enabled
     webSocketsEnabled                      = var.site_config.websockets_enabled
-    linuxFxVersion       = local.linux_fx_version
-    windowsFxVersion     = local.windows_fx_version
-    netFrameworkVersion  = local.net_framework_version
-    phpVersion           = local.php_version
-    pythonVersion        = local.python_version
-    nodeVersion          = local.node_version
-    javaVersion          = local.java_version
-    javaContainer        = local.java_container
-    javaContainerVersion = local.java_container_version
-    powerShellVersion    = local.powershell_version
+    linuxFxVersion                         = local.linux_fx_version
+    windowsFxVersion                       = local.windows_fx_version
+    netFrameworkVersion                    = local.net_framework_version
+    phpVersion                             = local.php_version
+    pythonVersion                          = local.python_version
+    nodeVersion                            = local.node_version
+    javaVersion                            = local.java_version
+    javaContainer                          = local.java_container
+    javaContainerVersion                   = local.java_container_version
+    powerShellVersion                      = local.powershell_version
     functionsRuntimeScaleMonitoringEnabled = local.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
     minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
-    scmType = local.is_logic_app ? var.site_config.scm_type : null
-    acrUseManagedIdentityCreds = var.site_config.container_registry_use_managed_identity
-    acrUserManagedIdentityID   = var.site_config.container_registry_managed_identity_client_id
-    functionAppScaleLimit = local.is_function_app ? var.site_config.app_scale_limit : null
-    localMySqlEnabled = local.is_web_app ? var.site_config.local_mysql_enabled : null
-    autoSwapSlotName = var.site_config.auto_swap_slot_name
+    scmType                                = local.is_logic_app ? var.site_config.scm_type : null
+    acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity
+    acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
+    functionAppScaleLimit                  = local.is_function_app ? var.site_config.app_scale_limit : null
+    localMySqlEnabled                      = local.is_web_app ? var.site_config.local_mysql_enabled : null
+    autoSwapSlotName                       = var.site_config.auto_swap_slot_name
   }
 }
 

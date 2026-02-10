@@ -5,21 +5,18 @@
 This deploys an app referencing resources not created by the root module.
 
 ```hcl
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
 module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
+  source  = "Azure/avm-utl-regions/azurerm"
+  version = "0.11.0"
+
+  is_recommended = true
 }
 
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -141,12 +138,11 @@ resource "azapi_resource" "application_insights_staging" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "webapp"
-  location = azapi_resource.resource_group.location
-  name     = "${module.naming.function_app.name_unique}-existing-resources"
-  # Uses an existing app service plan
+  kind                     = "webapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = "${module.naming.function_app.name_unique}-existing-resources"
   os_type                  = "Linux"
-  resource_group_name      = azapi_resource.resource_group.name
+  parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azapi_resource.application_insights.output.properties.ConnectionString
@@ -158,7 +154,6 @@ module "avm_res_web_site" {
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        # Uses existing application insights
         application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
         application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
@@ -171,7 +166,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  # Uses existing application insights
   enable_application_insights = false
   enable_telemetry            = var.enable_telemetry
   site_config = {
@@ -184,8 +178,7 @@ module "avm_res_web_site" {
     }
   }
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  # Uses an existing storage account
-  storage_account_name = azapi_resource.storage_account.name
+  storage_account_name       = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.19.1"
@@ -288,9 +281,9 @@ Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
-Source: Azure/regions/azurerm
+Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.8.0
+Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

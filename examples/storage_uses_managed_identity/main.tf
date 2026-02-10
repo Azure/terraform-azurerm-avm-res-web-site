@@ -1,6 +1,7 @@
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.11.0"
+
   is_recommended = true
 }
 
@@ -77,9 +78,9 @@ resource "azapi_resource" "role_assignment" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "functionapp"
-  location = azapi_resource.resource_group.location
-  name     = module.naming.function_app.name_unique
+  kind                     = "functionapp"
+  location                 = azapi_resource.resource_group.location
+  name                     = module.naming.function_app.name_unique
   os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id

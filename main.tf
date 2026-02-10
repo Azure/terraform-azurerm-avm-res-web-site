@@ -49,11 +49,11 @@ resource "azapi_resource" "appsettings" {
   body = {
     properties = local.merged_app_settings
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "connectionstrings" {
@@ -68,11 +68,11 @@ resource "azapi_resource" "connectionstrings" {
       value = v.value
     } }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "azurestorageaccounts" {
@@ -84,11 +84,11 @@ resource "azapi_resource" "azurestorageaccounts" {
   body = {
     properties = local.storage_mounts
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "slotconfignames" {
@@ -103,11 +103,11 @@ resource "azapi_resource" "slotconfignames" {
       connectionStringNames = flatten([for k, v in var.sticky_settings : coalesce(v.connection_string_names, [])])
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 # Deprecated but kept for backward compatibility.
@@ -175,11 +175,11 @@ resource "azapi_resource" "authsettings" {
       } : {},
     )
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "authsettingsv2" {
@@ -257,11 +257,11 @@ resource "azapi_resource" "authsettingsv2" {
       } : null
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "backup" {
@@ -286,11 +286,11 @@ resource "azapi_resource" "backup" {
       }[keys(each.value.schedule)[0]] : null
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "logs" {
@@ -333,11 +333,11 @@ resource "azapi_resource" "logs" {
       }[keys(each.value.http_logs)[0]] : null
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "slot" {
@@ -384,15 +384,15 @@ resource "azapi_resource" "slot" {
         acrUserManagedIdentityID               = each.value.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = each.value.site_config.container_registry_use_managed_identity
         functionAppScaleLimit                  = local.is_function_app ? each.value.site_config.app_scale_limit : null
-        linuxFxVersion       = local.slot_linux_fx_version[each.key]
-        netFrameworkVersion  = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.dotnet.dotnet_version, null) : null
-        phpVersion           = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.php.php_version, null) : null
-        pythonVersion        = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.python.python_version, null) : null
-        nodeVersion          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.node.node_version, null) : null
-        javaVersion          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_version, null) : null
-        javaContainer        = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container, null) : null
-        javaContainerVersion = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container_version, null) : null
-        powerShellVersion    = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.powershell.powershell_version, null) : null
+        linuxFxVersion                         = local.slot_linux_fx_version[each.key]
+        netFrameworkVersion                    = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.dotnet.dotnet_version, null) : null
+        phpVersion                             = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.php.php_version, null) : null
+        pythonVersion                          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.python.python_version, null) : null
+        nodeVersion                            = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.node.node_version, null) : null
+        javaVersion                            = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_version, null) : null
+        javaContainer                          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container, null) : null
+        javaContainerVersion                   = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container_version, null) : null
+        powerShellVersion                      = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.powershell.powershell_version, null) : null
       } : null
     }
   }
@@ -424,11 +424,11 @@ resource "azapi_resource" "slot_appsettings" {
   body = {
     properties = local.slot_app_settings[each.key]
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource_action" "active_slot" {
@@ -458,11 +458,11 @@ resource "azapi_resource" "hostname_binding" {
       thumbprint = each.value.thumbprint_value
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "slot_hostname_binding" {
@@ -477,11 +477,11 @@ resource "azapi_resource" "slot_hostname_binding" {
       thumbprint = each.value.thumbprint_value
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "ftp_publishing_credential_policy" {
@@ -495,11 +495,11 @@ resource "azapi_resource" "ftp_publishing_credential_policy" {
       allow = false
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource" "scm_publishing_credential_policy" {
@@ -513,11 +513,11 @@ resource "azapi_resource" "scm_publishing_credential_policy" {
       allow = false
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 resource "azapi_resource_action" "zip_deploy" {
