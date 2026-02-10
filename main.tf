@@ -2,7 +2,7 @@ resource "azapi_resource" "this" {
   location       = var.location
   name           = var.name
   parent_id      = local.resource_group_id
-  type           = "Microsoft.Web/sites@2024-04-01"
+  type           = "Microsoft.Web/sites@2025-03-01"
   body           = local.body
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

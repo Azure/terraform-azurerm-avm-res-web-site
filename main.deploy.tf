@@ -4,7 +4,7 @@ resource "azapi_resource_action" "zip_deploy" {
   action      = "extensions/zipdeploy"
   method      = "PUT"
   resource_id = azapi_resource.this.id
-  type        = "Microsoft.Web/sites@2024-04-01"
+  type        = "Microsoft.Web/sites@2025-03-01"
   body = {
     packageUri = var.zip_deploy_file
   }

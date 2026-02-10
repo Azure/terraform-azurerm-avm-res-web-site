@@ -3,7 +3,7 @@ resource "azapi_resource" "hostname_binding" {
 
   name      = each.value.hostname
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/hostNameBindings@2024-04-01"
+  type      = "Microsoft.Web/sites/hostNameBindings@2025-03-01"
   body = {
     properties = {
       sslState   = each.value.ssl_state
@@ -22,7 +22,7 @@ resource "azapi_resource" "slot_hostname_binding" {
 
   name      = each.value.hostname
   parent_id = azapi_resource.slot[each.value.app_service_slot_key].id
-  type      = "Microsoft.Web/sites/slots/hostNameBindings@2024-04-01"
+  type      = "Microsoft.Web/sites/slots/hostNameBindings@2025-03-01"
   body = {
     properties = {
       sslState   = each.value.ssl_state

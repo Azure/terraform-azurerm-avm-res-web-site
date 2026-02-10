@@ -18,7 +18,7 @@ module "naming" {
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
 }
 
@@ -26,7 +26,7 @@ resource "azapi_resource" "service_plan" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.app_service_plan.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  type      = "Microsoft.Web/serverfarms@2025-03-01"
   body = {
     kind = "app"
     sku = {

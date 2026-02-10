@@ -4,7 +4,7 @@ resource "azapi_resource" "slot" {
   location  = var.location
   name      = coalesce(each.value.name, each.key)
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots@2024-04-01"
+  type      = "Microsoft.Web/sites/slots@2025-03-01"
   body = {
     kind = local.arm_kind
     properties = {
@@ -78,7 +78,7 @@ resource "azapi_resource" "slot_appsettings" {
 
   name      = "appsettings"
   parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/config@2024-04-01"
+  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
   body = {
     properties = local.slot_app_settings[each.key]
   }
@@ -95,7 +95,7 @@ resource "azapi_resource_action" "active_slot" {
   action      = "slotsswap"
   method      = "POST"
   resource_id = azapi_resource.this.id
-  type        = "Microsoft.Web/sites@2024-04-01"
+  type        = "Microsoft.Web/sites@2025-03-01"
   body = {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config

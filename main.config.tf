@@ -3,7 +3,7 @@ resource "azapi_resource" "appsettings" {
 
   name      = "appsettings"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = local.merged_app_settings
   }
@@ -19,7 +19,7 @@ resource "azapi_resource" "connectionstrings" {
 
   name      = "connectionstrings"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = { for k, v in var.connection_strings : coalesce(v.name, k) => {
       type  = v.type
@@ -38,7 +38,7 @@ resource "azapi_resource" "azurestorageaccounts" {
 
   name      = "azurestorageaccounts"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = local.storage_mounts
   }
@@ -54,7 +54,7 @@ resource "azapi_resource" "slotconfignames" {
 
   name      = "slotConfigNames"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = {
       appSettingNames       = flatten([for k, v in var.sticky_settings : coalesce(v.app_setting_names, [])])
@@ -73,7 +73,7 @@ resource "azapi_resource" "ftp_publishing_credential_policy" {
 
   name      = "ftp"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2024-04-01"
+  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01"
   body = {
     properties = {
       allow = false
@@ -91,7 +91,7 @@ resource "azapi_resource" "scm_publishing_credential_policy" {
 
   name      = "scm"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2024-04-01"
+  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01"
   body = {
     properties = {
       allow = false

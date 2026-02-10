@@ -166,7 +166,7 @@ resource "azapi_resource" "slot_private_endpoint" {
   location  = coalesce(each.value.pe_value.location, var.location)
   name      = coalesce(each.value.pe_value.name, "pe-${each.key}")
   parent_id = each.value.pe_value.resource_group_name != null ? "/subscriptions/${local.subscription_id}/resourceGroups/${each.value.pe_value.resource_group_name}" : var.parent_id
-  type      = "Microsoft.Network/privateEndpoints@2024-05-01"
+  type      = "Microsoft.Network/privateEndpoints@2025-05-01"
   body = {
     properties = {
       subnet = {
@@ -208,7 +208,7 @@ resource "azapi_resource" "slot_private_dns_zone_group" {
 
   name      = each.value.pe_value.private_dns_zone_group_name
   parent_id = azapi_resource.slot_private_endpoint[each.key].id
-  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01"
+  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-05-01"
   body = {
     properties = {
       privateDnsZoneConfigs = [for idx, zone_id in tolist(each.value.pe_value.private_dns_zone_resource_ids) : {

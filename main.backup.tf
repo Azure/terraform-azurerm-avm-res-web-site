@@ -3,7 +3,7 @@ resource "azapi_resource" "backup" {
 
   name      = "backup"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = {
       backupName        = coalesce(each.value.name, "backup-${var.name}")

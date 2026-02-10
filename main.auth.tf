@@ -6,7 +6,7 @@ resource "azapi_resource" "authsettings" {
 
   name      = "authsettings"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = merge(
       {
@@ -75,7 +75,7 @@ resource "azapi_resource" "authsettingsv2" {
 
   name      = "authsettingsV2"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2024-04-01"
+  type      = "Microsoft.Web/sites/config@2025-03-01"
   body = {
     properties = {
       platform = {
