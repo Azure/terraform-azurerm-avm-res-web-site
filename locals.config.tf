@@ -51,7 +51,10 @@ locals {
 }
 
 locals {
-  app_stack = var.site_config.application_stack
+  app_stack              = var.site_config.application_stack
+  java_container         = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container, null) : null
+  java_container_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null
+  java_version           = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_version, null) : null
   # Linux uses linuxFxVersion in "RUNTIME|VERSION" format
   linux_fx_version = local.is_linux ? coalesce(
     try(local.app_stack.docker != null ? "DOCKER|${trimprefix(coalesce(local.app_stack.docker.docker_registry_url, ""), "https://")}/${local.app_stack.docker.docker_image_name}:${local.app_stack.docker.docker_image_tag}" : null, null),
@@ -63,9 +66,6 @@ locals {
     try(local.app_stack.php != null ? "PHP|${local.app_stack.php.php_version}" : null, null),
     var.site_config.linux_fx_version,
   ) : null
-  java_container         = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container, null) : null
-  java_container_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null
-  java_version           = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_version, null) : null
   net_framework_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.dotnet.dotnet_version, null) : (
     local.is_logic_app ? var.site_config.dotnet_framework_version : null
   )

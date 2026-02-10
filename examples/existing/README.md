@@ -25,7 +25,7 @@ module "naming" {
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
 }
 
@@ -33,7 +33,7 @@ resource "azapi_resource" "service_plan" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.app_service_plan.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  type      = "Microsoft.Web/serverfarms@2025-03-01"
   body = {
     kind = "linux"
     sku = {
@@ -52,7 +52,7 @@ resource "azapi_resource" "storage_account" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.storage_account.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+  type      = "Microsoft.Storage/storageAccounts@2025-01-01"
   body = {
     kind = "StorageV2"
     sku = {
@@ -71,7 +71,7 @@ data "azapi_resource_action" "storage_keys" {
   action                 = "listKeys"
   method                 = "POST"
   resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2023-05-01"
+  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
   response_export_values = ["keys"]
 }
 
@@ -79,7 +79,7 @@ resource "azapi_resource" "log_analytics_workspace" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-existing-resources"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
     properties = {
       retentionInDays = 30
@@ -109,7 +109,7 @@ resource "azapi_resource" "log_analytics_workspace_staging" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-existing-resources-staging"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
     properties = {
       retentionInDays = 30

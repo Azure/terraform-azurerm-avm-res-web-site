@@ -25,7 +25,7 @@ module "naming" {
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
-  type     = "Microsoft.Resources/resourceGroups@2024-03-01"
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
 }
 
@@ -33,7 +33,7 @@ resource "azapi_resource" "service_plan" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.app_service_plan.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Web/serverfarms@2024-04-01"
+  type      = "Microsoft.Web/serverfarms@2025-03-01"
   body = {
     kind = "app"
     sku = {
@@ -52,7 +52,7 @@ resource "azapi_resource" "storage_account" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.storage_account.name_unique}dmv"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Storage/storageAccounts@2023-05-01"
+  type      = "Microsoft.Storage/storageAccounts@2025-01-01"
   body = {
     kind = "StorageV2"
     sku = {
@@ -71,7 +71,7 @@ data "azapi_resource_action" "storage_keys" {
   action                 = "listKeys"
   method                 = "POST"
   resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2023-05-01"
+  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
   response_export_values = ["keys"]
 }
 
@@ -79,7 +79,7 @@ resource "azapi_resource" "virtual_network" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.virtual_network.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Network/virtualNetworks@2024-05-01"
+  type      = "Microsoft.Network/virtualNetworks@2025-05-01"
   body = {
     properties = {
       addressSpace = {
@@ -92,7 +92,7 @@ resource "azapi_resource" "virtual_network" {
 resource "azapi_resource" "subnet" {
   name      = module.naming.subnet.name_unique
   parent_id = azapi_resource.virtual_network.id
-  type      = "Microsoft.Network/virtualNetworks/subnets@2024-05-01"
+  type      = "Microsoft.Network/virtualNetworks/subnets@2025-05-01"
   body = {
     properties = {
       addressPrefix = "192.168.0.0/24"
@@ -142,7 +142,7 @@ resource "azapi_resource" "log_analytics_workspace_production" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-prod"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
     properties = {
       retentionInDays = 30
@@ -157,7 +157,7 @@ resource "azapi_resource" "log_analytics_workspace_staging" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-staging"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
     properties = {
       retentionInDays = 30
@@ -172,7 +172,7 @@ resource "azapi_resource" "log_analytics_workspace_development" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-development"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
     properties = {
       retentionInDays = 30
@@ -187,7 +187,7 @@ resource "azapi_resource" "user_assigned_identity" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.user_assigned_identity.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31"
+  type      = "Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30"
   body      = {}
 }
 
