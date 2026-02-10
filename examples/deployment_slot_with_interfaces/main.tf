@@ -187,10 +187,8 @@ resource "azapi_resource" "user_assigned_identity" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-slots"
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
@@ -245,6 +243,7 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
     system_assigned = true
@@ -252,6 +251,7 @@ module "avm_res_web_site" {
       azapi_resource.user_assigned_identity.id
     ]
   }
+  os_type = "Windows"
   site_config = {
     application_stack = {
       dotnet = {

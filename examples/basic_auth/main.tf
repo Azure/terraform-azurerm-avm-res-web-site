@@ -71,10 +71,8 @@ data "azapi_resource_action" "storage_keys" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-basic-auth"
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   auth_settings = {
@@ -107,6 +105,8 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "functionapp"
+  os_type          = "Windows"
   site_config = {
     ftps_state = "FtpsOnly"
   }

@@ -71,13 +71,13 @@ data "azapi_resource_action" "storage_keys" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-default"
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   enable_telemetry         = var.enable_telemetry
+  kind                     = "functionapp"
+  os_type                  = "Windows"
   site_config = {
     application_stack = {
       dotnet = {

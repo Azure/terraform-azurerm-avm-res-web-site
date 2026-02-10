@@ -1,16 +1,3 @@
-variable "kind" {
-  type        = string
-  description = <<DESCRIPTION
-The type of App Service to deploy. This maps to the ARM API `kind` property.
-Possible values are `functionapp`, `webapp` and `logicapp`.
-DESCRIPTION
-
-  validation {
-    error_message = "The value must be one of: `functionapp`, `webapp` or `logicapp`"
-    condition     = contains(["functionapp", "webapp", "logicapp"], var.kind)
-  }
-}
-
 variable "location" {
   type        = string
   description = "Azure region where the resource should be deployed."
@@ -20,26 +7,29 @@ variable "location" {
 variable "name" {
   type        = string
   description = "The name which should be used for the App Service."
-}
-
-variable "os_type" {
-  type        = string
-  description = "The operating system type. `Linux` sets `reserved = true` on the ARM resource."
-
-  validation {
-    error_message = "The value must be one of: `Linux` or `Windows`"
-    condition     = contains(["Linux", "Windows"], var.os_type)
-  }
+  nullable    = false
 }
 
 variable "parent_id" {
   type        = string
   description = "The resource ID of the Resource Group where the App Service will be deployed."
+  nullable    = false
+
+  validation {
+    error_message = "The value must be a valid Azure Resource Group resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}`"
+    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+$", var.parent_id))
+  }
 }
 
 variable "service_plan_resource_id" {
   type        = string
   description = "The resource ID of the App Service Plan to deploy the App Service in."
+  nullable    = false
+
+  validation {
+    error_message = "The value must be a valid Azure App Service Plan resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/serverFarms/{serverFarmName}`"
+    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+/providers/Microsoft.Web/serverFarms/[a-zA-Z0-9._-]+$", var.service_plan_resource_id))
+  }
 }
 
 variable "all_child_resources_inherit_tags" {
@@ -498,7 +488,7 @@ DESCRIPTION
 variable "builtin_logging_enabled" {
   type        = bool
   default     = true
-  description = "Should builtin logging be enabled for the Function App?"
+  description = "Should builtin logging be enabled for the Function App? Defaults to `true`."
 }
 
 variable "bundle_version" {
@@ -510,13 +500,13 @@ variable "bundle_version" {
 variable "client_affinity_enabled" {
   type        = bool
   default     = false
-  description = "Should client affinity be enabled for the App Service?"
+  description = "Should client affinity be enabled for the App Service? Defaults to `false`."
 }
 
 variable "client_certificate_enabled" {
   type        = bool
   default     = false
-  description = "Should client certificate be enabled for the App Service?"
+  description = "Should client certificate be enabled for the App Service? Defaults to `false`."
 }
 
 variable "client_certificate_exclusion_paths" {
@@ -528,7 +518,7 @@ variable "client_certificate_exclusion_paths" {
 variable "client_certificate_mode" {
   type        = string
   default     = "Required"
-  description = "The client certificate mode for the App Service. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`."
+  description = "The client certificate mode for the App Service. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. Defaults to `Required`."
 }
 
 variable "connection_strings" {
@@ -549,7 +539,7 @@ DESCRIPTION
 variable "content_share_force_disabled" {
   type        = bool
   default     = false
-  description = "Should content share be force disabled for the Function App?"
+  description = "Should content share be force disabled for the Function App? Defaults to `false`."
 }
 
 variable "custom_domains" {
@@ -845,7 +835,7 @@ DESCRIPTION
 variable "deployment_slots_inherit_lock" {
   type        = bool
   default     = true
-  description = "Whether to inherit the lock from the parent resource for the deployment slots."
+  description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
 }
 
 variable "diagnostic_settings" {
@@ -920,7 +910,7 @@ variable "diagnostic_settings" {
 variable "enable_application_insights" {
   type        = bool
   default     = true
-  description = "Should Application Insights be enabled for the App Service?"
+  description = "Should Application Insights be enabled for the App Service? Defaults to `true`."
 }
 
 variable "enable_telemetry" {
@@ -955,13 +945,13 @@ variable "fc1_runtime_version" {
 variable "ftp_publish_basic_authentication_enabled" {
   type        = bool
   default     = true
-  description = "Should basic authentication be enabled for FTP publish?"
+  description = "Should basic authentication be enabled for FTP publish? Defaults to `true`."
 }
 
 variable "function_app_uses_fc1" {
   type        = bool
   default     = false
-  description = "Should this Function App run on a Flex Consumption Plan?"
+  description = "Should this Function App run on a Flex Consumption Plan? Defaults to `false`."
 }
 
 variable "functions_extension_version" {
@@ -973,13 +963,13 @@ variable "functions_extension_version" {
 variable "https_only" {
   type        = bool
   default     = false
-  description = "Should the App Service only be accessible over HTTPS?"
+  description = "Should the App Service only be accessible over HTTPS? Defaults to `false`."
 }
 
 variable "instance_memory_in_mb" {
   type        = number
   default     = 2048
-  description = "The amount of memory to allocate for Flex Consumption instances."
+  description = "The amount of memory to allocate for Flex Consumption instances. Defaults to `2048`."
 
   validation {
     error_message = "The value must be one of: `512`, `2048`, or `4096`"
@@ -991,6 +981,21 @@ variable "key_vault_reference_identity_id" {
   type        = string
   default     = null
   description = "The identity ID to use for Key Vault references."
+}
+
+variable "kind" {
+  type        = string
+  default     = "webapp"
+  description = <<DESCRIPTION
+The type of App Service to deploy. This maps to the ARM API `kind` property.
+Possible values are `functionapp`, `webapp` and `logicapp`. Defaults to `webapp`.
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    error_message = "The value must be one of: `functionapp`, `webapp` or `logicapp`"
+    condition     = contains(["functionapp", "webapp", "logicapp"], var.kind)
+  }
 }
 
 variable "lock" {
@@ -1086,6 +1091,18 @@ variable "maximum_instance_count" {
   description = "The number of workers this function app can scale out to."
 }
 
+variable "os_type" {
+  type        = string
+  default     = "Linux"
+  description = "The operating system type. `Linux` sets `reserved = true` on the ARM resource. Defaults to `Linux`."
+  nullable    = false
+
+  validation {
+    error_message = "The value must be one of: `Linux` or `Windows`"
+    condition     = contains(["Linux", "Windows"], var.os_type)
+  }
+}
+
 variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
@@ -1153,13 +1170,13 @@ DESCRIPTION
 variable "private_endpoints_inherit_lock" {
   type        = bool
   default     = true
-  description = "Should the private endpoints inherit the lock from the parent resource?"
+  description = "Should the private endpoints inherit the lock from the parent resource? Defaults to `true`."
 }
 
 variable "private_endpoints_manage_dns_zone_group" {
   type        = bool
   default     = true
-  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally."
+  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally. Defaults to `true`."
   nullable    = false
 }
 
@@ -1199,7 +1216,7 @@ DESCRIPTION
 variable "scm_publish_basic_authentication_enabled" {
   type        = bool
   default     = true
-  description = "Should basic authentication be enabled for SCM publish?"
+  description = "Should basic authentication be enabled for SCM publish? Defaults to `true`."
 }
 
 variable "site_config" {
@@ -1541,7 +1558,7 @@ variable "storage_user_assigned_identity_id" {
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Storage Account use a Managed Identity?"
+  description = "Should the Storage Account use a Managed Identity? Defaults to `false`."
 }
 
 variable "tags" {
@@ -1569,13 +1586,13 @@ EOT
 variable "use_extension_bundle" {
   type        = bool
   default     = true
-  description = "Should the extension bundle be used? (Logic App)"
+  description = "Should the extension bundle be used? (Logic App) Defaults to `true`."
 }
 
 variable "virtual_network_backup_restore_enabled" {
   type        = bool
   default     = false
-  description = "Should backup and restore operations over the linked virtual network be enabled?"
+  description = "Should backup and restore operations over the linked virtual network be enabled? Defaults to `false`."
 }
 
 variable "virtual_network_subnet_id" {
@@ -1587,13 +1604,13 @@ variable "virtual_network_subnet_id" {
 variable "vnet_content_share_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for the content share be routed over virtual network?"
+  description = "Should the traffic for the content share be routed over virtual network? Defaults to `false`."
 }
 
 variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for image pull be routed over virtual network?"
+  description = "Should the traffic for image pull be routed over virtual network? Defaults to `false`."
 }
 
 variable "zip_deploy_file" {

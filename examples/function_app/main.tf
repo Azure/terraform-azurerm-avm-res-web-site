@@ -86,16 +86,16 @@ resource "azapi_resource" "log_analytics_workspace" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-functionapp"
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
   enable_telemetry           = var.enable_telemetry
+  kind                       = "functionapp"
+  os_type                    = "Windows"
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_account_name       = azapi_resource.storage_account.name
   tags = {

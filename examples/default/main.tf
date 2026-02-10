@@ -28,62 +28,22 @@ resource "azapi_resource" "service_plan" {
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.Web/serverfarms@2025-03-01"
   body = {
-    kind = "app"
+    kind = "linux"
     sku = {
       name = "P1v2"
     }
     properties = {
-      reserved = false
+      reserved = true
     }
   }
-  tags = {
-    app = "${module.naming.function_app.name_unique}-default"
-  }
-}
-
-resource "azapi_resource" "storage_account" {
-  location  = azapi_resource.resource_group.location
-  name      = module.naming.storage_account.name_unique
-  parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Storage/storageAccounts@2025-01-01"
-  body = {
-    kind = "StorageV2"
-    sku = {
-      name = "Standard_ZRS"
-    }
-    properties = {
-      networkAcls = {
-        defaultAction = "Allow"
-        bypass        = "AzureServices"
-      }
-    }
-  }
-  response_export_values = []
-}
-
-data "azapi_resource_action" "storage_keys" {
-  action                 = "listKeys"
-  method                 = "POST"
-  resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
-  response_export_values = ["keys"]
 }
 
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                       = "functionapp"
-  location                   = azapi_resource.resource_group.location
-  name                       = "${module.naming.function_app.name_unique}-default"
-  os_type                    = "Windows"
-  parent_id                  = azapi_resource.resource_group.id
-  service_plan_resource_id   = azapi_resource.service_plan.id
-  enable_telemetry           = var.enable_telemetry
-  storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  storage_account_name       = azapi_resource.storage_account.name
-  tags = {
-    module  = "Azure/avm-res-web-site/azurerm"
-    version = "0.18.0"
-  }
-  vnet_image_pull_enabled = true
+  location                 = azapi_resource.resource_group.location
+  name                     = "${module.naming.app_service.name_unique}-default"
+  parent_id                = azapi_resource.resource_group.id
+  service_plan_resource_id = azapi_resource.service_plan.id
+  enable_telemetry         = var.enable_telemetry
 }

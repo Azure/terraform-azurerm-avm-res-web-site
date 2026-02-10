@@ -23,13 +23,3 @@ output "service_plan_name" {
   description = "Full output of service plan created"
   value       = azapi_resource.service_plan.name
 }
-
-output "storage_account_id" {
-  description = "The ID of the storage account"
-  value       = azapi_resource.storage_account.id
-}
-
-output "storage_account_name" {
-  description = "Full output of storage account created"
-  value       = azapi_resource.storage_account.name
-}

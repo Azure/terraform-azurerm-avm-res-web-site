@@ -104,10 +104,8 @@ resource "azapi_resource" "log_analytics_workspace_development" {
 module "avm_res_web_site" {
   source = "../.."
 
-  kind                     = "webapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-logs"
-  os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
@@ -182,6 +180,7 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "webapp"
   logs = {
     app_service_logs = {
       # Added validation to ensure that logs object is configured.
@@ -203,6 +202,7 @@ module "avm_res_web_site" {
       }
     }
   }
+  os_type = "Linux"
   site_config = {
     application_stack = {
       dotnet = {

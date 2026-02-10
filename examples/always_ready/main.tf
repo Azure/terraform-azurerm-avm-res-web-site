@@ -89,10 +89,8 @@ resource "azapi_resource" "storage_container" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-always-ready"
-  os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   always_ready = {
@@ -114,6 +112,7 @@ module "avm_res_web_site" {
   fc1_runtime_version   = "20"
   function_app_uses_fc1 = true
   instance_memory_in_mb = 2048
+  kind                  = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
     system_assigned = true
@@ -122,6 +121,7 @@ module "avm_res_web_site" {
     ]
   }
   maximum_instance_count            = 100
+  os_type                           = "Linux"
   storage_account_access_key        = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_authentication_type       = "UserAssignedIdentity"
   storage_container_endpoint        = azapi_resource.storage_container.id

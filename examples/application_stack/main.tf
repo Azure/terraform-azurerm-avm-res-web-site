@@ -104,10 +104,8 @@ resource "azapi_resource" "log_analytics_workspace_development" {
 module "avm_res_web_site" {
   source = "../.."
 
-  kind                     = "webapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.app_service.name_unique}-app-stack"
-  os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
@@ -143,6 +141,8 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "webapp"
+  os_type          = "Linux"
   site_config = {
     application_stack = {
       python = {

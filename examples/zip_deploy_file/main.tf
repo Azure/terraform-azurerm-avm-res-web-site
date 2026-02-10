@@ -87,16 +87,16 @@ data "azapi_resource_action" "storage_keys" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = module.naming.function_app.name_unique
-  os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "functionapp"
+  os_type          = "Linux"
   site_config = {
     application_stack = {
       python = {

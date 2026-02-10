@@ -131,10 +131,8 @@ resource "azapi_resource" "application_insights_staging" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "webapp"
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-existing-resources"
-  os_type                  = "Linux"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
@@ -161,6 +159,8 @@ module "avm_res_web_site" {
   }
   enable_application_insights = false
   enable_telemetry            = var.enable_telemetry
+  kind                        = "webapp"
+  os_type                     = "Linux"
   site_config = {
     application_stack = {
       dotnet = {

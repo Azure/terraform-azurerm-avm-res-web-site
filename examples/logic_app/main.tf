@@ -136,10 +136,8 @@ data "azapi_client_config" "this" {}
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "logicapp"
   location                 = azapi_resource.resource_group.location
   name                     = module.naming.logic_app_workflow.name_unique
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
@@ -150,6 +148,8 @@ module "avm_res_web_site" {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "logicapp"
+  os_type          = "Windows"
   private_endpoints = {
     # Use of private endpoints requires Standard SKU
     primary = {

@@ -78,16 +78,16 @@ resource "azapi_resource" "role_assignment" {
 module "avm_res_web_site" {
   source = "../../"
 
-  kind                     = "functionapp"
   location                 = azapi_resource.resource_group.location
   name                     = module.naming.function_app.name_unique
-  os_type                  = "Windows"
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   enable_telemetry         = var.enable_telemetry
+  kind                     = "functionapp"
   managed_identities = {
     system_assigned = true
   }
+  os_type                       = "Windows"
   storage_account_name          = azapi_resource.storage_account.name
   storage_uses_managed_identity = true
   tags = {

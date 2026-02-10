@@ -1,3 +1,7 @@
-# Default example
+# Storage with Managed Identity Authentication
 
-This deploys the module with a Windows Function App that uses a managed identity to connect to the Storage Account.
+This example deploys a Windows Function App that authenticates to its backing Storage Account using a managed identity instead of access keys.
+
+By setting `storage_uses_managed_identity = true` and enabling a system-assigned managed identity, the Function App connects to Azure Storage without storing any secrets. An Azure role assignment (Storage Blob Data Owner) is created to grant the necessary permissions.
+
+The example uses `kind = "functionapp"` and `os_type = "Windows"`.
