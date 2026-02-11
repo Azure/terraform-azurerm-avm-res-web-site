@@ -212,7 +212,7 @@ resource "azapi_resource" "slot_private_dns_zone_group" {
 
   name      = each.value.pe_value.private_dns_zone_group_name
   parent_id = azapi_resource.slot_private_endpoint[each.key].id
-  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-05-01"
+  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-03-01"
   body = {
     properties = {
       privateDnsZoneConfigs = [for idx, zone_id in tolist(each.value.pe_value.private_dns_zone_resource_ids) : {
