@@ -8,10 +8,10 @@ locals {
     var.kind == "logicapp" ? "functionapp,linux,container,workflowapp" :
     "app"
   )
-  is_function_app   = var.kind == "functionapp"
-  is_linux          = var.os_type == "Linux"
-  is_logic_app      = var.kind == "logicapp"
-  is_web_app        = var.kind == "webapp"
+  is_function_app = var.kind == "functionapp"
+  is_linux        = var.os_type == "Linux"
+  is_logic_app    = var.kind == "logicapp"
+  is_web_app      = var.kind == "webapp"
 }
 
 locals {

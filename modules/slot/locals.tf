@@ -47,7 +47,6 @@ locals {
     } : {}),
     var.additional_app_settings,
   )
-
   # Storage mounts
   storage_mounts = {
     for k, v in var.storage_shares_to_mount : v.name => {
@@ -58,5 +57,4 @@ locals {
       accessKey   = var.storage_shares_access_keys[k]
     }
   }
-
 }
