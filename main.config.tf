@@ -1,105 +1,50 @@
-resource "azapi_resource" "appsettings" {
-  count = length(local.merged_app_settings) > 0 ? 1 : 0
+module "config_appsettings" {
+  source   = "./modules/config_appsettings"
+  for_each = length(local.merged_app_settings) > 0 ? { "default" = {} } : {}
 
-  name      = "appsettings"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2025-03-01"
-  body = {
-    properties = local.merged_app_settings
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id    = azapi_resource.this.id
+  app_settings = local.merged_app_settings
 }
 
-resource "azapi_resource" "connectionstrings" {
-  count = length(var.connection_strings) > 0 ? 1 : 0
+module "config_connectionstrings" {
+  source   = "./modules/config_connectionstrings"
+  for_each = length(var.connection_strings) > 0 ? { "default" = {} } : {}
 
-  name      = "connectionstrings"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2025-03-01"
-  body = {
-    properties = { for k, v in var.connection_strings : coalesce(v.name, k) => {
-      type  = v.type
-      value = v.value
-    } }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id          = azapi_resource.this.id
+  connection_strings = var.connection_strings
 }
 
-resource "azapi_resource" "azurestorageaccounts" {
-  count = length(var.storage_shares_to_mount) > 0 ? 1 : 0
+module "config_azurestorageaccounts" {
+  source   = "./modules/config_azurestorageaccounts"
+  for_each = length(var.storage_shares_to_mount) > 0 ? { "default" = {} } : {}
 
-  name      = "azurestorageaccounts"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2025-03-01"
-  body = {
-    properties = local.storage_mounts
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id               = azapi_resource.this.id
+  storage_shares_to_mount = var.storage_shares_to_mount
 }
 
-resource "azapi_resource" "slotconfignames" {
-  count = length(var.sticky_settings) > 0 ? 1 : 0
+module "config_slotconfignames" {
+  source   = "./modules/config_slotconfignames"
+  for_each = length(var.sticky_settings) > 0 ? { "default" = {} } : {}
 
-  name      = "slotConfigNames"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/config@2025-03-01"
-  body = {
-    properties = {
-      appSettingNames       = flatten([for k, v in var.sticky_settings : coalesce(v.app_setting_names, [])])
-      connectionStringNames = flatten([for k, v in var.sticky_settings : coalesce(v.connection_string_names, [])])
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id               = azapi_resource.this.id
+  app_setting_names       = flatten([for k, v in var.sticky_settings : coalesce(v.app_setting_names, [])])
+  connection_string_names = flatten([for k, v in var.sticky_settings : coalesce(v.connection_string_names, [])])
 }
 
-resource "azapi_resource" "ftp_publishing_credential_policy" {
-  count = !var.ftp_publish_basic_authentication_enabled ? 1 : 0
+module "ftp_publishing_credential_policy" {
+  source   = "./modules/publishing_credential_policy"
+  for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
+  parent_id = azapi_resource.this.id
   name      = "ftp"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  allow     = false
 }
 
-resource "azapi_resource" "scm_publishing_credential_policy" {
-  count = !var.scm_publish_basic_authentication_enabled ? 1 : 0
+module "scm_publishing_credential_policy" {
+  source   = "./modules/publishing_credential_policy"
+  for_each = !var.scm_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
-  name      = "scm"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  name      = "scm"
+  allow     = false
 }

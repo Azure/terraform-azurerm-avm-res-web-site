@@ -10,12 +10,16 @@ output "application_insights" {
 
 output "deployment_slot_locks" {
   description = "The locks of the deployment slots."
-  value       = length(azapi_resource.slot_lock) > 0 ? azapi_resource.slot_lock : null
+  value = length(module.slot) > 0 ? {
+    for k, v in module.slot : k => v.lock if v.lock != null
+  } : null
 }
 
 output "deployment_slots" {
   description = "The deployment slots."
-  value       = length(azapi_resource.slot) > 0 ? azapi_resource.slot : null
+  value = length(module.slot) > 0 ? {
+    for k, v in module.slot : k => v.resource
+  } : null
 }
 
 output "identity_principal_id" {
@@ -88,8 +92,8 @@ output "system_assigned_mi_principal_id_slots" {
   description = "Map of system-assigned managed identity principal IDs for deployment slots."
   sensitive   = true
   value = {
-    for slot_key, slot in azapi_resource.slot :
-    slot_key => try(slot.output.identity.principalId, null)
-    if try(slot.output.identity.principalId, null) != null
+    for slot_key, slot in module.slot :
+    slot_key => slot.identity_principal_id
+    if slot.identity_principal_id != null
   }
 }

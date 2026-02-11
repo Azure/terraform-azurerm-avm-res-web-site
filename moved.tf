@@ -13,7 +13,7 @@ moved {
   to   = azapi_resource.this
 }
 
-moved {
+/* moved {
   from = azurerm_windows_web_app.this[0]
   to   = azapi_resource.this
 }
@@ -36,20 +36,20 @@ moved {
 moved {
   from = azurerm_logic_app_standard.this[0]
   to   = azapi_resource.this
-}
+} */
 
 # ===========================
 # Deployment Slots
 # ===========================
-# Four mutually exclusive slot types consolidated into azapi_resource.slot.
-# Keys from var.deployment_slots are preserved.
+# Four mutually exclusive slot types consolidated into the slot submodule.
+# Chained: azurerm_*_slot.this → azapi_resource.slot → module.slot.azapi_resource.this
 
 moved {
   from = azurerm_linux_web_app_slot.this
   to   = azapi_resource.slot
 }
 
-moved {
+/* moved {
   from = azurerm_windows_web_app_slot.this
   to   = azapi_resource.slot
 }
@@ -62,6 +62,11 @@ moved {
 moved {
   from = azurerm_windows_function_app_slot.this
   to   = azapi_resource.slot
+} */
+
+moved {
+  from = azapi_resource.slot
+  to   = module.slot.azapi_resource.this
 }
 
 # ===========================
@@ -81,6 +86,7 @@ moved {
 # ===========================
 # Custom Hostname Bindings
 # ===========================
+# Chained: azurerm_*_hostname_binding → azapi_resource.hostname_binding → module.hostname_binding.azapi_resource.this
 
 moved {
   from = azurerm_app_service_custom_hostname_binding.this
@@ -90,6 +96,72 @@ moved {
 moved {
   from = azurerm_app_service_slot_custom_hostname_binding.slot
   to   = azapi_resource.slot_hostname_binding
+}
+
+moved {
+  from = azapi_resource.hostname_binding
+  to   = module.hostname_binding.azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.slot_hostname_binding
+  to   = module.slot_hostname_binding.azapi_resource.this
+}
+
+# ===========================
+# Config Resources → Submodules
+# ===========================
+# Resources that used count are mapped to module for_each with explicit instance keys.
+# Resources that used for_each are mapped with matching keys.
+
+moved {
+  from = azapi_resource.appsettings[0]
+  to   = module.config_appsettings["default"].azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.connectionstrings[0]
+  to   = module.config_connectionstrings["default"].azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.azurestorageaccounts[0]
+  to   = module.config_azurestorageaccounts["default"].azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.slotconfignames[0]
+  to   = module.config_slotconfignames["default"].azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.backup
+  to   = module.config_backup.azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.logs
+  to   = module.config_logs.azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.authsettings
+  to   = module.config_authsettings.azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.authsettingsv2
+  to   = module.config_authsettingsv2.azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.ftp_publishing_credential_policy[0]
+  to   = module.ftp_publishing_credential_policy["default"].azapi_resource.this
+}
+
+moved {
+  from = azapi_resource.scm_publishing_credential_policy[0]
+  to   = module.scm_publishing_credential_policy["default"].azapi_resource.this
 }
 
 # ===========================
@@ -106,10 +178,9 @@ moved {
   to   = azapi_resource.lock_private_endpoint
 }
 
-moved {
-  from = azurerm_management_lock.slot
-  to   = azapi_resource.slot_lock
-}
+# Note: Slot locks are now managed inside module.slot. Terraform cannot automatically
+# migrate these because the instance key structure differs (flat for_each → module for_each + count).
+# If upgrading from the azurerm-based version, slot locks will be destroyed and recreated.
 
 # ===========================
 # Role Assignments
@@ -125,15 +196,8 @@ moved {
   to   = azapi_resource.role_assignment_private_endpoint
 }
 
-moved {
-  from = azurerm_role_assignment.slot
-  to   = azapi_resource.slot_role_assignment
-}
-
-moved {
-  from = azurerm_role_assignment.slot_pe
-  to   = azapi_resource.slot_pe_role_assignment
-}
+# Note: Slot role assignments are now managed inside module.slot. They will be
+# destroyed and recreated when upgrading due to instance key structure changes.
 
 # ===========================
 # Private Endpoints
@@ -152,15 +216,8 @@ moved {
   to   = azapi_resource.private_dns_zone_group
 }
 
-moved {
-  from = azurerm_private_endpoint.slot
-  to   = azapi_resource.slot_private_endpoint
-}
-
-moved {
-  from = azurerm_private_endpoint.slot_this_unmanaged_dns_zone_groups
-  to   = azapi_resource.slot_private_dns_zone_group
-}
+# Note: Slot private endpoints are now managed inside module.slot. They will be
+# destroyed and recreated when upgrading due to instance key structure changes.
 
 # ===========================
 # Diagnostic Settings

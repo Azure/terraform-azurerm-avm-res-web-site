@@ -1,37 +1,19 @@
-resource "azapi_resource" "hostname_binding" {
+module "hostname_binding" {
+  source   = "./modules/hostname_binding"
   for_each = { for k, v in var.custom_domains : k => v if !v.slot_as_target }
 
-  name      = each.value.hostname
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/hostNameBindings@2025-03-01"
-  body = {
-    properties = {
-      sslState   = each.value.ssl_state
-      thumbprint = each.value.thumbprint_value
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id        = azapi_resource.this.id
+  hostname         = each.value.hostname
+  ssl_state        = each.value.ssl_state
+  thumbprint_value = each.value.thumbprint_value
 }
 
-resource "azapi_resource" "slot_hostname_binding" {
+module "slot_hostname_binding" {
+  source   = "./modules/hostname_binding"
   for_each = { for k, v in var.custom_domains : k => v if v.slot_as_target }
 
-  name      = each.value.hostname
-  parent_id = azapi_resource.slot[each.value.app_service_slot_key].id
-  type      = "Microsoft.Web/sites/slots/hostNameBindings@2025-03-01"
-  body = {
-    properties = {
-      sslState   = each.value.ssl_state
-      thumbprint = each.value.thumbprint_value
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  parent_id        = module.slot[each.value.app_service_slot_key].resource_id
+  hostname         = each.value.hostname
+  ssl_state        = each.value.ssl_state
+  thumbprint_value = each.value.thumbprint_value
 }

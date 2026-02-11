@@ -10,7 +10,7 @@ resource "azapi_resource_action" "zip_deploy" {
   }
 
   depends_on = [
-    azapi_resource.appsettings,
-    azapi_resource.connectionstrings,
+    module.config_appsettings,
+    module.config_connectionstrings,
   ]
 }

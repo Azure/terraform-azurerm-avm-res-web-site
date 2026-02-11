@@ -1,130 +1,58 @@
-resource "azapi_resource" "slot" {
+module "slot" {
+  source   = "./modules/slot"
   for_each = var.deployment_slots
 
-  location  = var.location
-  name      = coalesce(each.value.name, each.key)
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots@2025-03-01"
-  body = {
-    kind = local.arm_kind
-    properties = {
-      clientAffinityEnabled     = each.value.client_affinity_enabled
-      clientCertEnabled         = each.value.client_certificate_enabled
-      clientCertExclusionPaths  = each.value.client_certificate_exclusion_paths
-      clientCertMode            = each.value.client_certificate_mode
-      enabled                   = each.value.enabled
-      httpsOnly                 = each.value.https_only
-      keyVaultReferenceIdentity = each.value.key_vault_reference_identity_id
-      publicNetworkAccess       = each.value.public_network_access_enabled ? "Enabled" : "Disabled"
-      serverFarmId              = coalesce(each.value.service_plan_id, var.service_plan_resource_id)
-      virtualNetworkSubnetId    = each.value.virtual_network_subnet_id
-      siteConfig = each.value.site_config != null ? {
-        alwaysOn                               = each.value.site_config.always_on
-        apiDefinitionUrl                       = each.value.site_config.api_definition_url
-        apiManagementConfig                    = each.value.site_config.api_management_api_id != null ? { id = each.value.site_config.api_management_api_id } : null
-        appCommandLine                         = each.value.site_config.app_command_line
-        defaultDocuments                       = each.value.site_config.default_documents
-        ftpsState                              = each.value.site_config.ftps_state
-        healthCheckPath                        = each.value.site_config.health_check_path
-        healthCheckEvictionTimeInMin           = each.value.site_config.health_check_eviction_time_in_min
-        http20Enabled                          = each.value.site_config.http2_enabled
-        ipSecurityRestrictionsDefaultAction    = each.value.site_config.ip_restriction_default_action
-        loadBalancing                          = each.value.site_config.load_balancing_mode
-        managedPipelineMode                    = each.value.site_config.managed_pipeline_mode
-        minTlsVersion                          = each.value.site_config.minimum_tls_version
-        numberOfWorkers                        = each.value.site_config.worker_count
-        preWarmedInstanceCount                 = each.value.site_config.pre_warmed_instance_count
-        remoteDebuggingEnabled                 = each.value.site_config.remote_debugging_enabled
-        remoteDebuggingVersion                 = each.value.site_config.remote_debugging_version
-        scmIpSecurityRestrictionsDefaultAction = each.value.site_config.scm_ip_restriction_default_action
-        scmIpSecurityRestrictionsUseMain       = each.value.site_config.scm_use_main_ip_restriction
-        scmMinTlsVersion                       = each.value.site_config.scm_minimum_tls_version
-        use32BitWorkerProcess                  = each.value.site_config.use_32_bit_worker
-        vnetRouteAllEnabled                    = each.value.site_config.vnet_route_all_enabled
-        webSocketsEnabled                      = each.value.site_config.websockets_enabled
-        minimumElasticInstanceCount            = each.value.site_config.elastic_instance_minimum
-        functionsRuntimeScaleMonitoringEnabled = local.is_function_app ? each.value.site_config.runtime_scale_monitoring_enabled : null
-        autoSwapSlotName                       = each.value.site_config.auto_swap_slot_name
-        acrUserManagedIdentityID               = each.value.site_config.container_registry_managed_identity_client_id
-        acrUseManagedIdentityCreds             = each.value.site_config.container_registry_use_managed_identity
-        functionAppScaleLimit                  = local.is_function_app ? each.value.site_config.app_scale_limit : null
-        linuxFxVersion                         = local.slot_linux_fx_version[each.key]
-        netFrameworkVersion                    = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.dotnet.dotnet_version, null) : null
-        phpVersion                             = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.php.php_version, null) : null
-        pythonVersion                          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.python.python_version, null) : null
-        nodeVersion                            = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.node.node_version, null) : null
-        javaVersion                            = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_version, null) : null
-        javaContainer                          = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container, null) : null
-        javaContainerVersion                   = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.java.java_container_version, null) : null
-        powerShellVersion                      = !local.is_linux && each.value.site_config.application_stack != null ? try(each.value.site_config.application_stack.powershell.powershell_version, null) : null
-      } : null
-    }
+  parent_id                = azapi_resource.this.id
+  name                     = coalesce(each.value.name, each.key)
+  location                 = var.location
+  kind                     = local.arm_kind
+  os_type                  = var.os_type
+  is_function_app          = local.is_function_app
+  is_web_app               = local.is_web_app
+  service_plan_resource_id = var.service_plan_resource_id
+  tags                     = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
+  managed_identities       = var.managed_identities
+
+  # Slot-specific properties
+  client_affinity_enabled            = each.value.client_affinity_enabled
+  client_certificate_enabled         = each.value.client_certificate_enabled
+  client_certificate_exclusion_paths = each.value.client_certificate_exclusion_paths
+  client_certificate_mode            = each.value.client_certificate_mode
+  enabled                            = each.value.enabled
+  https_only                         = each.value.https_only
+  key_vault_reference_identity_id    = each.value.key_vault_reference_identity_id
+  public_network_access_enabled      = each.value.public_network_access_enabled
+  service_plan_id                    = each.value.service_plan_id
+  virtual_network_subnet_id          = each.value.virtual_network_subnet_id
+
+  ftp_publish_basic_authentication_enabled       = each.value.ftp_publish_basic_authentication_enabled
+  webdeploy_publish_basic_authentication_enabled = each.value.webdeploy_publish_basic_authentication_enabled
+
+  # Site config
+  site_config = each.value.site_config
+
+  # App settings and config
+  app_settings            = each.value.app_settings
+  additional_app_settings = lookup(var.slot_app_settings, each.key, {})
+
+  enable_application_insights            = var.enable_application_insights
+  application_insights_connection_string = try(azapi_resource.application_insights[0].output.properties.ConnectionString, null)
+  application_insights_key               = try(azapi_resource.application_insights[0].output.properties.InstrumentationKey, null)
+
+  connection_strings      = each.value.connection_strings
+  storage_shares_to_mount = each.value.storage_shares_to_mount
+  storage_shares_access_keys = {
+    for k, v in each.value.storage_shares_to_mount : k => var.slots_storage_shares_to_mount_sensitive_values[k]
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = [
-    "identity.principalId",
-  ]
-  tags           = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
-  dynamic "identity" {
-    for_each = local.has_identity ? [local.identity_block] : []
-
-    content {
-      type         = identity.value.type
-      identity_ids = identity.value.identity_ids
-    }
-  }
-}
-
-resource "azapi_resource" "slot_appsettings" {
-  for_each = { for k, v in var.deployment_slots : k => v if length(local.slot_app_settings[k]) > 0 }
-
-  name      = "appsettings"
-  parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = local.slot_app_settings[each.key]
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-}
-
-resource "azapi_resource" "slot_azurestorageaccounts" {
-  for_each = local.slot_storage_mounts
-
-  name      = "azurestorageaccounts"
-  parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = each.value
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-}
-
-resource "azapi_resource" "slot_connectionstrings" {
-  for_each = local.slot_connection_strings
-
-  name      = "connectionstrings"
-  parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = each.value
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  # AVM interfaces
+  lock = each.value.lock != null ? each.value.lock : (
+    var.deployment_slots_inherit_lock && var.lock != null ? var.lock : null
+  )
+  role_assignments                        = each.value.role_assignments
+  private_endpoints                       = each.value.private_endpoints
+  private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
+  private_endpoints_inherit_lock          = var.private_endpoints_inherit_lock
 }
 
 resource "azapi_resource_action" "active_slot" {
@@ -139,41 +67,5 @@ resource "azapi_resource_action" "active_slot" {
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
 
-  depends_on = [azapi_resource.slot]
-}
-
-resource "azapi_resource" "slot_ftp_publishing_credential_policy" {
-  for_each = { for k, v in var.deployment_slots : k => v if !v.ftp_publish_basic_authentication_enabled }
-
-  name      = "ftp"
-  parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-}
-
-resource "azapi_resource" "slot_scm_publishing_credential_policy" {
-  for_each = { for k, v in var.deployment_slots : k => v if !v.webdeploy_publish_basic_authentication_enabled }
-
-  name      = "scm"
-  parent_id = azapi_resource.slot[each.key].id
-  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values = []
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  depends_on = [module.slot]
 }
