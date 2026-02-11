@@ -45,6 +45,12 @@ locals {
     } : {}),
     lookup(var.slot_app_settings, slot_key, {}),
   ) }
+  slot_connection_strings = { for slot_key, slot_value in var.deployment_slots : slot_key => {
+    for k, v in slot_value.connection_strings : coalesce(v.name, k) => {
+      type  = v.type
+      value = v.value
+    }
+  } if length(slot_value.connection_strings) > 0 }
   slot_linux_fx_version = { for slot_key, slot_value in var.deployment_slots : slot_key => (
     local.is_linux && slot_value.site_config.application_stack != null ? coalesce(
       try(slot_value.site_config.application_stack.docker != null ? "DOCKER|${trimprefix(coalesce(slot_value.site_config.application_stack.docker.docker_registry_url, ""), "https://")}/${slot_value.site_config.application_stack.docker.docker_image_name}:${slot_value.site_config.application_stack.docker.docker_image_tag}" : null, null),
@@ -57,4 +63,13 @@ locals {
       null,
     ) : null
   ) }
+  slot_storage_mounts = { for slot_key, slot_value in var.deployment_slots : slot_key => {
+    for k, v in slot_value.storage_shares_to_mount : v.name => {
+      type        = v.type
+      accountName = v.account_name
+      shareName   = v.share_name
+      mountPath   = v.mount_path
+      accessKey   = var.slots_storage_shares_to_mount_sensitive_values[k]
+    }
+  } if length(slot_value.storage_shares_to_mount) > 0 }
 }

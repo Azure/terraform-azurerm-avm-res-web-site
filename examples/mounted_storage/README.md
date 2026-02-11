@@ -9,13 +9,6 @@ Storage mounts allow your App Service to access Azure Files shares as local dire
 The example uses `kind = "webapp"` with the `storage_shares_to_mount` configuration.
 
 ```hcl
-module "regions" {
-  source  = "Azure/avm-utl-regions/azurerm"
-  version = "0.11.0"
-
-  is_recommended = true
-}
-
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
@@ -277,12 +270,6 @@ Version:
 Source: Azure/naming/azurerm
 
 Version: 0.4.2
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/avm-utl-regions/azurerm
-
-Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

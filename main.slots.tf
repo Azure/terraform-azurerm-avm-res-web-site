@@ -8,16 +8,22 @@ resource "azapi_resource" "slot" {
   body = {
     kind = local.arm_kind
     properties = {
-      enabled                = each.value.enabled
-      httpsOnly              = each.value.https_only
-      publicNetworkAccess    = each.value.public_network_access_enabled ? "Enabled" : "Disabled"
-      serverFarmId           = coalesce(each.value.service_plan_id, var.service_plan_resource_id)
-      virtualNetworkSubnetId = each.value.virtual_network_subnet_id
+      clientAffinityEnabled     = each.value.client_affinity_enabled
+      clientCertEnabled         = each.value.client_certificate_enabled
+      clientCertExclusionPaths  = each.value.client_certificate_exclusion_paths
+      clientCertMode            = each.value.client_certificate_mode
+      enabled                   = each.value.enabled
+      httpsOnly                 = each.value.https_only
+      keyVaultReferenceIdentity = each.value.key_vault_reference_identity_id
+      publicNetworkAccess       = each.value.public_network_access_enabled ? "Enabled" : "Disabled"
+      serverFarmId              = coalesce(each.value.service_plan_id, var.service_plan_resource_id)
+      virtualNetworkSubnetId    = each.value.virtual_network_subnet_id
       siteConfig = each.value.site_config != null ? {
         alwaysOn                               = each.value.site_config.always_on
         apiDefinitionUrl                       = each.value.site_config.api_definition_url
         apiManagementConfig                    = each.value.site_config.api_management_api_id != null ? { id = each.value.site_config.api_management_api_id } : null
         appCommandLine                         = each.value.site_config.app_command_line
+        defaultDocuments                       = each.value.site_config.default_documents
         ftpsState                              = each.value.site_config.ftps_state
         healthCheckPath                        = each.value.site_config.health_check_path
         healthCheckEvictionTimeInMin           = each.value.site_config.health_check_eviction_time_in_min
@@ -89,6 +95,38 @@ resource "azapi_resource" "slot_appsettings" {
   update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
+resource "azapi_resource" "slot_azurestorageaccounts" {
+  for_each = local.slot_storage_mounts
+
+  name      = "azurestorageaccounts"
+  parent_id = azapi_resource.slot[each.key].id
+  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
+  body = {
+    properties = each.value
+  }
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+}
+
+resource "azapi_resource" "slot_connectionstrings" {
+  for_each = local.slot_connection_strings
+
+  name      = "connectionstrings"
+  parent_id = azapi_resource.slot[each.key].id
+  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
+  body = {
+    properties = each.value
+  }
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+}
+
 resource "azapi_resource_action" "active_slot" {
   count = var.app_service_active_slot != null ? 1 : 0
 
@@ -102,4 +140,40 @@ resource "azapi_resource_action" "active_slot" {
   }
 
   depends_on = [azapi_resource.slot]
+}
+
+resource "azapi_resource" "slot_ftp_publishing_credential_policy" {
+  for_each = { for k, v in var.deployment_slots : k => v if !v.ftp_publish_basic_authentication_enabled }
+
+  name      = "ftp"
+  parent_id = azapi_resource.slot[each.key].id
+  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
+  body = {
+    properties = {
+      allow = false
+    }
+  }
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+}
+
+resource "azapi_resource" "slot_scm_publishing_credential_policy" {
+  for_each = { for k, v in var.deployment_slots : k => v if !v.webdeploy_publish_basic_authentication_enabled }
+
+  name      = "scm"
+  parent_id = azapi_resource.slot[each.key].id
+  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
+  body = {
+    properties = {
+      allow = false
+    }
+  }
+  create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = []
+  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }

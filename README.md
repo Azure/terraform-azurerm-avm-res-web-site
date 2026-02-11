@@ -44,6 +44,9 @@ The following resources are used by this module:
 - [azapi_resource.slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_appsettings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.slot_azurestorageaccounts](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.slot_connectionstrings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.slot_ftp_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_hostname_binding](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_pe_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -51,6 +54,7 @@ The following resources are used by this module:
 - [azapi_resource.slot_private_dns_zone_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.slot_scm_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slotconfignames](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource_action.active_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
@@ -738,12 +742,19 @@ Default: `0`
 Description: A map of deployment slots to create for the App Service.
 
 - `name` - (Optional) The name of the slot.
+- `client_affinity_enabled` - (Optional) Should client affinity be enabled? Defaults to `false`.
+- `client_certificate_enabled` - (Optional) Should client certificates be enabled? Defaults to `false`.
+- `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
+- `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
 - `enabled` - (Optional) Is the slot enabled? Defaults to `true`.
+- `ftp_publish_basic_authentication_enabled` - (Optional) Should FTP basic authentication be enabled? Defaults to `true`.
 - `https_only` - (Optional) Should the slot only be accessible over HTTPS?
+- `key_vault_reference_identity_id` - (Optional) The identity ID to use for Key Vault references.
 - `public_network_access_enabled` - (Optional) Should public network access be enabled?
 - `service_plan_id` - (Optional) The App Service Plan ID to use for the slot.
 - `tags` - (Optional) Tags to apply to the slot.
 - `virtual_network_subnet_id` - (Optional) The subnet ID for VNet integration.
+- `webdeploy_publish_basic_authentication_enabled` - (Optional) Should WebDeploy basic authentication be enabled? Defaults to `true`.
 - `app_settings` - (Optional) App settings for the slot.
 - `site_config` - (Optional) Site configuration for the slot.
   - `always_on` - (Optional) Should the slot always be on? Defaults to `true`.
@@ -824,19 +835,36 @@ Description: A map of deployment slots to create for the App Service.
   - `condition_version` - (Optional) The condition version.
   - `delegated_managed_identity_resource_id` - (Optional) The delegated managed identity resource ID.
   - `principal_type` - (Optional) The type of the principal.
+- `storage_shares_to_mount` - (Optional) A map of storage shares to mount to the deployment slot.
+  - `account_name` - (Required) The name of the Storage Account.
+  - `mount_path` - (Required) The path to mount the share at.
+  - `name` - (Required) The name of the storage mount.
+  - `share_name` - (Required) The name of the file share.
+  - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
+- `connection_strings` - (Optional) A map of connection strings for the slot.
+  - `name` - (Optional) The name of the connection string.
+  - `type` - (Optional) The type of the connection string.
+  - `value` - (Optional) The value of the connection string.
 
 Type:
 
 ```hcl
 map(object({
-    name                          = optional(string)
-    enabled                       = optional(bool, true)
-    https_only                    = optional(bool, false)
-    public_network_access_enabled = optional(bool, true)
-    service_plan_id               = optional(string, null)
-    tags                          = optional(map(string))
-    virtual_network_subnet_id     = optional(string, null)
-    app_settings                  = optional(map(string), {})
+    name                                           = optional(string)
+    client_affinity_enabled                        = optional(bool, false)
+    client_certificate_enabled                     = optional(bool, false)
+    client_certificate_exclusion_paths             = optional(string, null)
+    client_certificate_mode                        = optional(string, "Required")
+    enabled                                        = optional(bool, true)
+    ftp_publish_basic_authentication_enabled       = optional(bool, true)
+    https_only                                     = optional(bool, false)
+    key_vault_reference_identity_id                = optional(string, null)
+    public_network_access_enabled                  = optional(bool, true)
+    service_plan_id                                = optional(string, null)
+    tags                                           = optional(map(string))
+    virtual_network_subnet_id                      = optional(string, null)
+    webdeploy_publish_basic_authentication_enabled = optional(bool, true)
+    app_settings                                   = optional(map(string), {})
     site_config = optional(object({
       always_on                                     = optional(bool, true)
       api_definition_url                            = optional(string)
@@ -944,6 +972,18 @@ map(object({
       condition_version                      = optional(string, null)
       delegated_managed_identity_resource_id = optional(string, null)
       principal_type                         = optional(string, null)
+    })), {})
+    storage_shares_to_mount = optional(map(object({
+      account_name = string
+      mount_path   = string
+      name         = string
+      share_name   = string
+      type         = optional(string, "AzureFiles")
+    })), {})
+    connection_strings = optional(map(object({
+      name  = optional(string)
+      type  = optional(string)
+      value = optional(string)
     })), {})
   }))
 ```
@@ -1615,6 +1655,16 @@ map(object({
     force_customer_storage_for_profiler   = optional(bool, false)
   }))
 ```
+
+Default: `{}`
+
+### <a name="input_slots_storage_shares_to_mount_sensitive_values"></a> [slots\_storage\_shares\_to\_mount\_sensitive\_values](#input\_slots\_storage\_shares\_to\_mount\_sensitive\_values)
+
+Description: A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the deployment slots.  
+The key is the supplied input to `var.deployment_slots.<slot_key>.storage_shares_to_mount`.  
+The value is the secret value (storage access key).
+
+Type: `map(string)`
 
 Default: `{}`
 

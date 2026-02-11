@@ -1,10 +1,3 @@
-module "regions" {
-  source  = "Azure/avm-utl-regions/azurerm"
-  version = "0.11.0"
-
-  is_recommended = true
-}
-
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0

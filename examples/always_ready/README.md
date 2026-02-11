@@ -9,13 +9,6 @@ Always-ready instances keep a specified number of pre-warmed workers for designa
 The example uses `kind = "functionapp"`, `os_type = "Linux"`, and `function_app_uses_fc1 = true`.
 
 ```hcl
-module "regions" {
-  source  = "Azure/avm-utl-regions/azurerm"
-  version = "0.11.0"
-
-  is_recommended = true
-}
-
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
@@ -235,12 +228,6 @@ Version:
 Source: Azure/naming/azurerm
 
 Version: 0.4.2
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/avm-utl-regions/azurerm
-
-Version: 0.11.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
