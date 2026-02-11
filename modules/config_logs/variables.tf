@@ -9,18 +9,6 @@ variable "parent_id" {
   }
 }
 
-variable "detailed_error_messages" {
-  type        = bool
-  default     = false
-  description = "Should detailed error messages be enabled? Defaults to `false`."
-}
-
-variable "failed_request_tracing" {
-  type        = bool
-  default     = false
-  description = "Should failed request tracing be enabled? Defaults to `false`."
-}
-
 variable "application_logs" {
   type = object({
     azure_blob_storage = optional(object({
@@ -40,6 +28,18 @@ Application log settings.
   - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
 - `file_system_level` - (Optional) The file system log level. Defaults to `Off`.
 DESCRIPTION
+}
+
+variable "detailed_error_messages" {
+  type        = bool
+  default     = false
+  description = "Should detailed error messages be enabled? Defaults to `false`."
+}
+
+variable "failed_request_tracing" {
+  type        = bool
+  default     = false
+  description = "Should failed request tracing be enabled? Defaults to `false`."
 }
 
 variable "http_logs" {

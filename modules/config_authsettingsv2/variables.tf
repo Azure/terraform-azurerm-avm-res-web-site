@@ -9,6 +9,40 @@ variable "parent_id" {
   }
 }
 
+variable "active_directory_v2" {
+  type = map(object({
+    allowed_applications                 = optional(list(string))
+    allowed_audiences                    = optional(list(string))
+    allowed_groups                       = optional(list(string))
+    allowed_identities                   = optional(list(string))
+    client_id                            = optional(string)
+    client_secret_certificate_thumbprint = optional(string)
+    client_secret_setting_name           = optional(string)
+    jwt_allowed_client_applications      = optional(list(string))
+    jwt_allowed_groups                   = optional(list(string))
+    login_parameters                     = optional(map(any))
+    tenant_auth_endpoint                 = optional(string)
+    www_authentication_disabled          = optional(bool, false)
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+Active Directory V2 authentication configuration.
+
+- `allowed_applications` - (Optional) A list of allowed application IDs.
+- `allowed_audiences` - (Optional) A list of allowed audience values.
+- `allowed_groups` - (Optional) A list of allowed group IDs.
+- `allowed_identities` - (Optional) A list of allowed identity values.
+- `client_id` - (Optional) The Client ID.
+- `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the client secret certificate.
+- `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
+- `jwt_allowed_client_applications` - (Optional) A list of allowed JWT client applications.
+- `jwt_allowed_groups` - (Optional) A list of allowed JWT groups.
+- `login_parameters` - (Optional) A map of login parameters.
+- `tenant_auth_endpoint` - (Optional) The tenant authentication endpoint.
+- `www_authentication_disabled` - (Optional) Should WWW-Authenticate be disabled? Defaults to `false`.
+DESCRIPTION
+}
+
 variable "auth_enabled" {
   type        = bool
   default     = false
@@ -57,64 +91,6 @@ variable "http_route_api_prefix" {
   description = "The prefix for the HTTP route API. Defaults to `/.auth`."
 }
 
-variable "require_authentication" {
-  type        = bool
-  default     = false
-  description = "Should authentication be required? Defaults to `false`."
-}
-
-variable "require_https" {
-  type        = bool
-  default     = true
-  description = "Should HTTPS be required? Defaults to `true`."
-}
-
-variable "runtime_version" {
-  type        = string
-  default     = "~1"
-  description = "The runtime version of the auth module. Defaults to `~1`."
-}
-
-variable "unauthenticated_action" {
-  type        = string
-  default     = "RedirectToLoginPage"
-  description = "The action for unauthenticated requests. Defaults to `RedirectToLoginPage`."
-}
-
-variable "active_directory_v2" {
-  type = map(object({
-    allowed_applications                 = optional(list(string))
-    allowed_audiences                    = optional(list(string))
-    allowed_groups                       = optional(list(string))
-    allowed_identities                   = optional(list(string))
-    client_id                            = optional(string)
-    client_secret_certificate_thumbprint = optional(string)
-    client_secret_setting_name           = optional(string)
-    jwt_allowed_client_applications      = optional(list(string))
-    jwt_allowed_groups                   = optional(list(string))
-    login_parameters                     = optional(map(any))
-    tenant_auth_endpoint                 = optional(string)
-    www_authentication_disabled          = optional(bool, false)
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-Active Directory V2 authentication configuration.
-
-- `allowed_applications` - (Optional) A list of allowed application IDs.
-- `allowed_audiences` - (Optional) A list of allowed audience values.
-- `allowed_groups` - (Optional) A list of allowed group IDs.
-- `allowed_identities` - (Optional) A list of allowed identity values.
-- `client_id` - (Optional) The Client ID.
-- `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the client secret certificate.
-- `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-- `jwt_allowed_client_applications` - (Optional) A list of allowed JWT client applications.
-- `jwt_allowed_groups` - (Optional) A list of allowed JWT groups.
-- `login_parameters` - (Optional) A map of login parameters.
-- `tenant_auth_endpoint` - (Optional) The tenant authentication endpoint.
-- `www_authentication_disabled` - (Optional) Should WWW-Authenticate be disabled? Defaults to `false`.
-DESCRIPTION
-}
-
 variable "login" {
   type = map(object({
     allowed_external_redirect_urls    = optional(list(string))
@@ -145,4 +121,28 @@ Login configuration for auth settings V2.
 - `token_store_sas_setting_name` - (Optional) The app setting name that contains the token store SAS URL.
 - `validate_nonce` - (Optional) Should the nonce be validated? Defaults to `true`.
 DESCRIPTION
+}
+
+variable "require_authentication" {
+  type        = bool
+  default     = false
+  description = "Should authentication be required? Defaults to `false`."
+}
+
+variable "require_https" {
+  type        = bool
+  default     = true
+  description = "Should HTTPS be required? Defaults to `true`."
+}
+
+variable "runtime_version" {
+  type        = string
+  default     = "~1"
+  description = "The runtime version of the auth module. Defaults to `~1`."
+}
+
+variable "unauthenticated_action" {
+  type        = string
+  default     = "RedirectToLoginPage"
+  description = "The action for unauthenticated requests. Defaults to `RedirectToLoginPage`."
 }

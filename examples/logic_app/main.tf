@@ -68,14 +68,6 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_resource_action" "storage_keys" {
-  action                 = "listKeys"
-  method                 = "POST"
-  resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
-  response_export_values = ["keys"]
-}
-
 resource "azapi_resource" "virtual_network" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.virtual_network.name_unique
@@ -123,8 +115,6 @@ resource "azapi_resource" "private_dns_zone_virtual_network_link" {
     }
   }
 }
-
-data "azapi_client_config" "this" {}
 
 module "avm_res_web_site" {
   source = "../../"

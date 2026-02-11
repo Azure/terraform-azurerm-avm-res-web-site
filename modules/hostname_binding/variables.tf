@@ -1,3 +1,9 @@
+variable "hostname" {
+  type        = string
+  description = "The hostname to bind to the site."
+  nullable    = false
+}
+
 variable "parent_id" {
   type        = string
   description = "The resource ID of the App Service site or slot."
@@ -10,12 +16,6 @@ variable "parent_id" {
       var.parent_id
     ))
   }
-}
-
-variable "hostname" {
-  type        = string
-  description = "The hostname to bind to the site."
-  nullable    = false
 }
 
 variable "ssl_state" {

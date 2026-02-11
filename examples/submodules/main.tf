@@ -53,23 +53,14 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_resource_action" "storage_keys" {
-  action                 = "listKeys"
-  method                 = "POST"
-  resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
-  response_export_values = ["keys"]
-}
-
 # Create the site with minimal configuration using the root module
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-submodules"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-
+  location                    = azapi_resource.resource_group.location
+  name                        = "${module.naming.function_app.name_unique}-submodules"
+  parent_id                   = azapi_resource.resource_group.id
+  service_plan_resource_id    = azapi_resource.service_plan.id
   enable_application_insights = false
   enable_telemetry            = var.enable_telemetry
   kind                        = "webapp"
@@ -95,19 +86,16 @@ module "avm_res_web_site" {
 module "appsettings" {
   source = "../../modules/config_appsettings"
 
-  parent_id = module.avm_res_web_site.resource_id
-
   app_settings = {
     "MY_CUSTOM_SETTING" = "my-custom-value"
     "ENVIRONMENT"       = "production"
   }
+  parent_id = module.avm_res_web_site.resource_id
 }
 
 # Use the config_connectionstrings submodule independently
 module "connectionstrings" {
   source = "../../modules/config_connectionstrings"
-
-  parent_id = module.avm_res_web_site.resource_id
 
   connection_strings = {
     "primary_db" = {
@@ -116,14 +104,15 @@ module "connectionstrings" {
       value = "Server=tcp:myserver.database.windows.net;Database=mydb;"
     }
   }
+  parent_id = module.avm_res_web_site.resource_id
 }
 
 # Use the publishing_credential_policy submodule to disable FTP basic auth
 module "ftp_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  parent_id = module.avm_res_web_site.resource_id
   name      = "ftp"
+  parent_id = module.avm_res_web_site.resource_id
   allow     = false
 }
 
@@ -131,8 +120,8 @@ module "ftp_publishing_credential_policy" {
 module "scm_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  parent_id = module.avm_res_web_site.resource_id
   name      = "scm"
+  parent_id = module.avm_res_web_site.resource_id
   allow     = false
 }
 
@@ -140,12 +129,12 @@ module "scm_publishing_credential_policy" {
 module "logs" {
   source = "../../modules/config_logs"
 
-  parent_id               = module.avm_res_web_site.resource_id
-  detailed_error_messages = true
-  failed_request_tracing  = true
+  parent_id = module.avm_res_web_site.resource_id
   application_logs = {
     file_system_level = "Warning"
   }
+  detailed_error_messages = true
+  failed_request_tracing  = true
   http_logs = {
     file_system = {
       retention_in_days = 7

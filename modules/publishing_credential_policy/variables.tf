@@ -1,3 +1,14 @@
+variable "name" {
+  type        = string
+  description = "The name of the publishing credential policy. Must be `ftp` or `scm`."
+  nullable    = false
+
+  validation {
+    error_message = "The name must be either `ftp` or `scm`."
+    condition     = contains(["ftp", "scm"], var.name)
+  }
+}
+
 variable "parent_id" {
   type        = string
   description = "The resource ID of the App Service site or slot."
@@ -9,17 +20,6 @@ variable "parent_id" {
       "^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+/providers/Microsoft.Web/sites/[a-zA-Z0-9._-]+(/slots/[a-zA-Z0-9._-]+)?$",
       var.parent_id
     ))
-  }
-}
-
-variable "name" {
-  type        = string
-  description = "The name of the publishing credential policy. Must be `ftp` or `scm`."
-  nullable    = false
-
-  validation {
-    error_message = "The name must be either `ftp` or `scm`."
-    condition     = contains(["ftp", "scm"], var.name)
   }
 }
 

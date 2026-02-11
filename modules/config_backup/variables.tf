@@ -21,12 +21,6 @@ variable "enabled" {
   description = "Is backup enabled? Defaults to `true`."
 }
 
-variable "storage_account_url" {
-  type        = string
-  default     = null
-  description = "The SAS URL to the Storage Account container for backup."
-}
-
 variable "schedule" {
   type = object({
     frequency_interval       = optional(number)
@@ -45,4 +39,10 @@ The backup schedule configuration.
 - `retention_period_days` - (Optional) The number of days to retain backups.
 - `start_time` - (Optional) The start time for the backup schedule.
 DESCRIPTION
+}
+
+variable "storage_account_url" {
+  type        = string
+  default     = null
+  description = "The SAS URL to the Storage Account container for backup."
 }

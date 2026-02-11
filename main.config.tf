@@ -2,16 +2,16 @@ module "config_appsettings" {
   source   = "./modules/config_appsettings"
   for_each = length(local.merged_app_settings) > 0 ? { "default" = {} } : {}
 
-  parent_id    = azapi_resource.this.id
   app_settings = local.merged_app_settings
+  parent_id    = azapi_resource.this.id
 }
 
 module "config_connectionstrings" {
   source   = "./modules/config_connectionstrings"
   for_each = length(var.connection_strings) > 0 ? { "default" = {} } : {}
 
-  parent_id          = azapi_resource.this.id
   connection_strings = var.connection_strings
+  parent_id          = azapi_resource.this.id
 }
 
 module "config_azurestorageaccounts" {
@@ -35,8 +35,8 @@ module "ftp_publishing_credential_policy" {
   source   = "./modules/publishing_credential_policy"
   for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
-  parent_id = azapi_resource.this.id
   name      = "ftp"
+  parent_id = azapi_resource.this.id
   allow     = false
 }
 
@@ -44,7 +44,7 @@ module "scm_publishing_credential_policy" {
   source   = "./modules/publishing_credential_policy"
   for_each = !var.scm_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
-  parent_id = azapi_resource.this.id
   name      = "scm"
+  parent_id = azapi_resource.this.id
   allow     = false
 }

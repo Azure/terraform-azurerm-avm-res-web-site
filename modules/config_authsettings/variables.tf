@@ -9,60 +9,6 @@ variable "parent_id" {
   }
 }
 
-variable "enabled" {
-  type        = bool
-  default     = false
-  description = "Is authentication enabled? Defaults to `false`."
-}
-
-variable "runtime_version" {
-  type        = string
-  default     = null
-  description = "The runtime version of the authentication module."
-}
-
-variable "token_store_enabled" {
-  type        = bool
-  default     = false
-  description = "Should the token store be enabled? Defaults to `false`."
-}
-
-variable "token_refresh_extension_hours" {
-  type        = number
-  default     = 72
-  description = "Hours before token expiry to refresh. Defaults to `72`."
-}
-
-variable "unauthenticated_client_action" {
-  type        = string
-  default     = null
-  description = "The action to take for unauthenticated requests."
-}
-
-variable "issuer" {
-  type        = string
-  default     = null
-  description = "The issuer URI."
-}
-
-variable "allowed_external_redirect_urls" {
-  type        = list(string)
-  default     = null
-  description = "A list of allowed external redirect URLs."
-}
-
-variable "additional_login_parameters" {
-  type        = map(string)
-  default     = null
-  description = "A map of additional login parameters."
-}
-
-variable "default_provider" {
-  type        = string
-  default     = null
-  description = "The default authentication provider."
-}
-
 variable "active_directory" {
   type = object({
     client_id                  = optional(string)
@@ -79,6 +25,30 @@ Active Directory authentication configuration.
 - `client_secret` - (Optional) The Client Secret of the Azure AD application.
 - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
 DESCRIPTION
+}
+
+variable "additional_login_parameters" {
+  type        = map(string)
+  default     = null
+  description = "A map of additional login parameters."
+}
+
+variable "allowed_external_redirect_urls" {
+  type        = list(string)
+  default     = null
+  description = "A list of allowed external redirect URLs."
+}
+
+variable "default_provider" {
+  type        = string
+  default     = null
+  description = "The default authentication provider."
+}
+
+variable "enabled" {
+  type        = bool
+  default     = false
+  description = "Is authentication enabled? Defaults to `false`."
 }
 
 variable "facebook" {
@@ -135,6 +105,12 @@ Google authentication configuration.
 DESCRIPTION
 }
 
+variable "issuer" {
+  type        = string
+  default     = null
+  description = "The issuer URI."
+}
+
 variable "microsoft" {
   type = object({
     client_id                  = optional(string)
@@ -153,6 +129,24 @@ Microsoft authentication configuration.
 DESCRIPTION
 }
 
+variable "runtime_version" {
+  type        = string
+  default     = null
+  description = "The runtime version of the authentication module."
+}
+
+variable "token_refresh_extension_hours" {
+  type        = number
+  default     = 72
+  description = "Hours before token expiry to refresh. Defaults to `72`."
+}
+
+variable "token_store_enabled" {
+  type        = bool
+  default     = false
+  description = "Should the token store be enabled? Defaults to `false`."
+}
+
 variable "twitter" {
   type = object({
     consumer_key                 = optional(string)
@@ -167,4 +161,10 @@ Twitter authentication configuration.
 - `consumer_secret` - (Optional) The consumer secret of the Twitter application.
 - `consumer_secret_setting_name` - (Optional) The app setting name that contains the consumer secret.
 DESCRIPTION
+}
+
+variable "unauthenticated_client_action" {
+  type        = string
+  default     = null
+  description = "The action to take for unauthenticated requests."
 }

@@ -101,7 +101,7 @@ The Application Insights settings for the App Service.
 - `inherit_tags` - Should Application Insights inherit tags from the parent? Defaults to `false`.
 - `location` - The location of the Application Insights.
 - `name` - The name of the Application Insights.
-- `resource_group_name` - The Resource Group for Application Insights.
+- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
 - `tags` - (Optional) Tags to apply to the Application Insights resource.
 - `workspace_resource_id` - The Log Analytics Workspace resource ID.
 - `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
@@ -1476,7 +1476,7 @@ variable "slot_application_insights" {
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
-    resource_group_name                   = optional(string)
+    parent_id                             = optional(string)
     tags                                  = optional(map(any), null)
     workspace_resource_id                 = optional(string)
     daily_data_cap_in_gb                  = optional(number)
@@ -1497,7 +1497,7 @@ Configures the Application Insights instance(s) for the deployment slot(s).
 - `inherit_tags` - (Optional) Should Application Insights inherit tags from the parent? Defaults to `false`.
 - `location` - (Optional) The location of the Application Insights.
 - `name` - (Optional) The name of the Application Insights.
-- `resource_group_name` - (Optional) The Resource Group for Application Insights.
+- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
 - `tags` - (Optional) Tags to apply to the Application Insights resource.
 - `workspace_resource_id` - (Optional) The Log Analytics Workspace resource ID.
 - `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.

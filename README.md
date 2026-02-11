@@ -24,38 +24,14 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.appsettings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.authsettings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.authsettingsv2](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.azurestorageaccounts](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.backup](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.connectionstrings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.diagnostic_setting](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.ftp_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.hostname_binding](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.logs](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_dns_zone_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.scm_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.slot_application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_appsettings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_azurestorageaccounts](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_connectionstrings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_ftp_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_hostname_binding](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_pe_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_pe_role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_private_dns_zone_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slot_scm_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.slotconfignames](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource_action.active_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
 - [azapi_resource_action.zip_deploy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
@@ -158,7 +134,7 @@ Description: The Application Insights settings for the App Service.
 - `inherit_tags` - Should Application Insights inherit tags from the parent? Defaults to `false`.
 - `location` - The location of the Application Insights.
 - `name` - The name of the Application Insights.
-- `resource_group_name` - The Resource Group for Application Insights.
+- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
 - `tags` - (Optional) Tags to apply to the Application Insights resource.
 - `workspace_resource_id` - The Log Analytics Workspace resource ID.
 - `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
@@ -1620,7 +1596,7 @@ Description: Configures the Application Insights instance(s) for the deployment 
 - `inherit_tags` - (Optional) Should Application Insights inherit tags from the parent? Defaults to `false`.
 - `location` - (Optional) The location of the Application Insights.
 - `name` - (Optional) The name of the Application Insights.
-- `resource_group_name` - (Optional) The Resource Group for Application Insights.
+- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
 - `tags` - (Optional) Tags to apply to the Application Insights resource.
 - `workspace_resource_id` - (Optional) The Log Analytics Workspace resource ID.
 - `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
@@ -1641,7 +1617,7 @@ map(object({
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
-    resource_group_name                   = optional(string)
+    parent_id                             = optional(string)
     tags                                  = optional(map(any), null)
     workspace_resource_id                 = optional(string)
     daily_data_cap_in_gb                  = optional(number)
@@ -1933,6 +1909,84 @@ The following Modules are called:
 Source: Azure/avm-utl-interfaces/azure
 
 Version: 0.5.0
+
+### <a name="module_config_appsettings"></a> [config\_appsettings](#module\_config\_appsettings)
+
+Source: ./modules/config_appsettings
+
+Version:
+
+### <a name="module_config_authsettings"></a> [config\_authsettings](#module\_config\_authsettings)
+
+Source: ./modules/config_authsettings
+
+Version:
+
+### <a name="module_config_authsettingsv2"></a> [config\_authsettingsv2](#module\_config\_authsettingsv2)
+
+Source: ./modules/config_authsettingsv2
+
+Version:
+
+### <a name="module_config_azurestorageaccounts"></a> [config\_azurestorageaccounts](#module\_config\_azurestorageaccounts)
+
+Source: ./modules/config_azurestorageaccounts
+
+Version:
+
+### <a name="module_config_backup"></a> [config\_backup](#module\_config\_backup)
+
+Source: ./modules/config_backup
+
+Version:
+
+### <a name="module_config_connectionstrings"></a> [config\_connectionstrings](#module\_config\_connectionstrings)
+
+Source: ./modules/config_connectionstrings
+
+Version:
+
+### <a name="module_config_logs"></a> [config\_logs](#module\_config\_logs)
+
+Source: ./modules/config_logs
+
+Version:
+
+### <a name="module_config_slotconfignames"></a> [config\_slotconfignames](#module\_config\_slotconfignames)
+
+Source: ./modules/config_slotconfignames
+
+Version:
+
+### <a name="module_ftp_publishing_credential_policy"></a> [ftp\_publishing\_credential\_policy](#module\_ftp\_publishing\_credential\_policy)
+
+Source: ./modules/publishing_credential_policy
+
+Version:
+
+### <a name="module_hostname_binding"></a> [hostname\_binding](#module\_hostname\_binding)
+
+Source: ./modules/hostname_binding
+
+Version:
+
+### <a name="module_scm_publishing_credential_policy"></a> [scm\_publishing\_credential\_policy](#module\_scm\_publishing\_credential\_policy)
+
+Source: ./modules/publishing_credential_policy
+
+Version:
+
+### <a name="module_slot"></a> [slot](#module\_slot)
+
+Source: ./modules/slot
+
+Version:
+
+### <a name="module_slot_hostname_binding"></a> [slot\_hostname\_binding](#module\_slot\_hostname\_binding)
+
+Source: ./modules/hostname_binding
+
+Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

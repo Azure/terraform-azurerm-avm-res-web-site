@@ -53,14 +53,6 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_resource_action" "storage_keys" {
-  action                 = "listKeys"
-  method                 = "POST"
-  resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
-  response_export_values = ["keys"]
-}
-
 resource "azapi_resource" "log_analytics_workspace" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-existing-resources"

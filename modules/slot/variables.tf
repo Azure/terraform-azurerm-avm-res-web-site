@@ -1,17 +1,6 @@
-variable "parent_id" {
+variable "kind" {
   type        = string
-  description = "The resource ID of the App Service site."
-  nullable    = false
-
-  validation {
-    error_message = "The value must be a valid Azure App Service site resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{siteName}`"
-    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+/providers/Microsoft.Web/sites/[a-zA-Z0-9._-]+$", var.parent_id))
-  }
-}
-
-variable "name" {
-  type        = string
-  description = "The name of the deployment slot."
+  description = "The ARM kind of the app (e.g. `app`, `app,linux`, `functionapp`, `functionapp,linux`)."
   nullable    = false
 }
 
@@ -21,9 +10,9 @@ variable "location" {
   nullable    = false
 }
 
-variable "kind" {
+variable "name" {
   type        = string
-  description = "The ARM kind of the app (e.g. `app`, `app,linux`, `functionapp`, `functionapp,linux`)."
+  description = "The name of the deployment slot."
   nullable    = false
 }
 
@@ -38,16 +27,15 @@ variable "os_type" {
   }
 }
 
-variable "is_function_app" {
-  type        = bool
-  default     = false
-  description = "Whether the parent app is a function app."
-}
+variable "parent_id" {
+  type        = string
+  description = "The resource ID of the App Service site."
+  nullable    = false
 
-variable "is_web_app" {
-  type        = bool
-  default     = true
-  description = "Whether the parent app is a web app."
+  validation {
+    error_message = "The value must be a valid Azure App Service site resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{siteName}`"
+    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+/providers/Microsoft.Web/sites/[a-zA-Z0-9._-]+$", var.parent_id))
+  }
 }
 
 variable "service_plan_resource_id" {
@@ -56,25 +44,31 @@ variable "service_plan_resource_id" {
   nullable    = false
 }
 
-variable "tags" {
+variable "additional_app_settings" {
   type        = map(string)
-  default     = null
-  description = "Tags to apply to the slot."
+  default     = {}
+  description = "Additional app settings to merge (e.g. from the parent module's `slot_app_settings` variable)."
 }
 
-variable "managed_identities" {
-  type = object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
+# App settings and config
+variable "app_settings" {
+  type        = map(string)
   default     = {}
-  description = <<DESCRIPTION
-Controls the Managed Identity configuration on this resource. The following properties can be specified:
+  description = "App settings for the slot."
+}
 
-- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
-- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
-DESCRIPTION
-  nullable    = false
+variable "application_insights_connection_string" {
+  type        = string
+  default     = null
+  description = "The Application Insights connection string (pre-computed from the parent module)."
+  sensitive   = true
+}
+
+variable "application_insights_key" {
+  type        = string
+  default     = null
+  description = "The Application Insights instrumentation key (pre-computed from the parent module)."
+  sensitive   = true
 }
 
 # Slot-specific properties
@@ -102,6 +96,22 @@ variable "client_certificate_mode" {
   description = "The client certificate mode. Defaults to `Required`."
 }
 
+variable "connection_strings" {
+  type = map(object({
+    name  = optional(string)
+    type  = optional(string)
+    value = optional(string)
+  }))
+  default     = {}
+  description = "Connection strings for the slot."
+}
+
+variable "enable_application_insights" {
+  type        = bool
+  default     = false
+  description = "Whether application insights is enabled on the parent site."
+}
+
 variable "enabled" {
   type        = bool
   default     = true
@@ -120,10 +130,94 @@ variable "https_only" {
   description = "Should the slot only be accessible over HTTPS? Defaults to `false`."
 }
 
+variable "is_function_app" {
+  type        = bool
+  default     = false
+  description = "Whether the parent app is a function app."
+}
+
+variable "is_web_app" {
+  type        = bool
+  default     = true
+  description = "Whether the parent app is a web app."
+}
+
 variable "key_vault_reference_identity_id" {
   type        = string
   default     = null
   description = "The identity ID to use for Key Vault references."
+}
+
+# AVM interface variables
+variable "lock" {
+  type = object({
+    kind = string
+    name = optional(string, null)
+  })
+  default     = null
+  description = "The lock to apply to the slot."
+}
+
+variable "managed_identities" {
+  type = object({
+    system_assigned            = optional(bool, false)
+    user_assigned_resource_ids = optional(set(string), [])
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Controls the Managed Identity configuration on this resource. The following properties can be specified:
+
+- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
+- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "private_endpoints" {
+  type = map(object({
+    name = optional(string, null)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+    tags                                    = optional(map(string), null)
+    subnet_resource_id                      = string
+    private_dns_zone_group_name             = optional(string, "default")
+    private_dns_zone_resource_ids           = optional(set(string), [])
+    application_security_group_associations = optional(map(string), {})
+    private_service_connection_name         = optional(string, null)
+    network_interface_name                  = optional(string, null)
+    location                                = optional(string, null)
+    resource_group_name                     = optional(string, null)
+    ip_configurations = optional(map(object({
+      name               = string
+      private_ip_address = string
+    })), {})
+  }))
+  default     = {}
+  description = "Private endpoints for the slot."
+}
+
+variable "private_endpoints_inherit_lock" {
+  type        = bool
+  default     = false
+  description = "Whether private endpoints should inherit the lock from the slot."
+}
+
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  description = "Whether to manage DNS zone groups for private endpoints."
 }
 
 variable "public_network_access_enabled" {
@@ -132,22 +226,25 @@ variable "public_network_access_enabled" {
   description = "Should public network access be enabled? Defaults to `true`."
 }
 
+variable "role_assignments" {
+  type = map(object({
+    role_definition_id_or_name             = string
+    principal_id                           = string
+    description                            = optional(string, null)
+    skip_service_principal_aad_check       = optional(bool, false)
+    condition                              = optional(string, null)
+    condition_version                      = optional(string, null)
+    delegated_managed_identity_resource_id = optional(string, null)
+    principal_type                         = optional(string, null)
+  }))
+  default     = {}
+  description = "Role assignments for the slot."
+}
+
 variable "service_plan_id" {
   type        = string
   default     = null
   description = "Optional override App Service Plan ID for this slot."
-}
-
-variable "virtual_network_subnet_id" {
-  type        = string
-  default     = null
-  description = "The subnet ID for VNet integration."
-}
-
-variable "webdeploy_publish_basic_authentication_enabled" {
-  type        = bool
-  default     = true
-  description = "Should WebDeploy basic authentication be enabled? Defaults to `true`."
 }
 
 variable "site_config" {
@@ -219,47 +316,11 @@ variable "site_config" {
   description = "Site configuration for the deployment slot."
 }
 
-# App settings and config
-variable "app_settings" {
+variable "storage_shares_access_keys" {
   type        = map(string)
   default     = {}
-  description = "App settings for the slot."
-}
-
-variable "additional_app_settings" {
-  type        = map(string)
-  default     = {}
-  description = "Additional app settings to merge (e.g. from the parent module's `slot_app_settings` variable)."
-}
-
-variable "enable_application_insights" {
-  type        = bool
-  default     = false
-  description = "Whether application insights is enabled on the parent site."
-}
-
-variable "application_insights_connection_string" {
-  type        = string
-  default     = null
-  description = "The Application Insights connection string (pre-computed from the parent module)."
+  description = "A map of access keys for storage shares to mount, keyed by the storage share mount key (sensitive)."
   sensitive   = true
-}
-
-variable "application_insights_key" {
-  type        = string
-  default     = null
-  description = "The Application Insights instrumentation key (pre-computed from the parent module)."
-  sensitive   = true
-}
-
-variable "connection_strings" {
-  type = map(object({
-    name  = optional(string)
-    type  = optional(string)
-    value = optional(string)
-  }))
-  default     = {}
-  description = "Connection strings for the slot."
 }
 
 variable "storage_shares_to_mount" {
@@ -274,81 +335,20 @@ variable "storage_shares_to_mount" {
   description = "Storage shares to mount on the slot."
 }
 
-variable "storage_shares_access_keys" {
+variable "tags" {
   type        = map(string)
-  default     = {}
-  description = "A map of access keys for storage shares to mount, keyed by the storage share mount key (sensitive)."
-  sensitive   = true
-}
-
-# AVM interface variables
-variable "lock" {
-  type = object({
-    kind = string
-    name = optional(string, null)
-  })
   default     = null
-  description = "The lock to apply to the slot."
+  description = "Tags to apply to the slot."
 }
 
-variable "role_assignments" {
-  type = map(object({
-    role_definition_id_or_name             = string
-    principal_id                           = string
-    description                            = optional(string, null)
-    skip_service_principal_aad_check       = optional(bool, false)
-    condition                              = optional(string, null)
-    condition_version                      = optional(string, null)
-    delegated_managed_identity_resource_id = optional(string, null)
-    principal_type                         = optional(string, null)
-  }))
-  default     = {}
-  description = "Role assignments for the slot."
+variable "virtual_network_subnet_id" {
+  type        = string
+  default     = null
+  description = "The subnet ID for VNet integration."
 }
 
-variable "private_endpoints" {
-  type = map(object({
-    name = optional(string, null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-      principal_type                         = optional(string, null)
-    })), {})
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    tags                                    = optional(map(string), null)
-    subnet_resource_id                      = string
-    private_dns_zone_group_name             = optional(string, "default")
-    private_dns_zone_resource_ids           = optional(set(string), [])
-    application_security_group_associations = optional(map(string), {})
-    private_service_connection_name         = optional(string, null)
-    network_interface_name                  = optional(string, null)
-    location                                = optional(string, null)
-    resource_group_name                     = optional(string, null)
-    ip_configurations = optional(map(object({
-      name               = string
-      private_ip_address = string
-    })), {})
-  }))
-  default     = {}
-  description = "Private endpoints for the slot."
-}
-
-variable "private_endpoints_manage_dns_zone_group" {
+variable "webdeploy_publish_basic_authentication_enabled" {
   type        = bool
   default     = true
-  description = "Whether to manage DNS zone groups for private endpoints."
-}
-
-variable "private_endpoints_inherit_lock" {
-  type        = bool
-  default     = false
-  description = "Whether private endpoints should inherit the lock from the slot."
+  description = "Should WebDeploy basic authentication be enabled? Defaults to `true`."
 }

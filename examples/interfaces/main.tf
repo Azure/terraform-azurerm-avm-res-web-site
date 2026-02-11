@@ -55,14 +55,6 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
-data "azapi_resource_action" "storage_keys" {
-  action                 = "listKeys"
-  method                 = "POST"
-  resource_id            = azapi_resource.storage_account.id
-  type                   = "Microsoft.Storage/storageAccounts@2025-01-01"
-  response_export_values = ["keys"]
-}
-
 resource "azapi_resource" "log_analytics_workspace" {
   location  = azapi_resource.resource_group.location
   name      = "law-test-001"
@@ -143,7 +135,7 @@ module "avm_res_web_site" {
   service_plan_resource_id = azapi_resource.service_plan.id
   application_insights = {
     name                  = module.naming.application_insights.name_unique
-    resource_group_name   = azapi_resource.resource_group.name
+    parent_id             = azapi_resource.resource_group.id
     location              = azapi_resource.resource_group.location
     application_type      = "web"
     workspace_resource_id = azapi_resource.log_analytics_workspace.id

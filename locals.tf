@@ -12,10 +12,7 @@ locals {
   is_linux          = var.os_type == "Linux"
   is_logic_app      = var.kind == "logicapp"
   is_web_app        = var.kind == "webapp"
-  resource_group_id = var.parent_id
 }
-
-data "azapi_client_config" "this" {}
 
 locals {
   subscription_id = data.azapi_client_config.this.subscription_id
