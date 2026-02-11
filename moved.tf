@@ -149,7 +149,7 @@ moved {
 
 moved {
   from = azurerm_private_endpoint.this_unmanaged_dns_zone_groups
-  to   = azapi_resource.private_endpoint
+  to   = azapi_resource.private_dns_zone_group
 }
 
 moved {
@@ -159,7 +159,7 @@ moved {
 
 moved {
   from = azurerm_private_endpoint.slot_this_unmanaged_dns_zone_groups
-  to   = azapi_resource.slot_private_endpoint
+  to   = azapi_resource.slot_private_dns_zone_group
 }
 
 # ===========================
