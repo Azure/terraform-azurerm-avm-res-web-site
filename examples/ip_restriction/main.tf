@@ -77,11 +77,9 @@ module "avm_res_web_site" {
         name        = "PortalAccess"
         priority    = 1000
         service_tag = "AzurePortal"
-        headers = [
-          {
-            x_fd_health_probe = ["1"]
-          }
-        ]
+        headers = {
+          x_fd_health_probe = ["1"]
+        }
       }
     ]
   }

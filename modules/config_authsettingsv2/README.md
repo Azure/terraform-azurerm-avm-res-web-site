@@ -90,14 +90,6 @@ Type: `string`
 
 Default: `null`
 
-### <a name="input_default_provider"></a> [default\_provider](#input\_default\_provider)
-
-Description: The default authentication provider.
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_excluded_paths"></a> [excluded\_paths](#input\_excluded\_paths)
 
 Description: A list of paths excluded from authentication.

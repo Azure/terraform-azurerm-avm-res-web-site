@@ -206,6 +206,7 @@ variable "private_endpoints" {
   }))
   default     = {}
   description = "Private endpoints for the slot."
+  nullable    = false
 }
 
 variable "private_endpoints_inherit_lock" {
@@ -239,6 +240,7 @@ variable "role_assignments" {
   }))
   default     = {}
   description = "Role assignments for the slot."
+  nullable    = false
 }
 
 variable "service_plan_id" {

@@ -55,12 +55,6 @@ variable "config_file_path" {
   description = "The path to the auth configuration file."
 }
 
-variable "default_provider" {
-  type        = string
-  default     = null
-  description = "The default authentication provider."
-}
-
 variable "excluded_paths" {
   type        = list(string)
   default     = null
