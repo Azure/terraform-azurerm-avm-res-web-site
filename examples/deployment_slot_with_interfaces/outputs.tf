@@ -36,10 +36,12 @@ output "storage_account_name" {
 
 output "system_assigned_mi_principal_id" {
   description = "Test"
+  sensitive   = true
   value       = module.avm_res_web_site.system_assigned_mi_principal_id
 }
 
 output "system_assigned_mi_principal_id_slots" {
   description = "Test"
+  sensitive   = true
   value       = module.avm_res_web_site.system_assigned_mi_principal_id_slots
 }

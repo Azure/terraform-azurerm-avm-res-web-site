@@ -17,7 +17,7 @@ module "avm_interfaces" {
 }
 
 resource "azapi_resource" "lock" {
-  for_each = module.avm_interfaces.lock_azapi
+  for_each = module.avm_interfaces.lock_azapi != null ? { "lock" = module.avm_interfaces.lock_azapi } : {}
 
   name                   = each.value.name
   parent_id              = azapi_resource.this.id
@@ -47,9 +47,9 @@ resource "azapi_resource" "role_assignment" {
 resource "azapi_resource" "private_endpoint" {
   for_each = module.avm_interfaces.private_endpoints_azapi
 
-  location               = each.value.location
+  location               = coalesce(try(var.private_endpoints[each.key].location, null), var.location)
   name                   = each.value.name
-  parent_id              = each.value.parent_id
+  parent_id              = var.parent_id
   type                   = each.value.type
   body                   = each.value.body
   create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
