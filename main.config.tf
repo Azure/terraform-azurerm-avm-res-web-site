@@ -1,6 +1,6 @@
 module "config_appsettings" {
   source   = "./modules/config_appsettings"
-  for_each = length(local.merged_app_settings) > 0 ? { "default" = {} } : {}
+  for_each = length(var.app_settings) > 0 || local.is_function_app || local.is_logic_app ? { "default" = {} } : {}
 
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id

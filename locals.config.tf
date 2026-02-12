@@ -1,11 +1,10 @@
 locals {
   ip_security_restrictions = [for rule in var.site_config.ip_restriction : {
     action               = rule.action
-    ipAddress            = rule.ip_address
+    ipAddress            = rule.service_tag != null ? rule.service_tag : rule.ip_address
     name                 = rule.name
     priority             = rule.priority
     tag                  = rule.service_tag != null ? "ServiceTag" : (rule.ip_address != null ? "Default" : null)
-    serviceTag           = rule.service_tag
     vnetSubnetResourceId = rule.virtual_network_subnet_id
     headers = rule.headers != null ? {
       x-azure-fdid     = rule.headers.x_azure_fdid
@@ -16,11 +15,10 @@ locals {
   }]
   scm_ip_security_restrictions = [for rule in var.site_config.scm_ip_restriction : {
     action               = rule.action
-    ipAddress            = rule.ip_address
+    ipAddress            = rule.service_tag != null ? rule.service_tag : rule.ip_address
     name                 = rule.name
     priority             = rule.priority
     tag                  = rule.service_tag != null ? "ServiceTag" : (rule.ip_address != null ? "Default" : null)
-    serviceTag           = rule.service_tag
     vnetSubnetResourceId = rule.virtual_network_subnet_id
     headers = rule.headers != null ? {
       x-azure-fdid     = rule.headers.x_azure_fdid
@@ -56,7 +54,7 @@ locals {
   java_container_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null
   java_version           = !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_version, null) : null
   # Linux uses linuxFxVersion in "RUNTIME|VERSION" format
-  linux_fx_version = local.is_linux ? coalesce(
+  linux_fx_version = local.is_linux && local.app_stack != null ? try(coalesce(
     try(local.app_stack.docker != null ? "DOCKER|${trimprefix(coalesce(local.app_stack.docker.docker_registry_url, ""), "https://")}/${local.app_stack.docker.docker_image_name}:${local.app_stack.docker.docker_image_tag}" : null, null),
     try(local.app_stack.python != null ? "PYTHON|${local.app_stack.python.python_version}" : null, null),
     try(local.app_stack.node != null ? "NODE|${local.app_stack.node.node_version}" : null, null),
@@ -65,7 +63,9 @@ locals {
     try(local.app_stack.powershell != null ? "POWERSHELL|${local.app_stack.powershell.powershell_version}" : null, null),
     try(local.app_stack.php != null ? "PHP|${local.app_stack.php.php_version}" : null, null),
     var.site_config.linux_fx_version,
-  ) : null
+    ), null) : (
+    local.is_linux ? var.site_config.linux_fx_version : null
+  )
   net_framework_version = !local.is_linux && local.app_stack != null ? try(local.app_stack.dotnet.dotnet_version, null) : (
     local.is_logic_app ? var.site_config.dotnet_framework_version : null
   )
@@ -142,7 +142,7 @@ locals {
 locals {
   site_config_body = {
     alwaysOn                               = var.site_config.always_on
-    apiDefinitionUrl                       = var.site_config.api_definition_url
+    apiDefinition                          = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
     apiManagementConfig                    = var.site_config.api_management_api_id != null ? { id = var.site_config.api_management_api_id } : null
     appCommandLine                         = var.site_config.app_command_line
     autoHealEnabled                        = length(var.auto_heal_setting) > 0 ? true : null
@@ -151,7 +151,6 @@ locals {
     defaultDocuments                       = var.site_config.default_documents
     ftpsState                              = var.site_config.ftps_state
     healthCheckPath                        = var.site_config.health_check_path
-    healthCheckEvictionTimeInMin           = var.site_config.health_check_eviction_time_in_min
     http20Enabled                          = var.site_config.http2_enabled
     ipSecurityRestrictions                 = length(local.ip_security_restrictions) > 0 ? local.ip_security_restrictions : null
     ipSecurityRestrictionsDefaultAction    = var.site_config.ip_restriction_default_action

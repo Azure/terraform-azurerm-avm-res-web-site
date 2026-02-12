@@ -15,9 +15,11 @@ locals {
         virtualNetworkSubnetId    = var.virtual_network_subnet_id
         keyVaultReferenceIdentity = var.key_vault_reference_identity_id
         siteConfig                = local.site_config_body
-        vnetBackupRestoreEnabled  = var.virtual_network_backup_restore_enabled
-        vnetContentShareEnabled   = var.vnet_content_share_enabled
-        vnetImagePullEnabled      = var.vnet_image_pull_enabled
+        outboundVnetRouting = {
+          backupRestoreTraffic = var.virtual_network_backup_restore_enabled
+          contentShareTraffic  = var.vnet_content_share_enabled
+          imagePullTraffic     = var.vnet_image_pull_enabled
+        }
       },
       var.function_app_uses_fc1 ? {
         functionAppConfig = {

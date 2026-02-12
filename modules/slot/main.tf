@@ -18,13 +18,12 @@ resource "azapi_resource" "this" {
       virtualNetworkSubnetId    = var.virtual_network_subnet_id
       siteConfig = var.site_config != null ? {
         alwaysOn                               = var.site_config.always_on
-        apiDefinitionUrl                       = var.site_config.api_definition_url
+        apiDefinition                          = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
         apiManagementConfig                    = var.site_config.api_management_api_id != null ? { id = var.site_config.api_management_api_id } : null
         appCommandLine                         = var.site_config.app_command_line
         defaultDocuments                       = var.site_config.default_documents
         ftpsState                              = var.site_config.ftps_state
         healthCheckPath                        = var.site_config.health_check_path
-        healthCheckEvictionTimeInMin           = var.site_config.health_check_eviction_time_in_min
         http20Enabled                          = var.site_config.http2_enabled
         ipSecurityRestrictionsDefaultAction    = var.site_config.ip_restriction_default_action
         loadBalancing                          = var.site_config.load_balancing_mode
@@ -75,7 +74,7 @@ resource "azapi_resource" "this" {
 
 # Slot app settings
 resource "azapi_resource" "appsettings" {
-  count = length(local.merged_app_settings) > 0 ? 1 : 0
+  count = length(var.app_settings) > 0 || length(var.additional_app_settings) > 0 || (var.enable_application_insights && var.is_web_app) ? 1 : 0
 
   name      = "appsettings"
   parent_id = azapi_resource.this.id
