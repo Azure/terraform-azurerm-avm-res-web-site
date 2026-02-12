@@ -90,7 +90,7 @@ resource "azapi_resource" "virtual_network" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.virtual_network.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Network/virtualNetworks@2025-05-01"
+  type      = "Microsoft.Network/virtualNetworks@2025-03-01"
   body = {
     properties = {
       addressSpace = {
@@ -103,7 +103,7 @@ resource "azapi_resource" "virtual_network" {
 resource "azapi_resource" "subnet" {
   name      = module.naming.subnet.name_unique
   parent_id = azapi_resource.virtual_network.id
-  type      = "Microsoft.Network/virtualNetworks/subnets@2025-05-01"
+  type      = "Microsoft.Network/virtualNetworks/subnets@2025-03-01"
   body = {
     properties = {
       addressPrefix = "192.168.0.0/24"
@@ -208,7 +208,7 @@ resource "azapi_resource" "network_security_group" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.network_security_group.name_unique
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Network/networkSecurityGroups@2025-05-01"
+  type      = "Microsoft.Network/networkSecurityGroups@2025-03-01"
   body = {
     properties = {
       securityRules = [
@@ -234,7 +234,7 @@ resource "azapi_resource" "network_interface" {
   location  = azapi_resource.resource_group.location
   name      = "example-nic"
   parent_id = azapi_resource.resource_group.id
-  type      = "Microsoft.Network/networkInterfaces@2025-05-01"
+  type      = "Microsoft.Network/networkInterfaces@2025-03-01"
   body = {
     properties = {
       ipConfigurations = [

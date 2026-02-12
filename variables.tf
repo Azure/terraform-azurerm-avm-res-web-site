@@ -80,6 +80,7 @@ variable "application_insights" {
     inherit_tags                          = optional(bool, false)
     location                              = optional(string)
     name                                  = optional(string)
+    parent_id                             = optional(string)
     resource_group_name                   = optional(string)
     tags                                  = optional(map(any), null)
     workspace_resource_id                 = optional(string)
