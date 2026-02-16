@@ -1,4 +1,3 @@
-
 data "modtm_module_source" "telemetry" {
   count = var.enable_telemetry ? 1 : 0
 
