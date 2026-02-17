@@ -28,3 +28,9 @@ variable "allow" {
   default     = false
   description = "Should basic authentication be allowed for this publishing credential type? Defaults to `false`."
 }
+
+variable "is_slot" {
+  type        = bool
+  default     = false
+  description = "Whether the parent resource is a deployment slot. Defaults to `false`."
+}

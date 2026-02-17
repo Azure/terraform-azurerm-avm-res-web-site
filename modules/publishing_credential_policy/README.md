@@ -50,6 +50,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_is_slot"></a> [is\_slot](#input\_is\_slot)
+
+Description: Whether the parent resource is a deployment slot. Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
 ## Outputs
 
 The following outputs are exported:

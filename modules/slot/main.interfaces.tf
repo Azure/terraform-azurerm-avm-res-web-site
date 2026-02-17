@@ -52,7 +52,7 @@ resource "azapi_resource" "private_dns_zone_group" {
   for_each = module.avm_interfaces.private_dns_zone_groups_azapi
 
   name                   = each.value.name
-  parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
+  parent_id              = azapi_resource.private_endpoint[each.key].id
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []
