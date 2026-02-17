@@ -65,14 +65,15 @@ resource "azapi_resource" "storage_account" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                    = azapi_resource.resource_group.location
-  name                        = "${module.naming.function_app.name_unique}-submodules"
-  parent_id                   = azapi_resource.resource_group.id
-  service_plan_resource_id    = azapi_resource.service_plan.id
-  enable_application_insights = false
-  enable_telemetry            = var.enable_telemetry
-  kind                        = "webapp"
-  os_type                     = "Linux"
+  location                      = azapi_resource.resource_group.location
+  name                          = "${module.naming.function_app.name_unique}-submodules"
+  parent_id                     = azapi_resource.resource_group.id
+  service_plan_resource_id      = azapi_resource.service_plan.id
+  enable_application_insights   = false
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "webapp"
+  os_type                       = "Linux"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {
@@ -139,10 +140,12 @@ module "logs" {
 
   parent_id = module.avm_res_web_site.resource_id
   application_logs = {
-    file_system_level = "Warning"
+    file_system = {
+      level = "Warning"
+    }
   }
   detailed_error_messages = true
-  failed_request_tracing  = true
+  failed_requests_tracing = true
   http_logs = {
     file_system = {
       retention_in_days = 7

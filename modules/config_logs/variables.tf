@@ -16,7 +16,9 @@ variable "application_logs" {
       retention_in_days = optional(number, 0)
       sas_url           = string
     }))
-    file_system_level = optional(string, "Off")
+    file_system = optional(object({
+      level = optional(string, "Off")
+    }), {})
   })
   default     = null
   description = <<DESCRIPTION
@@ -26,7 +28,8 @@ Application log settings.
   - `level` - (Optional) The log level. Defaults to `Off`.
   - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
   - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
-- `file_system_level` - (Optional) The file system log level. Defaults to `Off`.
+- `file_system` - (Optional) File system configuration for application logs.
+  - `level` - (Optional) The file system log level. Defaults to `Off`.
 DESCRIPTION
 }
 
@@ -36,7 +39,7 @@ variable "detailed_error_messages" {
   description = "Should detailed error messages be enabled? Defaults to `false`."
 }
 
-variable "failed_request_tracing" {
+variable "failed_requests_tracing" {
   type        = bool
   default     = false
   description = "Should failed request tracing be enabled? Defaults to `false`."
@@ -44,7 +47,7 @@ variable "failed_request_tracing" {
 
 variable "http_logs" {
   type = object({
-    azure_blob_storage_http = optional(object({
+    azure_blob_storage = optional(object({
       retention_in_days = optional(number, 0)
       sas_url           = string
     }))
@@ -57,7 +60,7 @@ variable "http_logs" {
   description = <<DESCRIPTION
 HTTP log settings.
 
-- `azure_blob_storage_http` - (Optional) Azure Blob Storage configuration for HTTP logs.
+- `azure_blob_storage` - (Optional) Azure Blob Storage configuration for HTTP logs.
   - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
   - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
 - `file_system` - (Optional) File system configuration for HTTP logs.

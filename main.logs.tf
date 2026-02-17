@@ -7,7 +7,7 @@ module "config_logs" {
     for alk, alv in each.value.application_logs : alk => alv
   }[keys(each.value.application_logs)[0]] : null
   detailed_error_messages = each.value.detailed_error_messages
-  failed_request_tracing  = each.value.failed_request_tracing
+  failed_requests_tracing = each.value.failed_requests_tracing
   http_logs = length(each.value.http_logs) > 0 ? {
     for hlk, hlv in each.value.http_logs : hlk => hlv
   }[keys(each.value.http_logs)[0]] : null

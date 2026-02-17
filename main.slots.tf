@@ -25,7 +25,7 @@ module "slot" {
   https_only                               = each.value.https_only
   is_function_app                          = local.is_function_app
   is_web_app                               = local.is_web_app
-  key_vault_reference_identity_id          = each.value.key_vault_reference_identity_id
+  key_vault_reference_identity             = each.value.key_vault_reference_identity
   # AVM interfaces
   lock = each.value.lock != null ? each.value.lock : (
     var.deployment_slots_inherit_lock && var.lock != null ? var.lock : null
@@ -36,7 +36,7 @@ module "slot" {
   private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
   public_network_access_enabled           = each.value.public_network_access_enabled
   role_assignments                        = each.value.role_assignments
-  service_plan_id                         = each.value.service_plan_id
+  server_farm_id                          = each.value.server_farm_id
   # Site config
   site_config = each.value.site_config
   storage_shares_access_keys = {

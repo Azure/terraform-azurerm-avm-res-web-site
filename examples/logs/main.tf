@@ -124,7 +124,9 @@ module "avm_res_web_site" {
         app_service_logs = {
           application_logs = {
             file_system_level = {
-              file_system_level = "Warning"
+              file_system = {
+                level = "Warning"
+              }
             }
           }
           http_logs = {
@@ -158,7 +160,9 @@ module "avm_res_web_site" {
         app_service_logs = {
           application_logs = {
             file_system_level = {
-              file_system_level = "Off"
+              file_system = {
+                level = "Off"
+              }
             }
           }
           http_logs = {
@@ -178,11 +182,13 @@ module "avm_res_web_site" {
   logs = {
     app_service_logs = {
       # Added validation to ensure that logs object is configured.
-      # If file_system_level is set to "Off", then http_logs will have no effect
+      # If application_logs.file_system.level is set to "Off", then http_logs will have no effect
       # logs set in `logs`
       application_logs = {
         file_system_level = {
-          file_system_level = "Off"
+          file_system = {
+            level = "Off"
+          }
         }
       }
       # Added validation to ensure that is http_logs is configured, application_logs must also be configured.
@@ -196,7 +202,8 @@ module "avm_res_web_site" {
       }
     }
   }
-  os_type = "Linux"
+  os_type                       = "Linux"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {

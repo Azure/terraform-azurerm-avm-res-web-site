@@ -64,7 +64,7 @@ resource "azapi_resource" "private_dns_zone_group" {
   for_each = module.avm_interfaces.private_dns_zone_groups_azapi
 
   name                   = each.value.name
-  parent_id              = azapi_resource.private_endpoint[each.value.key].id
+  parent_id              = azapi_resource.private_endpoint[each.key].id
   type                   = each.value.type
   body                   = each.value.body
   create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

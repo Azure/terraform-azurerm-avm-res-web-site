@@ -86,9 +86,10 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry = var.enable_telemetry
-  kind             = "webapp"
-  os_type          = "Windows"
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "webapp"
+  os_type                       = "Windows"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {

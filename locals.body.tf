@@ -13,7 +13,7 @@ locals {
         clientCertExclusionPaths  = var.client_certificate_exclusion_paths
         publicNetworkAccess       = var.public_network_access_enabled ? "Enabled" : "Disabled"
         virtualNetworkSubnetId    = var.virtual_network_subnet_id
-        keyVaultReferenceIdentity = var.key_vault_reference_identity_id
+        keyVaultReferenceIdentity = var.key_vault_reference_identity
         siteConfig                = local.site_config_body
         outboundVnetRouting = {
           backupRestoreTraffic = var.virtual_network_backup_restore_enabled

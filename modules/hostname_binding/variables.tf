@@ -24,7 +24,7 @@ variable "ssl_state" {
   description = "The SSL state for the hostname binding. Possible values include `Disabled`, `IpBasedEnabled`, `SniEnabled`."
 }
 
-variable "thumbprint_value" {
+variable "thumbprint" {
   type        = string
   default     = null
   description = "The certificate thumbprint associated with the hostname."

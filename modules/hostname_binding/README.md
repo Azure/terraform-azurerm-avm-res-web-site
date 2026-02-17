@@ -50,7 +50,7 @@ Type: `string`
 
 Default: `null`
 
-### <a name="input_thumbprint_value"></a> [thumbprint\_value](#input\_thumbprint\_value)
+### <a name="input_thumbprint"></a> [thumbprint](#input\_thumbprint)
 
 Description: The certificate thumbprint associated with the hostname.
 

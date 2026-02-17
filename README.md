@@ -662,8 +662,8 @@ Description: A map of custom domains to assign to the App Service.
 - `ssl_state` - (Optional) The SSL state. Possible values are `IpBasedEnabled` and `SniEnabled`.
 - `inherit_tags` - (Optional) Should tags be inherited from the parent? Defaults to `true`.
 - `tags` - (Optional) Tags to apply to the custom domain resources.
+- `thumbprint` - (Optional) The certificate thumbprint value.
 - `thumbprint_key` - (Optional) The key to look up the certificate thumbprint.
-- `thumbprint_value` - (Optional) The certificate thumbprint value.
 - `ttl` - (Optional) The TTL for DNS records. Defaults to `300`.
 - `validation_type` - (Optional) The domain validation type. Defaults to `cname-delegation`.
 - `create_cname_records` - (Optional) Should CNAME records be created? Defaults to `false`.
@@ -697,8 +697,8 @@ map(object({
     ssl_state                    = optional(string)
     inherit_tags                 = optional(bool, true)
     tags                         = optional(map(any), {})
+    thumbprint                   = optional(string)
     thumbprint_key               = optional(string)
-    thumbprint_value             = optional(string)
     ttl                          = optional(number, 300)
     validation_type              = optional(string, "cname-delegation")
     create_cname_records         = optional(bool, false)
@@ -733,14 +733,14 @@ Description: A map of deployment slots to create for the App Service.
 - `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
 - `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
 - `enabled` - (Optional) Is the slot enabled? Defaults to `true`.
-- `ftp_publish_basic_authentication_enabled` - (Optional) Should FTP basic authentication be enabled? Defaults to `true`.
-- `https_only` - (Optional) Should the slot only be accessible over HTTPS?
-- `key_vault_reference_identity_id` - (Optional) The identity ID to use for Key Vault references.
-- `public_network_access_enabled` - (Optional) Should public network access be enabled?
-- `service_plan_id` - (Optional) The App Service Plan ID to use for the slot.
+- `ftp_publish_basic_authentication_enabled` - (Optional) Should FTP basic authentication be enabled? Defaults to `false`.
+- `https_only` - (Optional) Should the slot only be accessible over HTTPS? Defaults to `true`.
+- `key_vault_reference_identity` - (Optional) The identity to use for Key Vault references.
+- `public_network_access_enabled` - (Optional) Should public network access be enabled? Defaults to `false`.
+- `server_farm_id` - (Optional) The server farm resource ID to use for the slot.
 - `tags` - (Optional) Tags to apply to the slot.
 - `virtual_network_subnet_id` - (Optional) The subnet ID for VNet integration.
-- `webdeploy_publish_basic_authentication_enabled` - (Optional) Should WebDeploy basic authentication be enabled? Defaults to `true`.
+- `webdeploy_publish_basic_authentication_enabled` - (Optional) Should WebDeploy basic authentication be enabled? Defaults to `false`.
 - `app_settings` - (Optional) App settings for the slot.
 - `site_config` - (Optional) Site configuration for the slot.
   - `always_on` - (Optional) Should the slot always be on? Defaults to `true`.
@@ -842,14 +842,14 @@ map(object({
     client_certificate_exclusion_paths             = optional(string, null)
     client_certificate_mode                        = optional(string, "Required")
     enabled                                        = optional(bool, true)
-    ftp_publish_basic_authentication_enabled       = optional(bool, true)
-    https_only                                     = optional(bool, false)
-    key_vault_reference_identity_id                = optional(string, null)
-    public_network_access_enabled                  = optional(bool, true)
-    service_plan_id                                = optional(string, null)
+    ftp_publish_basic_authentication_enabled       = optional(bool, false)
+    https_only                                     = optional(bool, true)
+    key_vault_reference_identity                   = optional(string, null)
+    public_network_access_enabled                  = optional(bool, false)
+    server_farm_id                                 = optional(string, null)
     tags                                           = optional(map(string))
     virtual_network_subnet_id                      = optional(string, null)
-    webdeploy_publish_basic_authentication_enabled = optional(bool, true)
+    webdeploy_publish_basic_authentication_enabled = optional(bool, false)
     app_settings                                   = optional(map(string), {})
     site_config = optional(object({
       always_on                                     = optional(bool, true)
@@ -1086,11 +1086,11 @@ Default: `null`
 
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
-Description: Should basic authentication be enabled for FTP publish? Defaults to `true`.
+Description: Should basic authentication be enabled for FTP publish? Defaults to `false`.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
 
@@ -1110,11 +1110,11 @@ Default: `"~4"`
 
 ### <a name="input_https_only"></a> [https\_only](#input\_https\_only)
 
-Description: Should the App Service only be accessible over HTTPS? Defaults to `false`.
+Description: Should the App Service only be accessible over HTTPS? Defaults to `true`.
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_instance_memory_in_mb"></a> [instance\_memory\_in\_mb](#input\_instance\_memory\_in\_mb)
 
@@ -1124,9 +1124,9 @@ Type: `number`
 
 Default: `2048`
 
-### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
+### <a name="input_key_vault_reference_identity"></a> [key\_vault\_reference\_identity](#input\_key\_vault\_reference\_identity)
 
-Description: The identity ID to use for Key Vault references.
+Description: The identity to use for Key Vault references.
 
 Type: `string`
 
@@ -1176,11 +1176,12 @@ Description: A map of logs configuration for the App Service.
     - `level` - (Optional) The log level. Defaults to `Off`.
     - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
     - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
-  - `file_system_level` - (Optional) The file system log level. Defaults to `Off`.
+  - `file_system` - (Optional) File system configuration for application logs.
+    - `level` - (Optional) The file system log level. Defaults to `Off`.
 - `detailed_error_messages` - (Optional) Should detailed error messages be enabled? Defaults to `false`.
-- `failed_request_tracing` - (Optional) Should failed request tracing be enabled? Defaults to `false`.
+- `failed_requests_tracing` - (Optional) Should failed request tracing be enabled? Defaults to `false`.
 - `http_logs` - (Optional) A map of HTTP log settings.
-  - `azure_blob_storage_http` - (Optional) Azure Blob Storage configuration for HTTP logs.
+  - `azure_blob_storage` - (Optional) Azure Blob Storage configuration for HTTP logs.
     - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
     - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
   - `file_system` - (Optional) File system configuration for HTTP logs.
@@ -1197,12 +1198,14 @@ map(object({
         retention_in_days = optional(number, 0)
         sas_url           = string
       }))
-      file_system_level = optional(string, "Off")
+      file_system = optional(object({
+        level = optional(string, "Off")
+      }), {})
     })), {})
     detailed_error_messages = optional(bool, false)
-    failed_request_tracing  = optional(bool, false)
+    failed_requests_tracing = optional(bool, false)
     http_logs = optional(map(object({
-      azure_blob_storage_http = optional(object({
+      azure_blob_storage = optional(object({
         retention_in_days = optional(number, 0)
         sas_url           = string
       }))
@@ -1335,11 +1338,11 @@ Default: `true`
 
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
-Description: Should the App Service be accessible from the public network? Defaults to `true`.
+Description: Should the App Service be accessible from the public network? Defaults to `false`.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 

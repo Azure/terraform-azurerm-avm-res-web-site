@@ -40,7 +40,7 @@ variable "parent_id" {
 
 variable "service_plan_resource_id" {
   type        = string
-  description = "The default App Service Plan resource ID (used if `service_plan_id` is not set)."
+  description = "The default App Service Plan resource ID (used if `server_farm_id` is not set)."
   nullable    = false
 }
 
@@ -120,14 +120,14 @@ variable "enabled" {
 
 variable "ftp_publish_basic_authentication_enabled" {
   type        = bool
-  default     = true
-  description = "Should FTP basic authentication be enabled? Defaults to `true`."
+  default     = false
+  description = "Should FTP basic authentication be enabled? Defaults to `false`."
 }
 
 variable "https_only" {
   type        = bool
-  default     = false
-  description = "Should the slot only be accessible over HTTPS? Defaults to `false`."
+  default     = true
+  description = "Should the slot only be accessible over HTTPS? Defaults to `true`."
 }
 
 variable "is_function_app" {
@@ -142,10 +142,10 @@ variable "is_web_app" {
   description = "Whether the parent app is a web app."
 }
 
-variable "key_vault_reference_identity_id" {
+variable "key_vault_reference_identity" {
   type        = string
   default     = null
-  description = "The identity ID to use for Key Vault references."
+  description = "The identity to use for Key Vault references."
 }
 
 # AVM interface variables
@@ -223,8 +223,8 @@ variable "private_endpoints_manage_dns_zone_group" {
 
 variable "public_network_access_enabled" {
   type        = bool
-  default     = true
-  description = "Should public network access be enabled? Defaults to `true`."
+  default     = false
+  description = "Should public network access be enabled? Defaults to `false`."
 }
 
 variable "role_assignments" {
@@ -243,10 +243,10 @@ variable "role_assignments" {
   nullable    = false
 }
 
-variable "service_plan_id" {
+variable "server_farm_id" {
   type        = string
   default     = null
-  description = "Optional override App Service Plan ID for this slot."
+  description = "Optional override server farm resource ID for this slot."
 }
 
 variable "site_config" {
@@ -351,6 +351,6 @@ variable "virtual_network_subnet_id" {
 
 variable "webdeploy_publish_basic_authentication_enabled" {
   type        = bool
-  default     = true
-  description = "Should WebDeploy basic authentication be enabled? Defaults to `true`."
+  default     = false
+  description = "Should WebDeploy basic authentication be enabled? Defaults to `false`."
 }

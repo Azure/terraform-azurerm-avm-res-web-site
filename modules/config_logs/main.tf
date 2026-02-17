@@ -8,11 +8,11 @@ resource "azapi_resource" "this" {
         enabled = var.detailed_error_messages
       }
       failedRequestsTracing = {
-        enabled = var.failed_request_tracing
+        enabled = var.failed_requests_tracing
       }
       applicationLogs = var.application_logs != null ? {
         fileSystem = {
-          level = var.application_logs.file_system_level
+          level = var.application_logs.file_system.level
         }
         azureBlobStorage = var.application_logs.azure_blob_storage != null ? {
           level           = var.application_logs.azure_blob_storage.level
@@ -21,9 +21,9 @@ resource "azapi_resource" "this" {
         } : null
       } : null
       httpLogs = var.http_logs != null ? {
-        azureBlobStorage = var.http_logs.azure_blob_storage_http != null ? {
-          retentionInDays = var.http_logs.azure_blob_storage_http.retention_in_days
-          sasUrl          = var.http_logs.azure_blob_storage_http.sas_url
+        azureBlobStorage = var.http_logs.azure_blob_storage != null ? {
+          retentionInDays = var.http_logs.azure_blob_storage.retention_in_days
+          sasUrl          = var.http_logs.azure_blob_storage.sas_url
         } : null
         fileSystem = var.http_logs.file_system != null ? {
           retentionInDays = var.http_logs.file_system.retention_in_days

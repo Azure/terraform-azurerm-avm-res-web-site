@@ -79,9 +79,10 @@ module "avm_res_web_site" {
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
-  enable_telemetry = var.enable_telemetry
-  kind             = "functionapp"
-  os_type          = "Linux"
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "functionapp"
+  os_type                       = "Linux"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       python = {

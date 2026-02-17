@@ -79,11 +79,12 @@ module "avm_res_web_site" {
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
-  enable_telemetry           = var.enable_telemetry
-  kind                       = "functionapp"
-  os_type                    = "Windows"
-  storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
-  storage_account_name       = azapi_resource.storage_account.name
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "functionapp"
+  os_type                       = "Windows"
+  public_network_access_enabled = true
+  storage_account_access_key    = data.azapi_resource_action.storage_keys.output.keys[0].value
+  storage_account_name          = azapi_resource.storage_account.name
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"

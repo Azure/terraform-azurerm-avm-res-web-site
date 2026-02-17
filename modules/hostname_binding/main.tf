@@ -5,7 +5,7 @@ resource "azapi_resource" "this" {
   body = {
     properties = {
       sslState   = var.ssl_state
-      thumbprint = var.thumbprint_value
+      thumbprint = var.thumbprint
     }
   }
   response_export_values = []

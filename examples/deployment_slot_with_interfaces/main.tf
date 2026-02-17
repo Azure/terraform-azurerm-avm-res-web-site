@@ -237,7 +237,8 @@ module "avm_res_web_site" {
       azapi_resource.user_assigned_identity.id
     ]
   }
-  os_type = "Windows"
+  os_type                       = "Windows"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {

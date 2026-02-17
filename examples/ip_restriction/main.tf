@@ -57,13 +57,14 @@ resource "azapi_resource" "storage_account" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-default"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  enable_telemetry         = var.enable_telemetry
-  kind                     = "functionapp"
-  os_type                  = "Windows"
+  location                      = azapi_resource.resource_group.location
+  name                          = "${module.naming.function_app.name_unique}-default"
+  parent_id                     = azapi_resource.resource_group.id
+  service_plan_resource_id      = azapi_resource.service_plan.id
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "functionapp"
+  os_type                       = "Windows"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {

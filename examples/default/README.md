@@ -46,11 +46,12 @@ resource "azapi_resource" "service_plan" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.app_service.name_unique}-default"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  enable_telemetry         = var.enable_telemetry
+  location                      = azapi_resource.resource_group.location
+  name                          = "${module.naming.app_service.name_unique}-default"
+  parent_id                     = azapi_resource.resource_group.id
+  service_plan_resource_id      = azapi_resource.service_plan.id
+  enable_telemetry              = var.enable_telemetry
+  public_network_access_enabled = true
 }
 ```
 

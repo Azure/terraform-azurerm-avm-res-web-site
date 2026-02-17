@@ -44,7 +44,8 @@ Description: Application log settings.
   - `level` - (Optional) The log level. Defaults to `Off`.
   - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
   - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
-- `file_system_level` - (Optional) The file system log level. Defaults to `Off`.
+- `file_system` - (Optional) File system configuration for application logs.
+  - `level` - (Optional) The file system log level. Defaults to `Off`.
 
 Type:
 
@@ -55,7 +56,9 @@ object({
       retention_in_days = optional(number, 0)
       sas_url           = string
     }))
-    file_system_level = optional(string, "Off")
+    file_system = optional(object({
+      level = optional(string, "Off")
+    }), {})
   })
 ```
 
@@ -69,7 +72,7 @@ Type: `bool`
 
 Default: `false`
 
-### <a name="input_failed_request_tracing"></a> [failed\_request\_tracing](#input\_failed\_request\_tracing)
+### <a name="input_failed_requests_tracing"></a> [failed\_requests\_tracing](#input\_failed\_requests\_tracing)
 
 Description: Should failed request tracing be enabled? Defaults to `false`.
 
@@ -81,7 +84,7 @@ Default: `false`
 
 Description: HTTP log settings.
 
-- `azure_blob_storage_http` - (Optional) Azure Blob Storage configuration for HTTP logs.
+- `azure_blob_storage` - (Optional) Azure Blob Storage configuration for HTTP logs.
   - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
   - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
 - `file_system` - (Optional) File system configuration for HTTP logs.
@@ -92,7 +95,7 @@ Type:
 
 ```hcl
 object({
-    azure_blob_storage_http = optional(object({
+    azure_blob_storage = optional(object({
       retention_in_days = optional(number, 0)
       sas_url           = string
     }))

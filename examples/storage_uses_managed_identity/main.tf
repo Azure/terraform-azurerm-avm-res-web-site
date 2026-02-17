@@ -82,6 +82,7 @@ module "avm_res_web_site" {
     system_assigned = true
   }
   os_type                       = "Windows"
+  public_network_access_enabled = true
   storage_account_name          = azapi_resource.storage_account.name
   storage_uses_managed_identity = true
   tags = {

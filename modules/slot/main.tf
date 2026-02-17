@@ -12,9 +12,9 @@ resource "azapi_resource" "this" {
       clientCertMode            = var.client_certificate_mode
       enabled                   = var.enabled
       httpsOnly                 = var.https_only
-      keyVaultReferenceIdentity = var.key_vault_reference_identity_id
+      keyVaultReferenceIdentity = var.key_vault_reference_identity
       publicNetworkAccess       = var.public_network_access_enabled ? "Enabled" : "Disabled"
-      serverFarmId              = coalesce(var.service_plan_id, var.service_plan_resource_id)
+      serverFarmId              = coalesce(var.server_farm_id, var.service_plan_resource_id)
       virtualNetworkSubnetId    = var.virtual_network_subnet_id
       siteConfig = var.site_config != null ? {
         alwaysOn                               = var.site_config.always_on

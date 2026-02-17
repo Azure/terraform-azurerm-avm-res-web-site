@@ -75,7 +75,7 @@ Type: `string`
 
 ### <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)
 
-Description: The default App Service Plan resource ID (used if `service_plan_id` is not set).
+Description: The default App Service Plan resource ID (used if `server_farm_id` is not set).
 
 Type: `string`
 
@@ -181,19 +181,19 @@ Default: `true`
 
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
-Description: Should FTP basic authentication be enabled? Defaults to `true`.
-
-Type: `bool`
-
-Default: `true`
-
-### <a name="input_https_only"></a> [https\_only](#input\_https\_only)
-
-Description: Should the slot only be accessible over HTTPS? Defaults to `false`.
+Description: Should FTP basic authentication be enabled? Defaults to `false`.
 
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_https_only"></a> [https\_only](#input\_https\_only)
+
+Description: Should the slot only be accessible over HTTPS? Defaults to `true`.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_is_function_app"></a> [is\_function\_app](#input\_is\_function\_app)
 
@@ -211,9 +211,9 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_key_vault_reference_identity_id"></a> [key\_vault\_reference\_identity\_id](#input\_key\_vault\_reference\_identity\_id)
+### <a name="input_key_vault_reference_identity"></a> [key\_vault\_reference\_identity](#input\_key\_vault\_reference\_identity)
 
-Description: The identity ID to use for Key Vault references.
+Description: The identity to use for Key Vault references.
 
 Type: `string`
 
@@ -311,11 +311,11 @@ Default: `true`
 
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
-Description: Should public network access be enabled? Defaults to `true`.
+Description: Should public network access be enabled? Defaults to `false`.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
@@ -338,9 +338,9 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_service_plan_id"></a> [service\_plan\_id](#input\_service\_plan\_id)
+### <a name="input_server_farm_id"></a> [server\_farm\_id](#input\_server\_farm\_id)
 
-Description: Optional override App Service Plan ID for this slot.
+Description: Optional override server farm resource ID for this slot.
 
 Type: `string`
 
@@ -465,11 +465,11 @@ Default: `null`
 
 ### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
 
-Description: Should WebDeploy basic authentication be enabled? Defaults to `true`.
+Description: Should WebDeploy basic authentication be enabled? Defaults to `false`.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 

@@ -108,6 +108,7 @@ module "avm_res_web_site" {
   }
   maximum_instance_count            = 100
   os_type                           = "Linux"
+  public_network_access_enabled     = true
   storage_account_access_key        = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_authentication_type       = "UserAssignedIdentity"
   storage_container_endpoint        = azapi_resource.storage_container.id
