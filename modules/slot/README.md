@@ -115,6 +115,14 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_auto_generated_domain_name_label_scope"></a> [auto\_generated\_domain\_name\_label\_scope](#input\_auto\_generated\_domain\_name\_label\_scope)
+
+Description: The scope of the auto-generated domain name label.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_client_affinity_enabled"></a> [client\_affinity\_enabled](#input\_client\_affinity\_enabled)
 
 Description: Should client affinity be enabled? Defaults to `false`.
@@ -122,6 +130,22 @@ Description: Should client affinity be enabled? Defaults to `false`.
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_client_affinity_partitioning_enabled"></a> [client\_affinity\_partitioning\_enabled](#input\_client\_affinity\_partitioning\_enabled)
+
+Description: Should client affinity partitioning (CHIPS) be enabled?
+
+Type: `bool`
+
+Default: `null`
+
+### <a name="input_client_affinity_proxy_enabled"></a> [client\_affinity\_proxy\_enabled](#input\_client\_affinity\_proxy\_enabled)
+
+Description: Should client affinity proxy be enabled?
+
+Type: `bool`
+
+Default: `null`
 
 ### <a name="input_client_certificate_enabled"></a> [client\_certificate\_enabled](#input\_client\_certificate\_enabled)
 
@@ -163,6 +187,50 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_container_size"></a> [container\_size](#input\_container\_size)
+
+Description: The size of the function container in MB.
+
+Type: `number`
+
+Default: `null`
+
+### <a name="input_dapr_config"></a> [dapr\_config](#input\_dapr\_config)
+
+Description: Dapr configuration for the slot.
+
+Type:
+
+```hcl
+object({
+    app_id                = optional(string)
+    app_port              = optional(number)
+    enable_api_logging    = optional(bool)
+    enabled               = optional(bool)
+    http_max_request_size = optional(number)
+    http_read_buffer_size = optional(number)
+    log_level             = optional(string)
+  })
+```
+
+Default: `null`
+
+### <a name="input_dns_configuration"></a> [dns\_configuration](#input\_dns\_configuration)
+
+Description: DNS configuration for the slot.
+
+Type:
+
+```hcl
+object({
+    alternate_private_dns_zone_id = optional(string)
+    dns_legacy_sort_order         = optional(bool)
+    dns_suffix                    = optional(string)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)
 
 Description: Whether application insights is enabled on the parent site.
@@ -179,6 +247,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_end_to_end_encryption_enabled"></a> [end\_to\_end\_encryption\_enabled](#input\_end\_to\_end\_encryption\_enabled)
+
+Description: Should end-to-end encryption be enabled?
+
+Type: `bool`
+
+Default: `null`
+
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
 Description: Should FTP basic authentication be enabled? Defaults to `false`.
@@ -187,6 +263,22 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_host_names_disabled"></a> [host\_names\_disabled](#input\_host\_names\_disabled)
+
+Description: Should public hostnames be disabled?
+
+Type: `bool`
+
+Default: `null`
+
+### <a name="input_hosting_environment_id"></a> [hosting\_environment\_id](#input\_hosting\_environment\_id)
+
+Description: The resource ID of the App Service Environment.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_https_only"></a> [https\_only](#input\_https\_only)
 
 Description: Should the slot only be accessible over HTTPS? Defaults to `true`.
@@ -194,6 +286,22 @@ Description: Should the slot only be accessible over HTTPS? Defaults to `true`.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_hyper_v"></a> [hyper\_v](#input\_hyper\_v)
+
+Description: Should the slot run in Hyper-V isolation?
+
+Type: `bool`
+
+Default: `null`
+
+### <a name="input_ip_mode"></a> [ip\_mode](#input\_ip\_mode)
+
+Description: The IP mode. Possible values: `IPv4`, `IPv4AndIPv6`, `IPv6`.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_is_function_app"></a> [is\_function\_app](#input\_is\_function\_app)
 
@@ -231,6 +339,14 @@ object({
     name = optional(string, null)
   })
 ```
+
+Default: `null`
+
+### <a name="input_managed_environment_id"></a> [managed\_environment\_id](#input\_managed\_environment\_id)
+
+Description: The Azure Container Apps managed environment ID.
+
+Type: `string`
 
 Default: `null`
 
@@ -317,6 +433,29 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_redundancy_mode"></a> [redundancy\_mode](#input\_redundancy\_mode)
+
+Description: The site redundancy mode.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_resource_config"></a> [resource\_config](#input\_resource\_config)
+
+Description: Resource config for Container App environment hosted apps.
+
+Type:
+
+```hcl
+object({
+    cpu    = optional(number)
+    memory = optional(string)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description: Role assignments for the slot.
@@ -338,6 +477,14 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_scm_site_also_stopped"></a> [scm\_site\_also\_stopped](#input\_scm\_site\_also\_stopped)
+
+Description: Should the SCM site also be stopped?
+
+Type: `bool`
+
+Default: `null`
+
 ### <a name="input_server_farm_id"></a> [server\_farm\_id](#input\_server\_farm\_id)
 
 Description: Optional override server farm resource ID for this slot.
@@ -354,38 +501,159 @@ Type:
 
 ```hcl
 object({
-    always_on                                     = optional(bool, true)
-    api_definition_url                            = optional(string)
-    api_management_api_id                         = optional(string)
-    app_command_line                              = optional(string)
-    app_scale_limit                               = optional(number)
+    always_on             = optional(bool, true)
+    api_definition_url    = optional(string)
+    api_management_api_id = optional(string)
+    app_command_line      = optional(string)
+    app_scale_limit       = optional(number)
+    auto_heal_enabled     = optional(bool)
+    auto_heal_rules = optional(object({
+      actions = optional(object({
+        action_type = string
+        custom_action = optional(object({
+          exe        = string
+          parameters = optional(string)
+        }))
+        min_process_execution_time = optional(string, "00:00:00")
+      }))
+      triggers = optional(object({
+        private_bytes_in_kb = optional(number)
+        requests = optional(object({
+          count         = number
+          time_interval = string
+        }))
+        slow_requests = optional(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        }))
+        slow_requests_with_path = optional(list(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        })), [])
+        status_codes = optional(list(object({
+          count         = number
+          time_interval = string
+          status        = number
+          path          = optional(string)
+          sub_status    = optional(number)
+          win32_status  = optional(number)
+        })), [])
+        status_codes_range = optional(list(object({
+          count         = number
+          time_interval = string
+          status_codes  = string
+          path          = optional(string)
+        })), [])
+      }))
+    }))
     auto_swap_slot_name                           = optional(string)
     container_registry_managed_identity_client_id = optional(string)
     container_registry_use_managed_identity       = optional(bool)
-    default_documents                             = optional(list(string))
-    elastic_instance_minimum                      = optional(number)
-    ftps_state                                    = optional(string, "FtpsOnly")
-    health_check_eviction_time_in_min             = optional(number)
-    health_check_path                             = optional(string)
-    http2_enabled                                 = optional(bool, false)
-    ip_restriction_default_action                 = optional(string, "Allow")
-    load_balancing_mode                           = optional(string, "LeastRequests")
-    managed_pipeline_mode                         = optional(string, "Integrated")
-    minimum_tls_version                           = optional(string, "1.3")
-    pre_warmed_instance_count                     = optional(number)
-    remote_debugging_enabled                      = optional(bool, false)
-    remote_debugging_version                      = optional(string)
-    runtime_scale_monitoring_enabled              = optional(bool)
-    scm_ip_restriction_default_action             = optional(string, "Allow")
-    scm_minimum_tls_version                       = optional(string, "1.2")
-    scm_use_main_ip_restriction                   = optional(bool, false)
-    use_32_bit_worker                             = optional(bool, false)
-    vnet_route_all_enabled                        = optional(bool, false)
-    websockets_enabled                            = optional(bool, false)
-    worker_count                                  = optional(number)
-    application_insights_connection_string        = optional(string)
-    application_insights_key                      = optional(string)
-    slot_application_insights_object_key          = optional(string)
+    cors = optional(object({
+      allowed_origins     = optional(list(string))
+      support_credentials = optional(bool, false)
+    }))
+    default_documents              = optional(list(string))
+    detailed_error_logging_enabled = optional(bool)
+    document_root                  = optional(string)
+    dotnet_framework_version       = optional(string, "v4.0")
+    elastic_instance_minimum       = optional(number)
+    elastic_web_app_scale_limit    = optional(number)
+    experiments = optional(object({
+      ramp_up_rules = optional(list(object({
+        action_host_name             = optional(string)
+        change_decision_callback_url = optional(string)
+        change_interval_in_minutes   = optional(number)
+        change_step                  = optional(number)
+        max_reroute_percentage       = optional(number)
+        min_reroute_percentage       = optional(number)
+        name                         = optional(string)
+        reroute_percentage           = optional(number)
+      })), [])
+    }))
+    ftps_state = optional(string, "FtpsOnly")
+    handler_mappings = optional(list(object({
+      arguments        = optional(string)
+      extension        = optional(string)
+      script_processor = optional(string)
+    })))
+    health_check_path    = optional(string)
+    http2_enabled        = optional(bool, false)
+    http20_proxy_flag    = optional(number)
+    http_logging_enabled = optional(bool)
+    ip_restriction = optional(list(object({
+      action                    = optional(string, "Allow")
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+      headers = optional(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(list(string))
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      }))
+    })), [])
+    ip_restriction_default_action = optional(string, "Allow")
+    java_container                = optional(string)
+    java_container_version        = optional(string)
+    java_version                  = optional(string)
+    limits = optional(object({
+      max_disk_size_in_mb = optional(number)
+      max_memory_in_mb    = optional(number)
+      max_percentage_cpu  = optional(number)
+    }))
+    linux_fx_version                 = optional(string)
+    load_balancing_mode              = optional(string, "LeastRequests")
+    local_mysql_enabled              = optional(bool, false)
+    logs_directory_size_limit        = optional(number)
+    managed_pipeline_mode            = optional(string, "Integrated")
+    min_tls_cipher_suite             = optional(string)
+    minimum_tls_version              = optional(string, "1.3")
+    node_version                     = optional(string)
+    php_version                      = optional(string)
+    powershell_version               = optional(string)
+    pre_warmed_instance_count        = optional(number)
+    python_version                   = optional(string)
+    remote_debugging_enabled         = optional(bool, false)
+    remote_debugging_version         = optional(string)
+    request_tracing_enabled          = optional(bool)
+    request_tracing_expiration_time  = optional(string)
+    runtime_scale_monitoring_enabled = optional(bool)
+    scm_ip_restriction = optional(list(object({
+      action                    = optional(string, "Allow")
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+      headers = optional(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(list(string))
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      }))
+    })), [])
+    scm_ip_restriction_default_action      = optional(string, "Allow")
+    scm_minimum_tls_version                = optional(string, "1.2")
+    scm_type                               = optional(string, "None")
+    scm_use_main_ip_restriction            = optional(bool, false)
+    tracing_options                        = optional(string)
+    use_32_bit_worker                      = optional(bool, false)
+    vnet_private_ports_count               = optional(number)
+    vnet_route_all_enabled                 = optional(bool, false)
+    website_time_zone                      = optional(string)
+    websockets_enabled                     = optional(bool, false)
+    windows_fx_version                     = optional(string)
+    worker_count                           = optional(number)
+    application_insights_connection_string = optional(string)
+    application_insights_key               = optional(string)
+    slot_application_insights_object_key   = optional(string)
     application_stack = optional(object({
       docker = optional(object({
         docker_image_name   = optional(string)
@@ -416,10 +684,35 @@ object({
         powershell_version = optional(string)
       }))
     }))
+    virtual_application = optional(list(object({
+      physical_path   = optional(string, "site\\wwwroot")
+      preload_enabled = optional(bool, false)
+      virtual_path    = optional(string, "/")
+      virtual_directory = optional(list(object({
+        physical_path = optional(string)
+        virtual_path  = optional(string)
+      })), [])
+    })), [])
   })
 ```
 
 Default: `{}`
+
+### <a name="input_ssh_enabled"></a> [ssh\_enabled](#input\_ssh\_enabled)
+
+Description: Should SSH be enabled?
+
+Type: `bool`
+
+Default: `null`
+
+### <a name="input_storage_account_required"></a> [storage\_account\_required](#input\_storage\_account\_required)
+
+Description: Should a storage account be required?
+
+Type: `bool`
+
+Default: `null`
 
 ### <a name="input_storage_shares_access_keys"></a> [storage\_shares\_access\_keys](#input\_storage\_shares\_access\_keys)
 
@@ -463,6 +756,46 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_vnet_application_traffic_enabled"></a> [vnet\_application\_traffic\_enabled](#input\_vnet\_application\_traffic\_enabled)
+
+Description: Should application traffic use VNet routing? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_vnet_backup_restore_enabled"></a> [vnet\_backup\_restore\_enabled](#input\_vnet\_backup\_restore\_enabled)
+
+Description: Should backup/restore traffic use VNet routing? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_vnet_content_share_enabled"></a> [vnet\_content\_share\_enabled](#input\_vnet\_content\_share\_enabled)
+
+Description: Should content share traffic use VNet routing? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_vnet_image_pull_enabled"></a> [vnet\_image\_pull\_enabled](#input\_vnet\_image\_pull\_enabled)
+
+Description: Should image pull traffic use VNet routing? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_vnet_route_all_traffic"></a> [vnet\_route\_all\_traffic](#input\_vnet\_route\_all\_traffic)
+
+Description: Should all outbound traffic use VNet routing? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled)
 
 Description: Should WebDeploy basic authentication be enabled? Defaults to `false`.
@@ -470,6 +803,14 @@ Description: Should WebDeploy basic authentication be enabled? Defaults to `fals
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_workload_profile_name"></a> [workload\_profile\_name](#input\_workload\_profile\_name)
+
+Description: The workload profile name.
+
+Type: `string`
+
+Default: `null`
 
 ## Outputs
 
@@ -508,6 +849,12 @@ The following Modules are called:
 Source: Azure/avm-utl-interfaces/azure
 
 Version: 0.5.0
+
+### <a name="module_site_config_helpers"></a> [site\_config\_helpers](#module\_site\_config\_helpers)
+
+Source: ../site_config_helpers
+
+Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

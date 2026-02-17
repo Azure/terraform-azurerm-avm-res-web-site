@@ -71,11 +71,29 @@ variable "application_insights_key" {
   sensitive   = true
 }
 
+variable "auto_generated_domain_name_label_scope" {
+  type        = string
+  default     = null
+  description = "The scope of the auto-generated domain name label."
+}
+
 # Slot-specific properties
 variable "client_affinity_enabled" {
   type        = bool
   default     = false
   description = "Should client affinity be enabled? Defaults to `false`."
+}
+
+variable "client_affinity_partitioning_enabled" {
+  type        = bool
+  default     = null
+  description = "Should client affinity partitioning (CHIPS) be enabled?"
+}
+
+variable "client_affinity_proxy_enabled" {
+  type        = bool
+  default     = null
+  description = "Should client affinity proxy be enabled?"
 }
 
 variable "client_certificate_enabled" {
@@ -106,6 +124,36 @@ variable "connection_strings" {
   description = "Connection strings for the slot."
 }
 
+variable "container_size" {
+  type        = number
+  default     = null
+  description = "The size of the function container in MB."
+}
+
+variable "dapr_config" {
+  type = object({
+    app_id                = optional(string)
+    app_port              = optional(number)
+    enable_api_logging    = optional(bool)
+    enabled               = optional(bool)
+    http_max_request_size = optional(number)
+    http_read_buffer_size = optional(number)
+    log_level             = optional(string)
+  })
+  default     = null
+  description = "Dapr configuration for the slot."
+}
+
+variable "dns_configuration" {
+  type = object({
+    alternate_private_dns_zone_id = optional(string)
+    dns_legacy_sort_order         = optional(bool)
+    dns_suffix                    = optional(string)
+  })
+  default     = null
+  description = "DNS configuration for the slot."
+}
+
 variable "enable_application_insights" {
   type        = bool
   default     = false
@@ -118,16 +166,46 @@ variable "enabled" {
   description = "Is the slot enabled? Defaults to `true`."
 }
 
+variable "end_to_end_encryption_enabled" {
+  type        = bool
+  default     = null
+  description = "Should end-to-end encryption be enabled?"
+}
+
 variable "ftp_publish_basic_authentication_enabled" {
   type        = bool
   default     = false
   description = "Should FTP basic authentication be enabled? Defaults to `false`."
 }
 
+variable "host_names_disabled" {
+  type        = bool
+  default     = null
+  description = "Should public hostnames be disabled?"
+}
+
+variable "hosting_environment_id" {
+  type        = string
+  default     = null
+  description = "The resource ID of the App Service Environment."
+}
+
 variable "https_only" {
   type        = bool
   default     = true
   description = "Should the slot only be accessible over HTTPS? Defaults to `true`."
+}
+
+variable "hyper_v" {
+  type        = bool
+  default     = null
+  description = "Should the slot run in Hyper-V isolation?"
+}
+
+variable "ip_mode" {
+  type        = string
+  default     = null
+  description = "The IP mode. Possible values: `IPv4`, `IPv4AndIPv6`, `IPv6`."
 }
 
 variable "is_function_app" {
@@ -156,6 +234,12 @@ variable "lock" {
   })
   default     = null
   description = "The lock to apply to the slot."
+}
+
+variable "managed_environment_id" {
+  type        = string
+  default     = null
+  description = "The Azure Container Apps managed environment ID."
 }
 
 variable "managed_identities" {
@@ -227,6 +311,21 @@ variable "public_network_access_enabled" {
   description = "Should public network access be enabled? Defaults to `false`."
 }
 
+variable "redundancy_mode" {
+  type        = string
+  default     = null
+  description = "The site redundancy mode."
+}
+
+variable "resource_config" {
+  type = object({
+    cpu    = optional(number)
+    memory = optional(string)
+  })
+  default     = null
+  description = "Resource config for Container App environment hosted apps."
+}
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
@@ -243,6 +342,12 @@ variable "role_assignments" {
   nullable    = false
 }
 
+variable "scm_site_also_stopped" {
+  type        = bool
+  default     = null
+  description = "Should the SCM site also be stopped?"
+}
+
 variable "server_farm_id" {
   type        = string
   default     = null
@@ -251,38 +356,159 @@ variable "server_farm_id" {
 
 variable "site_config" {
   type = object({
-    always_on                                     = optional(bool, true)
-    api_definition_url                            = optional(string)
-    api_management_api_id                         = optional(string)
-    app_command_line                              = optional(string)
-    app_scale_limit                               = optional(number)
+    always_on             = optional(bool, true)
+    api_definition_url    = optional(string)
+    api_management_api_id = optional(string)
+    app_command_line      = optional(string)
+    app_scale_limit       = optional(number)
+    auto_heal_enabled     = optional(bool)
+    auto_heal_rules = optional(object({
+      actions = optional(object({
+        action_type = string
+        custom_action = optional(object({
+          exe        = string
+          parameters = optional(string)
+        }))
+        min_process_execution_time = optional(string, "00:00:00")
+      }))
+      triggers = optional(object({
+        private_bytes_in_kb = optional(number)
+        requests = optional(object({
+          count         = number
+          time_interval = string
+        }))
+        slow_requests = optional(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        }))
+        slow_requests_with_path = optional(list(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        })), [])
+        status_codes = optional(list(object({
+          count         = number
+          time_interval = string
+          status        = number
+          path          = optional(string)
+          sub_status    = optional(number)
+          win32_status  = optional(number)
+        })), [])
+        status_codes_range = optional(list(object({
+          count         = number
+          time_interval = string
+          status_codes  = string
+          path          = optional(string)
+        })), [])
+      }))
+    }))
     auto_swap_slot_name                           = optional(string)
     container_registry_managed_identity_client_id = optional(string)
     container_registry_use_managed_identity       = optional(bool)
-    default_documents                             = optional(list(string))
-    elastic_instance_minimum                      = optional(number)
-    ftps_state                                    = optional(string, "FtpsOnly")
-    health_check_eviction_time_in_min             = optional(number)
-    health_check_path                             = optional(string)
-    http2_enabled                                 = optional(bool, false)
-    ip_restriction_default_action                 = optional(string, "Allow")
-    load_balancing_mode                           = optional(string, "LeastRequests")
-    managed_pipeline_mode                         = optional(string, "Integrated")
-    minimum_tls_version                           = optional(string, "1.3")
-    pre_warmed_instance_count                     = optional(number)
-    remote_debugging_enabled                      = optional(bool, false)
-    remote_debugging_version                      = optional(string)
-    runtime_scale_monitoring_enabled              = optional(bool)
-    scm_ip_restriction_default_action             = optional(string, "Allow")
-    scm_minimum_tls_version                       = optional(string, "1.2")
-    scm_use_main_ip_restriction                   = optional(bool, false)
-    use_32_bit_worker                             = optional(bool, false)
-    vnet_route_all_enabled                        = optional(bool, false)
-    websockets_enabled                            = optional(bool, false)
-    worker_count                                  = optional(number)
-    application_insights_connection_string        = optional(string)
-    application_insights_key                      = optional(string)
-    slot_application_insights_object_key          = optional(string)
+    cors = optional(object({
+      allowed_origins     = optional(list(string))
+      support_credentials = optional(bool, false)
+    }))
+    default_documents              = optional(list(string))
+    detailed_error_logging_enabled = optional(bool)
+    document_root                  = optional(string)
+    dotnet_framework_version       = optional(string, "v4.0")
+    elastic_instance_minimum       = optional(number)
+    elastic_web_app_scale_limit    = optional(number)
+    experiments = optional(object({
+      ramp_up_rules = optional(list(object({
+        action_host_name             = optional(string)
+        change_decision_callback_url = optional(string)
+        change_interval_in_minutes   = optional(number)
+        change_step                  = optional(number)
+        max_reroute_percentage       = optional(number)
+        min_reroute_percentage       = optional(number)
+        name                         = optional(string)
+        reroute_percentage           = optional(number)
+      })), [])
+    }))
+    ftps_state = optional(string, "FtpsOnly")
+    handler_mappings = optional(list(object({
+      arguments        = optional(string)
+      extension        = optional(string)
+      script_processor = optional(string)
+    })))
+    health_check_path    = optional(string)
+    http2_enabled        = optional(bool, false)
+    http20_proxy_flag    = optional(number)
+    http_logging_enabled = optional(bool)
+    ip_restriction = optional(list(object({
+      action                    = optional(string, "Allow")
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+      headers = optional(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(list(string))
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      }))
+    })), [])
+    ip_restriction_default_action = optional(string, "Allow")
+    java_container                = optional(string)
+    java_container_version        = optional(string)
+    java_version                  = optional(string)
+    limits = optional(object({
+      max_disk_size_in_mb = optional(number)
+      max_memory_in_mb    = optional(number)
+      max_percentage_cpu  = optional(number)
+    }))
+    linux_fx_version                 = optional(string)
+    load_balancing_mode              = optional(string, "LeastRequests")
+    local_mysql_enabled              = optional(bool, false)
+    logs_directory_size_limit        = optional(number)
+    managed_pipeline_mode            = optional(string, "Integrated")
+    min_tls_cipher_suite             = optional(string)
+    minimum_tls_version              = optional(string, "1.3")
+    node_version                     = optional(string)
+    php_version                      = optional(string)
+    powershell_version               = optional(string)
+    pre_warmed_instance_count        = optional(number)
+    python_version                   = optional(string)
+    remote_debugging_enabled         = optional(bool, false)
+    remote_debugging_version         = optional(string)
+    request_tracing_enabled          = optional(bool)
+    request_tracing_expiration_time  = optional(string)
+    runtime_scale_monitoring_enabled = optional(bool)
+    scm_ip_restriction = optional(list(object({
+      action                    = optional(string, "Allow")
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number, 65000)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+      headers = optional(object({
+        x_azure_fdid      = optional(list(string))
+        x_fd_health_probe = optional(list(string))
+        x_forwarded_for   = optional(list(string))
+        x_forwarded_host  = optional(list(string))
+      }))
+    })), [])
+    scm_ip_restriction_default_action      = optional(string, "Allow")
+    scm_minimum_tls_version                = optional(string, "1.2")
+    scm_type                               = optional(string, "None")
+    scm_use_main_ip_restriction            = optional(bool, false)
+    tracing_options                        = optional(string)
+    use_32_bit_worker                      = optional(bool, false)
+    vnet_private_ports_count               = optional(number)
+    vnet_route_all_enabled                 = optional(bool, false)
+    website_time_zone                      = optional(string)
+    websockets_enabled                     = optional(bool, false)
+    windows_fx_version                     = optional(string)
+    worker_count                           = optional(number)
+    application_insights_connection_string = optional(string)
+    application_insights_key               = optional(string)
+    slot_application_insights_object_key   = optional(string)
     application_stack = optional(object({
       docker = optional(object({
         docker_image_name   = optional(string)
@@ -313,9 +539,30 @@ variable "site_config" {
         powershell_version = optional(string)
       }))
     }))
+    virtual_application = optional(list(object({
+      physical_path   = optional(string, "site\\wwwroot")
+      preload_enabled = optional(bool, false)
+      virtual_path    = optional(string, "/")
+      virtual_directory = optional(list(object({
+        physical_path = optional(string)
+        virtual_path  = optional(string)
+      })), [])
+    })), [])
   })
   default     = {}
   description = "Site configuration for the deployment slot."
+}
+
+variable "ssh_enabled" {
+  type        = bool
+  default     = null
+  description = "Should SSH be enabled?"
+}
+
+variable "storage_account_required" {
+  type        = bool
+  default     = null
+  description = "Should a storage account be required?"
 }
 
 variable "storage_shares_access_keys" {
@@ -349,8 +596,44 @@ variable "virtual_network_subnet_id" {
   description = "The subnet ID for VNet integration."
 }
 
+variable "vnet_application_traffic_enabled" {
+  type        = bool
+  default     = false
+  description = "Should application traffic use VNet routing? Defaults to `false`."
+}
+
+variable "vnet_backup_restore_enabled" {
+  type        = bool
+  default     = false
+  description = "Should backup/restore traffic use VNet routing? Defaults to `false`."
+}
+
+variable "vnet_content_share_enabled" {
+  type        = bool
+  default     = false
+  description = "Should content share traffic use VNet routing? Defaults to `false`."
+}
+
+variable "vnet_image_pull_enabled" {
+  type        = bool
+  default     = false
+  description = "Should image pull traffic use VNet routing? Defaults to `false`."
+}
+
+variable "vnet_route_all_traffic" {
+  type        = bool
+  default     = false
+  description = "Should all outbound traffic use VNet routing? Defaults to `false`."
+}
+
 variable "webdeploy_publish_basic_authentication_enabled" {
   type        = bool
   default     = false
   description = "Should WebDeploy basic authentication be enabled? Defaults to `false`."
+}
+
+variable "workload_profile_name" {
+  type        = string
+  default     = null
+  description = "The workload profile name."
 }

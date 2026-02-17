@@ -15,7 +15,7 @@ resource "azapi_resource" "this" {
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "identity" {
-    for_each = local.has_identity ? [local.identity_block] : []
+    for_each = module.site_config_helpers.has_identity ? [module.site_config_helpers.identity_block] : []
 
     content {
       type         = identity.value.type

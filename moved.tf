@@ -5,68 +5,19 @@
 # ===========================
 # Main App Resource
 # ===========================
-# The six mutually exclusive azurerm app resources are consolidated into a single
-# azapi_resource.this. Only one of these will match a given deployment's state.
 
 moved {
   from = azurerm_linux_web_app.this[0]
   to   = azapi_resource.this
 }
 
-/* moved {
-  from = azurerm_windows_web_app.this[0]
-  to   = azapi_resource.this
-}
-
-moved {
-  from = azurerm_linux_function_app.this[0]
-  to   = azapi_resource.this
-}
-
-moved {
-  from = azurerm_windows_function_app.this[0]
-  to   = azapi_resource.this
-}
-
-moved {
-  from = azurerm_function_app_flex_consumption.this[0]
-  to   = azapi_resource.this
-}
-
-moved {
-  from = azurerm_logic_app_standard.this[0]
-  to   = azapi_resource.this
-} */
-
 # ===========================
 # Deployment Slots
 # ===========================
-# Four mutually exclusive slot types consolidated into the slot submodule.
-# Chained: azurerm_*_slot.this → azapi_resource.slot → module.slot.azapi_resource.this
 
 moved {
-  from = azurerm_linux_web_app_slot.this
+  from = module.slot.azapi_resource.this
   to   = azapi_resource.slot
-}
-
-/* moved {
-  from = azurerm_windows_web_app_slot.this
-  to   = azapi_resource.slot
-}
-
-moved {
-  from = azurerm_linux_function_app_slot.this
-  to   = azapi_resource.slot
-}
-
-moved {
-  from = azurerm_windows_function_app_slot.this
-  to   = azapi_resource.slot
-} */
-
-moved {
-  from = azapi_resource.slot
-  to   = module.slot.azapi_resource.this
 }
 
 # ===========================
@@ -75,93 +26,26 @@ moved {
 
 moved {
   from = azurerm_application_insights.this[0]
-  to   = azapi_resource.application_insights[0]
+  to   = azapi_resource.application_insights["main"]
 }
 
 moved {
   from = azurerm_application_insights.slot
-  to   = azapi_resource.slot_application_insights
+  to   = azapi_resource.application_insights
 }
 
 # ===========================
 # Custom Hostname Bindings
 # ===========================
-# Chained: azurerm_*_hostname_binding → azapi_resource.hostname_binding → module.hostname_binding.azapi_resource.this
 
 moved {
   from = azurerm_app_service_custom_hostname_binding.this
-  to   = azapi_resource.hostname_binding
-}
-
-moved {
-  from = azurerm_app_service_slot_custom_hostname_binding.slot
-  to   = azapi_resource.slot_hostname_binding
-}
-
-moved {
-  from = azapi_resource.hostname_binding
   to   = module.hostname_binding.azapi_resource.this
 }
 
 moved {
-  from = azapi_resource.slot_hostname_binding
+  from = azurerm_app_service_slot_custom_hostname_binding.slot
   to   = module.slot_hostname_binding.azapi_resource.this
-}
-
-# ===========================
-# Config Resources → Submodules
-# ===========================
-# Resources that used count are mapped to module for_each with explicit instance keys.
-# Resources that used for_each are mapped with matching keys.
-
-moved {
-  from = azapi_resource.appsettings[0]
-  to   = module.config_appsettings["default"].azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.connectionstrings[0]
-  to   = module.config_connectionstrings["default"].azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.azurestorageaccounts[0]
-  to   = module.config_azurestorageaccounts["default"].azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.slotconfignames[0]
-  to   = module.config_slotconfignames["default"].azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.backup
-  to   = module.config_backup.azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.logs
-  to   = module.config_logs.azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.authsettings
-  to   = module.config_authsettings.azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.authsettingsv2
-  to   = module.config_authsettingsv2.azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.ftp_publishing_credential_policy[0]
-  to   = module.ftp_publishing_credential_policy["default"].azapi_resource.this
-}
-
-moved {
-  from = azapi_resource.scm_publishing_credential_policy[0]
-  to   = module.scm_publishing_credential_policy["default"].azapi_resource.this
 }
 
 # ===========================

@@ -60,44 +60,40 @@ module "avm_res_web_site" {
   application_insights = {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
-  auto_heal_setting = {
-    setting_1 = {
-      action = {
-        action_type                    = "Recycle"
-        minimum_process_execution_time = "00:01:00"
-      }
-      trigger = {
-        requests = {
-          request = {
-            count    = 100
-            interval = "00:00:30"
-          }
-        }
-        status_code = {
-          status_5000 = {
-            count             = 5000
-            interval          = "00:05:00"
-            path              = "/HealthCheck"
-            status_code_range = 500
-            sub_status        = 0
-          }
-          status_6000 = {
-            count             = 6000
-            interval          = "00:05:00"
-            path              = "/Get"
-            status_code_range = 500
-            sub_status        = 0
-          }
-        }
-      }
-    }
-  }
   enable_telemetry              = var.enable_telemetry
   kind                          = "webapp"
   os_type                       = "Linux"
   public_network_access_enabled = true
   site_config = {
-
+    auto_heal_enabled = true
+    auto_heal_rules = {
+      actions = {
+        action_type                = "Recycle"
+        min_process_execution_time = "00:01:00"
+      }
+      triggers = {
+        requests = {
+          count         = 100
+          time_interval = "00:00:30"
+        }
+        status_codes = [
+          {
+            count         = 5000
+            time_interval = "00:05:00"
+            path          = "/HealthCheck"
+            status        = 500
+            sub_status    = 0
+          },
+          {
+            count         = 6000
+            time_interval = "00:05:00"
+            path          = "/Get"
+            status        = 500
+            sub_status    = 0
+          },
+        ]
+      }
+    }
   }
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"

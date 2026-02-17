@@ -5,7 +5,7 @@ output "active_slot" {
 
 output "application_insights" {
   description = "The application insights resource."
-  value       = var.enable_application_insights ? azapi_resource.application_insights[0] : null
+  value       = var.enable_application_insights ? azapi_resource.application_insights["main"] : null
 }
 
 output "deployment_slot_locks" {

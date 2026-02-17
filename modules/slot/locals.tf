@@ -1,3 +1,27 @@
+module "site_config_helpers" {
+  source = "../site_config_helpers"
+
+  os_type            = var.os_type
+  managed_identities = var.managed_identities
+  site_config        = var.site_config
+}
+
+locals {
+  cors = var.site_config.cors != null ? {
+    allowedOrigins     = var.site_config.cors.allowed_origins
+    supportCredentials = var.site_config.cors.support_credentials
+  } : null
+  virtual_applications = var.os_type == "Windows" ? [for va in var.site_config.virtual_application : {
+    physicalPath   = va.physical_path
+    preloadEnabled = va.preload_enabled
+    virtualPath    = va.virtual_path
+    virtualDirectories = [for vd in va.virtual_directory : {
+      physicalPath = vd.physical_path
+      virtualPath  = vd.virtual_path
+    }]
+  }] : null
+}
+
 locals {
   # Connection strings
   connection_strings_body = {
@@ -6,32 +30,7 @@ locals {
       value = v.value
     }
   }
-  has_identity = local.managed_identity_type != null
-  identity_block = local.has_identity ? {
-    type         = local.managed_identity_type
-    identity_ids = length(var.managed_identities.user_assigned_resource_ids) > 0 ? tolist(var.managed_identities.user_assigned_resource_ids) : null
-  } : null
   is_linux = var.os_type == "Linux"
-  # Compute linuxFxVersion from the application stack
-  linux_fx_version = (
-    local.is_linux && var.site_config.application_stack != null ? coalesce(
-      try(var.site_config.application_stack.docker != null ? "DOCKER|${trimprefix(coalesce(var.site_config.application_stack.docker.docker_registry_url, ""), "https://")}/${var.site_config.application_stack.docker.docker_image_name}:${var.site_config.application_stack.docker.docker_image_tag}" : null, null),
-      try(var.site_config.application_stack.python != null ? "PYTHON|${var.site_config.application_stack.python.python_version}" : null, null),
-      try(var.site_config.application_stack.node != null ? "NODE|${var.site_config.application_stack.node.node_version}" : null, null),
-      try(var.site_config.application_stack.dotnet != null ? "DOTNETCORE|${var.site_config.application_stack.dotnet.dotnet_version}" : null, null),
-      try(var.site_config.application_stack.java != null ? "JAVA|${var.site_config.application_stack.java.java_version}-${lower(coalesce(var.site_config.application_stack.java.java_container, "java"))}${var.site_config.application_stack.java.java_container_version != null ? "-${var.site_config.application_stack.java.java_container_version}" : ""}" : null, null),
-      try(var.site_config.application_stack.powershell != null ? "POWERSHELL|${var.site_config.application_stack.powershell.powershell_version}" : null, null),
-      try(var.site_config.application_stack.php != null ? "PHP|${var.site_config.application_stack.php.php_version}" : null, null),
-      null,
-    ) : null
-  )
-  # Identity
-  managed_identity_type = (
-    var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" :
-    var.managed_identities.system_assigned ? "SystemAssigned" :
-    length(var.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" :
-    null
-  )
   # Merge app settings: slot-level + additional from main module + application insights
   merged_app_settings = merge(
     var.app_settings,
