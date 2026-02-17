@@ -218,7 +218,7 @@ Description: A map of authentication settings to assign to the App Service.
 Type:
 
 ```hcl
-map(object({
+object({
     additional_login_parameters    = optional(map(string))
     allowed_external_redirect_urls = optional(list(string))
     default_provider               = optional(string)
@@ -228,223 +228,233 @@ map(object({
     token_refresh_extension_hours  = optional(number, 72)
     token_store_enabled            = optional(bool, false)
     unauthenticated_client_action  = optional(string)
-    active_directory = optional(map(object({
+    active_directory = optional(object({
       client_id                  = optional(string)
       allowed_audiences          = optional(list(string))
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
-    })), {})
-    facebook = optional(map(object({
+    }))
+    facebook = optional(object({
       app_id                  = optional(string)
       app_secret              = optional(string)
       app_secret_setting_name = optional(string)
       oauth_scopes            = optional(list(string))
-    })), {})
-    github = optional(map(object({
+    }))
+    github = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    google = optional(map(object({
+    }))
+    google = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    microsoft = optional(map(object({
+    }))
+    microsoft = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    twitter = optional(map(object({
+    }))
+    twitter = optional(object({
       consumer_key                 = optional(string)
       consumer_secret              = optional(string)
       consumer_secret_setting_name = optional(string)
-    })), {})
-  }))
+    }))
+  })
 ```
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_auth_settings_v2"></a> [auth\_settings\_v2](#input\_auth\_settings\_v2)
 
-Description: A map of authentication settings (V2) to assign to the App Service.
+Description: Authentication settings V2 configuration for the App Service. Mirrors the API structure.
 
 - `auth_enabled` - (Optional) Is authentication enabled? Defaults to `false`.
 - `config_file_path` - (Optional) The path to the auth configuration file.
-- `default_provider` - (Optional) The default authentication provider.
 - `excluded_paths` - (Optional) A list of paths excluded from authentication.
 - `forward_proxy_convention` - (Optional) The convention for forwarding proxy headers. Defaults to `NoProxy`.
 - `forward_proxy_custom_host_header_name` - (Optional) The custom host header name for the forward proxy.
-- `forward_proxy_custom_scheme_header_name` - (Optional) The custom scheme header name for the forward proxy.
+- `forward_proxy_custom_proto_header_name` - (Optional) The custom proto header name for the forward proxy.
 - `http_route_api_prefix` - (Optional) The prefix for the HTTP route API. Defaults to `/.auth`.
+- `redirect_to_provider` - (Optional) The default authentication provider when multiple providers are configured.
 - `require_authentication` - (Optional) Should authentication be required? Defaults to `false`.
 - `require_https` - (Optional) Should HTTPS be required? Defaults to `true`.
 - `runtime_version` - (Optional) The runtime version of the auth module. Defaults to `~1`.
-- `unauthenticated_action` - (Optional) The action for unauthenticated requests. Defaults to `RedirectToLoginPage`.
-- `active_directory_v2` - (Optional) An Active Directory V2 authentication block.
-  - `allowed_applications` - (Optional) A list of allowed application IDs.
-  - `allowed_audiences` - (Optional) A list of allowed audience values.
-  - `allowed_groups` - (Optional) A list of allowed group IDs.
-  - `allowed_identities` - (Optional) A list of allowed identity values.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the client secret certificate.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `jwt_allowed_client_applications` - (Optional) A list of allowed JWT client applications.
-  - `jwt_allowed_groups` - (Optional) A list of allowed JWT groups.
-  - `login_parameters` - (Optional) A map of login parameters.
-  - `tenant_auth_endpoint` - (Optional) The tenant authentication endpoint.
-  - `www_authentication_disabled` - (Optional) Should WWW-Authenticate be disabled? Defaults to `false`.
-- `apple_v2` - (Optional) An Apple V2 authentication block.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `login_scopes` - (Optional) A list of login scopes.
-- `azure_static_web_app_v2` - (Optional) An Azure Static Web App V2 authentication block.
-  - `client_id` - (Optional) The Client ID.
-- `custom_oidc_v2` - (Optional) A Custom OIDC V2 authentication block.
-  - `authorisation_endpoint` - (Optional) The authorisation endpoint.
-  - `certification_uri` - (Optional) The certification URI.
-  - `client_credential_method` - (Optional) The client credential method.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `issuer_endpoint` - (Optional) The issuer endpoint.
-  - `name` - (Optional) The name of the custom OIDC provider.
-  - `name_claim_type` - (Optional) The name claim type.
-  - `openid_configuration_endpoint` - (Optional) The OpenID configuration endpoint.
-  - `scopes` - (Optional) A list of scopes.
-  - `token_endpoint` - (Optional) The token endpoint.
-- `facebook_v2` - (Optional) A Facebook V2 authentication block.
-  - `app_id` - (Optional) The App ID.
-  - `app_secret_setting_name` - (Optional) The app setting name that contains the app secret.
-  - `graph_api_version` - (Optional) The Facebook Graph API version.
-  - `login_scopes` - (Optional) A list of login scopes.
-- `github_v2` - (Optional) A GitHub V2 authentication block.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `login_scopes` - (Optional) A list of login scopes.
-- `google_v2` - (Optional) A Google V2 authentication block.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `allowed_audiences` - (Optional) A list of allowed audience values.
-  - `login_scopes` - (Optional) A list of login scopes.
-- `login` - (Optional) A login configuration block.
-  - `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
-  - `cookie_expiration_convention` - (Optional) The cookie expiration convention. Defaults to `FixedTime`.
-  - `cookie_expiration_time` - (Optional) The cookie expiration time. Defaults to `08:00:00`.
-  - `logout_endpoint` - (Optional) The logout endpoint.
-  - `nonce_expiration_time` - (Optional) The nonce expiration time. Defaults to `00:05:00`.
-  - `preserve_url_fragments_for_logins` - (Optional) Should URL fragments be preserved? Defaults to `false`.
-  - `token_refresh_extension_time` - (Optional) Hours before token expiry to refresh. Defaults to `72`.
-  - `token_store_enabled` - (Optional) Should the token store be enabled? Defaults to `false`.
-  - `token_store_path` - (Optional) The path to the token store.
-  - `token_store_sas_setting_name` - (Optional) The app setting name that contains the SAS for the token store.
-  - `validate_nonce` - (Optional) Should the nonce be validated? Defaults to `true`.
-- `microsoft_v2` - (Optional) A Microsoft V2 authentication block.
-  - `client_id` - (Optional) The Client ID.
-  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-  - `allowed_audiences` - (Optional) A list of allowed audience values.
-  - `login_scopes` - (Optional) A list of login scopes.
-- `twitter_v2` - (Optional) A Twitter V2 authentication block.
-  - `consumer_key` - (Optional) The consumer key.
-  - `consumer_secret_setting_name` - (Optional) The app setting name that contains the consumer secret.
+- `unauthenticated_client_action` - (Optional) The action for unauthenticated requests. Defaults to `RedirectToLoginPage`.
+- `identity_providers` - (Optional) The identity providers configuration. See variable description in the submodule for full details.
+- `login` - (Optional) The login configuration. See variable description in the submodule for full details.
 
 Type:
 
 ```hcl
-map(object({
-    auth_enabled                            = optional(bool, false)
-    config_file_path                        = optional(string)
-    default_provider                        = optional(string)
-    excluded_paths                          = optional(list(string))
-    forward_proxy_convention                = optional(string, "NoProxy")
-    forward_proxy_custom_host_header_name   = optional(string)
-    forward_proxy_custom_scheme_header_name = optional(string)
-    http_route_api_prefix                   = optional(string, "/.auth")
-    require_authentication                  = optional(bool, false)
-    require_https                           = optional(bool, true)
-    runtime_version                         = optional(string, "~1")
-    unauthenticated_action                  = optional(string, "RedirectToLoginPage")
-    active_directory_v2 = optional(map(object({
-      allowed_applications                 = optional(list(string))
-      allowed_audiences                    = optional(list(string))
-      allowed_groups                       = optional(list(string))
-      allowed_identities                   = optional(list(string))
-      client_id                            = optional(string)
-      client_secret_certificate_thumbprint = optional(string)
-      client_secret_setting_name           = optional(string)
-      jwt_allowed_client_applications      = optional(list(string))
-      jwt_allowed_groups                   = optional(list(string))
-      login_parameters                     = optional(map(any))
-      tenant_auth_endpoint                 = optional(string)
-      www_authentication_disabled          = optional(bool, false)
-    })), {})
-    apple_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
-    })), {})
-    azure_static_web_app_v2 = optional(map(object({
-      client_id = optional(string)
-    })), {})
-    custom_oidc_v2 = optional(map(object({
-      authorisation_endpoint        = optional(string)
-      certification_uri             = optional(string)
-      client_credential_method      = optional(string)
-      client_id                     = optional(string)
-      client_secret_setting_name    = optional(string)
-      issuer_endpoint               = optional(string)
-      name                          = optional(string)
-      name_claim_type               = optional(string)
-      openid_configuration_endpoint = optional(string)
-      scopes                        = optional(list(string))
-      token_endpoint                = optional(string)
-    })), {})
-    facebook_v2 = optional(map(object({
-      app_id                  = optional(string)
-      app_secret_setting_name = optional(string)
-      graph_api_version       = optional(string)
-      login_scopes            = optional(list(string))
-    })), {})
-    github_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
-    })), {})
-    google_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      allowed_audiences          = optional(list(string))
-      login_scopes               = optional(list(string))
-    })), {})
-    login = optional(map(object({
-      allowed_external_redirect_urls    = optional(list(string))
-      cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "08:00:00")
-      logout_endpoint                   = optional(string)
-      nonce_expiration_time             = optional(string, "00:05:00")
+object({
+    auth_enabled                           = optional(bool, false)
+    config_file_path                       = optional(string)
+    excluded_paths                         = optional(list(string))
+    forward_proxy_convention               = optional(string, "NoProxy")
+    forward_proxy_custom_host_header_name  = optional(string)
+    forward_proxy_custom_proto_header_name = optional(string)
+    http_route_api_prefix                  = optional(string, "/.auth")
+    redirect_to_provider                   = optional(string)
+    require_authentication                 = optional(bool, false)
+    require_https                          = optional(bool, true)
+    runtime_version                        = optional(string, "~1")
+    unauthenticated_client_action          = optional(string, "RedirectToLoginPage")
+    identity_providers = optional(object({
+      apple = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+      }))
+      azure_active_directory = optional(object({
+        enabled             = optional(bool)
+        is_auto_provisioned = optional(bool)
+        login = optional(object({
+          disable_www_authenticate = optional(bool)
+          login_parameters         = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                                          = optional(string)
+          client_secret_certificate_issuer                   = optional(string)
+          client_secret_certificate_subject_alternative_name = optional(string)
+          client_secret_certificate_thumbprint               = optional(string)
+          client_secret_setting_name                         = optional(string)
+          open_id_issuer                                     = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+          default_authorization_policy = optional(object({
+            allowed_applications = optional(list(string))
+            allowed_principals = optional(object({
+              groups     = optional(list(string))
+              identities = optional(list(string))
+            }))
+          }))
+          jwt_claim_checks = optional(object({
+            allowed_client_applications = optional(list(string))
+            allowed_groups              = optional(list(string))
+          }))
+        }))
+      }))
+      azure_static_web_apps = optional(object({
+        enabled = optional(bool)
+        registration = optional(object({
+          client_id = optional(string)
+        }))
+      }))
+      custom_open_id_connect_providers = optional(map(object({
+        enabled = optional(bool)
+        login = optional(object({
+          name_claim_type = optional(string)
+          scopes          = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id = optional(string)
+          client_credential = optional(object({
+            method                     = optional(string)
+            client_secret_setting_name = optional(string)
+          }))
+          open_id_connect_configuration = optional(object({
+            authorization_endpoint           = optional(string)
+            certification_uri                = optional(string)
+            issuer                           = optional(string)
+            token_endpoint                   = optional(string)
+            well_known_open_id_configuration = optional(string)
+          }))
+        }))
+      })))
+      facebook = optional(object({
+        enabled           = optional(bool)
+        graph_api_version = optional(string)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          app_id                  = optional(string)
+          app_secret_setting_name = optional(string)
+        }))
+      }))
+      github = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+      }))
+      google = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+        }))
+      }))
+      legacy_microsoft_account = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+        }))
+      }))
+      twitter = optional(object({
+        enabled = optional(bool)
+        registration = optional(object({
+          consumer_key                 = optional(string)
+          consumer_secret_setting_name = optional(string)
+        }))
+      }))
+    }))
+    login = optional(object({
+      allowed_external_redirect_urls = optional(list(string))
+      cookie_expiration = optional(object({
+        convention         = optional(string, "FixedTime")
+        time_to_expiration = optional(string, "08:00:00")
+      }))
+      nonce = optional(object({
+        nonce_expiration_interval = optional(string, "00:05:00")
+        validate_nonce            = optional(bool, true)
+      }))
       preserve_url_fragments_for_logins = optional(bool, false)
-      token_refresh_extension_time      = optional(number, 72)
-      token_store_enabled               = optional(bool, false)
-      token_store_path                  = optional(string)
-      token_store_sas_setting_name      = optional(string)
-      validate_nonce                    = optional(bool, true)
-    })), {})
-    microsoft_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      allowed_audiences          = optional(list(string))
-      login_scopes               = optional(list(string))
-    })), {})
-    twitter_v2 = optional(map(object({
-      consumer_key                 = optional(string)
-      consumer_secret_setting_name = optional(string)
-    })), {})
-  }))
+      routes = optional(object({
+        logout_endpoint = optional(string)
+      }))
+      token_store = optional(object({
+        azure_blob_storage = optional(object({
+          sas_url_setting_name = optional(string)
+        }))
+        enabled = optional(bool, false)
+        file_system = optional(object({
+          directory = optional(string)
+        }))
+        token_refresh_extension_hours = optional(number, 72)
+      }))
+    }))
+  })
 ```
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_auto_heal_setting"></a> [auto\_heal\_setting](#input\_auto\_heal\_setting)
 

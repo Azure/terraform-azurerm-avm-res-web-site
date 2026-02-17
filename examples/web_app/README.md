@@ -72,14 +72,18 @@ module "avm_res_web_site" {
     workspace_resource_id = azapi_resource.log_analytics_workspace.id
   }
   auth_settings_v2 = {
-    default = {
-      auth_enabled     = true
-      default_provider = "okta"
-      custom_oidc_v2 = {
+    auth_enabled         = true
+    redirect_to_provider = "okta"
+    identity_providers = {
+      custom_open_id_connect_providers = {
         default = {
-          name                          = "example_oidc_provider"
-          client_id                     = "your-client-id"
-          openid_configuration_endpoint = "https://test-config-endpoint.com/.well-known/openid-configuration"
+          enabled = true
+          registration = {
+            client_id = "your-client-id"
+            open_id_connect_configuration = {
+              well_known_open_id_configuration = "https://test-config-endpoint.com/.well-known/openid-configuration"
+            }
+          }
         }
       }
     }

@@ -62,31 +62,27 @@ module "avm_res_web_site" {
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   auth_settings = {
-    sso = {
-      enabled = true
-      active_directory = {
-        aad = {
-          client_id                  = "000000-000000-000000-000000"
-          client_secret_setting_name = "SSO_CLIENT_SECRET"
-        }
-      }
+    enabled = true
+    active_directory = {
+      client_id                  = "000000-000000-000000-000000"
+      client_secret_setting_name = "SSO_CLIENT_SECRET"
     }
   }
   auth_settings_v2 = {
-    setting1 = {
-      auth_enabled     = true
-      default_provider = "AzureActiveDirectory"
-
-      active_directory_v2 = {
-        aad1 = {
-          client_id            = "<>"
-          tenant_auth_endpoint = "https://login.microsoftonline.com/{}/v2.0/"
+    auth_enabled         = true
+    redirect_to_provider = "AzureActiveDirectory"
+    identity_providers = {
+      azure_active_directory = {
+        enabled = true
+        registration = {
+          client_id      = "<>"
+          open_id_issuer = "https://login.microsoftonline.com/{}/v2.0/"
         }
       }
-      login = {
-        login1 = {
-          token_store_enabled = true
-        }
+    }
+    login = {
+      token_store = {
+        enabled = true
       }
     }
   }

@@ -36,44 +36,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_active_directory_v2"></a> [active\_directory\_v2](#input\_active\_directory\_v2)
-
-Description: Active Directory V2 authentication configuration.
-
-- `allowed_applications` - (Optional) A list of allowed application IDs.
-- `allowed_audiences` - (Optional) A list of allowed audience values.
-- `allowed_groups` - (Optional) A list of allowed group IDs.
-- `allowed_identities` - (Optional) A list of allowed identity values.
-- `client_id` - (Optional) The Client ID.
-- `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the client secret certificate.
-- `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
-- `jwt_allowed_client_applications` - (Optional) A list of allowed JWT client applications.
-- `jwt_allowed_groups` - (Optional) A list of allowed JWT groups.
-- `login_parameters` - (Optional) A map of login parameters.
-- `tenant_auth_endpoint` - (Optional) The tenant authentication endpoint.
-- `www_authentication_disabled` - (Optional) Should WWW-Authenticate be disabled? Defaults to `false`.
-
-Type:
-
-```hcl
-map(object({
-    allowed_applications                 = optional(list(string))
-    allowed_audiences                    = optional(list(string))
-    allowed_groups                       = optional(list(string))
-    allowed_identities                   = optional(list(string))
-    client_id                            = optional(string)
-    client_secret_certificate_thumbprint = optional(string)
-    client_secret_setting_name           = optional(string)
-    jwt_allowed_client_applications      = optional(list(string))
-    jwt_allowed_groups                   = optional(list(string))
-    login_parameters                     = optional(map(any))
-    tenant_auth_endpoint                 = optional(string)
-    www_authentication_disabled          = optional(bool, false)
-  }))
-```
-
-Default: `{}`
-
 ### <a name="input_auth_enabled"></a> [auth\_enabled](#input\_auth\_enabled)
 
 Description: Is authentication enabled? Defaults to `false`.
@@ -114,9 +76,9 @@ Type: `string`
 
 Default: `null`
 
-### <a name="input_forward_proxy_custom_scheme_header_name"></a> [forward\_proxy\_custom\_scheme\_header\_name](#input\_forward\_proxy\_custom\_scheme\_header\_name)
+### <a name="input_forward_proxy_custom_proto_header_name"></a> [forward\_proxy\_custom\_proto\_header\_name](#input\_forward\_proxy\_custom\_proto\_header\_name)
 
-Description: The custom scheme header name for the forward proxy.
+Description: The custom proto header name for the forward proxy.
 
 Type: `string`
 
@@ -130,41 +92,290 @@ Type: `string`
 
 Default: `"/.auth"`
 
-### <a name="input_login"></a> [login](#input\_login)
+### <a name="input_identity_providers"></a> [identity\_providers](#input\_identity\_providers)
 
-Description: Login configuration for auth settings V2.
+Description: The identity providers configuration for authentication. This mirrors the API structure of `identityProviders`.
 
-- `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
-- `cookie_expiration_convention` - (Optional) The cookie expiration convention. Defaults to `FixedTime`.
-- `cookie_expiration_time` - (Optional) The cookie expiration time. Defaults to `08:00:00`.
-- `logout_endpoint` - (Optional) The logout endpoint.
-- `nonce_expiration_time` - (Optional) The nonce expiration time. Defaults to `00:05:00`.
-- `preserve_url_fragments_for_logins` - (Optional) Should URL fragments be preserved for logins? Defaults to `false`.
-- `token_refresh_extension_time` - (Optional) Hours before token expiry to refresh. Defaults to `72`.
-- `token_store_enabled` - (Optional) Should the token store be enabled? Defaults to `false`.
-- `token_store_path` - (Optional) The path to the token store.
-- `token_store_sas_setting_name` - (Optional) The app setting name that contains the token store SAS URL.
-- `validate_nonce` - (Optional) Should the nonce be validated? Defaults to `true`.
+- `apple` - (Optional) The Apple provider configuration.
+  - `enabled` - (Optional) Whether the Apple provider is enabled.
+  - `login` - (Optional) The login configuration.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+- `azure_active_directory` - (Optional) The Azure Active Directory provider configuration.
+  - `enabled` - (Optional) Whether the Azure AD provider is enabled.
+  - `is_auto_provisioned` - (Optional) Whether the Azure AD configuration was auto-provisioned.
+  - `login` - (Optional) The login configuration.
+    - `disable_www_authenticate` - (Optional) Whether to disable WWW-Authenticate.
+    - `login_parameters` - (Optional) Login parameters as a list of "key=value" strings.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_secret_certificate_issuer` - (Optional) The certificate issuer for the client secret.
+    - `client_secret_certificate_subject_alternative_name` - (Optional) The certificate subject alternative name.
+    - `client_secret_certificate_thumbprint` - (Optional) The certificate thumbprint for the client secret.
+    - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+    - `open_id_issuer` - (Optional) The OpenID Connect issuer URI.
+  - `validation` - (Optional) The validation configuration.
+    - `allowed_audiences` - (Optional) A list of allowed audiences.
+    - `default_authorization_policy` - (Optional) The default authorization policy.
+      - `allowed_applications` - (Optional) A list of allowed applications.
+      - `allowed_principals` - (Optional) The allowed principals.
+        - `groups` - (Optional) A list of allowed groups.
+        - `identities` - (Optional) A list of allowed identities.
+    - `jwt_claim_checks` - (Optional) JWT claim check configuration.
+      - `allowed_client_applications` - (Optional) A list of allowed client applications.
+      - `allowed_groups` - (Optional) A list of allowed groups.
+- `azure_static_web_apps` - (Optional) The Azure Static Web Apps provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+- `custom_open_id_connect_providers` - (Optional) A map of custom OpenID Connect providers.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `login` - (Optional) The login configuration.
+    - `name_claim_type` - (Optional) The name claim type.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_credential` - (Optional) The client credential configuration.
+      - `method` - (Optional) The client credential method.
+      - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+    - `open_id_connect_configuration` - (Optional) The OpenID Connect configuration.
+      - `authorization_endpoint` - (Optional) The authorization endpoint.
+      - `certification_uri` - (Optional) The certification URI.
+      - `issuer` - (Optional) The issuer endpoint.
+      - `token_endpoint` - (Optional) The token endpoint.
+      - `well_known_open_id_configuration` - (Optional) The well-known OpenID configuration endpoint.
+- `facebook` - (Optional) The Facebook provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `graph_api_version` - (Optional) The Graph API version.
+  - `login` - (Optional) The login configuration.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `app_id` - (Optional) The App ID.
+    - `app_secret_setting_name` - (Optional) The app setting name containing the app secret.
+- `github` - (Optional) The GitHub provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `login` - (Optional) The login configuration.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+- `google` - (Optional) The Google provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `login` - (Optional) The login configuration.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+  - `validation` - (Optional) The validation configuration.
+    - `allowed_audiences` - (Optional) A list of allowed audiences.
+- `legacy_microsoft_account` - (Optional) The legacy Microsoft Account provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `login` - (Optional) The login configuration.
+    - `scopes` - (Optional) A list of scopes.
+  - `registration` - (Optional) The registration configuration.
+    - `client_id` - (Optional) The Client ID.
+    - `client_secret_setting_name` - (Optional) The app setting name containing the client secret.
+  - `validation` - (Optional) The validation configuration.
+    - `allowed_audiences` - (Optional) A list of allowed audiences.
+- `twitter` - (Optional) The Twitter provider configuration.
+  - `enabled` - (Optional) Whether the provider is enabled.
+  - `registration` - (Optional) The registration configuration.
+    - `consumer_key` - (Optional) The consumer key.
+    - `consumer_secret_setting_name` - (Optional) The app setting name containing the consumer secret.
 
 Type:
 
 ```hcl
-map(object({
-    allowed_external_redirect_urls    = optional(list(string))
-    cookie_expiration_convention      = optional(string, "FixedTime")
-    cookie_expiration_time            = optional(string, "08:00:00")
-    logout_endpoint                   = optional(string)
-    nonce_expiration_time             = optional(string, "00:05:00")
-    preserve_url_fragments_for_logins = optional(bool, false)
-    token_refresh_extension_time      = optional(number, 72)
-    token_store_enabled               = optional(bool, false)
-    token_store_path                  = optional(string)
-    token_store_sas_setting_name      = optional(string)
-    validate_nonce                    = optional(bool, true)
-  }))
+object({
+    apple = optional(object({
+      enabled = optional(bool)
+      login = optional(object({
+        scopes = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id                  = optional(string)
+        client_secret_setting_name = optional(string)
+      }))
+    }))
+    azure_active_directory = optional(object({
+      enabled             = optional(bool)
+      is_auto_provisioned = optional(bool)
+      login = optional(object({
+        disable_www_authenticate = optional(bool)
+        login_parameters         = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id                                          = optional(string)
+        client_secret_certificate_issuer                   = optional(string)
+        client_secret_certificate_subject_alternative_name = optional(string)
+        client_secret_certificate_thumbprint               = optional(string)
+        client_secret_setting_name                         = optional(string)
+        open_id_issuer                                     = optional(string)
+      }))
+      validation = optional(object({
+        allowed_audiences = optional(list(string))
+        default_authorization_policy = optional(object({
+          allowed_applications = optional(list(string))
+          allowed_principals = optional(object({
+            groups     = optional(list(string))
+            identities = optional(list(string))
+          }))
+        }))
+        jwt_claim_checks = optional(object({
+          allowed_client_applications = optional(list(string))
+          allowed_groups              = optional(list(string))
+        }))
+      }))
+    }))
+    azure_static_web_apps = optional(object({
+      enabled = optional(bool)
+      registration = optional(object({
+        client_id = optional(string)
+      }))
+    }))
+    custom_open_id_connect_providers = optional(map(object({
+      enabled = optional(bool)
+      login = optional(object({
+        name_claim_type = optional(string)
+        scopes          = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id = optional(string)
+        client_credential = optional(object({
+          method                     = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+        open_id_connect_configuration = optional(object({
+          authorization_endpoint           = optional(string)
+          certification_uri                = optional(string)
+          issuer                           = optional(string)
+          token_endpoint                   = optional(string)
+          well_known_open_id_configuration = optional(string)
+        }))
+      }))
+    })))
+    facebook = optional(object({
+      enabled           = optional(bool)
+      graph_api_version = optional(string)
+      login = optional(object({
+        scopes = optional(list(string))
+      }))
+      registration = optional(object({
+        app_id                  = optional(string)
+        app_secret_setting_name = optional(string)
+      }))
+    }))
+    github = optional(object({
+      enabled = optional(bool)
+      login = optional(object({
+        scopes = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id                  = optional(string)
+        client_secret_setting_name = optional(string)
+      }))
+    }))
+    google = optional(object({
+      enabled = optional(bool)
+      login = optional(object({
+        scopes = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id                  = optional(string)
+        client_secret_setting_name = optional(string)
+      }))
+      validation = optional(object({
+        allowed_audiences = optional(list(string))
+      }))
+    }))
+    legacy_microsoft_account = optional(object({
+      enabled = optional(bool)
+      login = optional(object({
+        scopes = optional(list(string))
+      }))
+      registration = optional(object({
+        client_id                  = optional(string)
+        client_secret_setting_name = optional(string)
+      }))
+      validation = optional(object({
+        allowed_audiences = optional(list(string))
+      }))
+    }))
+    twitter = optional(object({
+      enabled = optional(bool)
+      registration = optional(object({
+        consumer_key                 = optional(string)
+        consumer_secret_setting_name = optional(string)
+      }))
+    }))
+  })
 ```
 
-Default: `{}`
+Default: `null`
+
+### <a name="input_login"></a> [login](#input\_login)
+
+Description: Login configuration for auth settings V2. Mirrors the API structure of `login`.
+
+- `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
+- `cookie_expiration` - (Optional) The cookie expiration configuration.
+  - `convention` - (Optional) The cookie expiration convention. Defaults to `FixedTime`.
+  - `time_to_expiration` - (Optional) The time after request when the session cookie should expire. Defaults to `08:00:00`.
+- `nonce` - (Optional) The nonce configuration.
+  - `nonce_expiration_interval` - (Optional) The time after request when the nonce should expire. Defaults to `00:05:00`.
+  - `validate_nonce` - (Optional) Should the nonce be validated? Defaults to `true`.
+- `preserve_url_fragments_for_logins` - (Optional) Should URL fragments be preserved for logins? Defaults to `false`.
+- `routes` - (Optional) The login routes configuration.
+  - `logout_endpoint` - (Optional) The logout endpoint.
+- `token_store` - (Optional) The token store configuration.
+  - `azure_blob_storage` - (Optional) The Azure Blob Storage token store configuration.
+    - `sas_url_setting_name` - (Optional) The app setting name containing the SAS URL.
+  - `enabled` - (Optional) Should the token store be enabled? Defaults to `false`.
+  - `file_system` - (Optional) The file system token store configuration.
+    - `directory` - (Optional) The directory for token storage.
+  - `token_refresh_extension_hours` - (Optional) Hours after session token expiry for refresh. Defaults to `72`.
+
+Type:
+
+```hcl
+object({
+    allowed_external_redirect_urls = optional(list(string))
+    cookie_expiration = optional(object({
+      convention         = optional(string, "FixedTime")
+      time_to_expiration = optional(string, "08:00:00")
+    }))
+    nonce = optional(object({
+      nonce_expiration_interval = optional(string, "00:05:00")
+      validate_nonce            = optional(bool, true)
+    }))
+    preserve_url_fragments_for_logins = optional(bool, false)
+    routes = optional(object({
+      logout_endpoint = optional(string)
+    }))
+    token_store = optional(object({
+      azure_blob_storage = optional(object({
+        sas_url_setting_name = optional(string)
+      }))
+      enabled = optional(bool, false)
+      file_system = optional(object({
+        directory = optional(string)
+      }))
+      token_refresh_extension_hours = optional(number, 72)
+    }))
+  })
+```
+
+Default: `null`
+
+### <a name="input_redirect_to_provider"></a> [redirect\_to\_provider](#input\_redirect\_to\_provider)
+
+Description: The default authentication provider to use when multiple providers are configured.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_require_authentication"></a> [require\_authentication](#input\_require\_authentication)
 
@@ -190,7 +401,7 @@ Type: `string`
 
 Default: `"~1"`
 
-### <a name="input_unauthenticated_action"></a> [unauthenticated\_action](#input\_unauthenticated\_action)
+### <a name="input_unauthenticated_client_action"></a> [unauthenticated\_client\_action](#input\_unauthenticated\_client\_action)
 
 Description: The action for unauthenticated requests. Defaults to `RedirectToLoginPage`.
 
