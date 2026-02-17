@@ -30,7 +30,6 @@ locals {
       value = v.value
     }
   }
-  is_linux = var.os_type == "Linux"
   # Merge app settings: slot-level + additional from main module + application insights
   merged_app_settings = merge(
     var.app_settings,
