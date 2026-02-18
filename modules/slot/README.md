@@ -298,14 +298,6 @@ Type: `bool`
 
 Default: `false`
 
-### <a name="input_is_web_app"></a> [is\_web\_app](#input\_is\_web\_app)
-
-Description: Whether the parent app is a web app.
-
-Type: `bool`
-
-Default: `true`
-
 ### <a name="input_key_vault_reference_identity"></a> [key\_vault\_reference\_identity](#input\_key\_vault\_reference\_identity)
 
 Description: The identity to use for Key Vault references.

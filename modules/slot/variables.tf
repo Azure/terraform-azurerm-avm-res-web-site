@@ -208,12 +208,6 @@ variable "is_function_app" {
   description = "Whether the parent app is a function app."
 }
 
-variable "is_web_app" {
-  type        = bool
-  default     = true
-  description = "Whether the parent app is a web app."
-}
-
 variable "key_vault_reference_identity" {
   type        = string
   default     = null

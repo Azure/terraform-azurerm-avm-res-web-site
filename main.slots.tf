@@ -34,7 +34,6 @@ module "slot" {
   hyper_v                                  = each.value.hyper_v
   ip_mode                                  = each.value.ip_mode
   is_function_app                          = local.is_function_app
-  is_web_app                               = local.is_web_app
   key_vault_reference_identity             = each.value.key_vault_reference_identity
   # AVM interfaces
   lock = each.value.lock != null ? each.value.lock : (

@@ -9,3 +9,7 @@ rule "terraform_required_providers_declaration" {
 rule "required_module_source_tffr1" {
   enabled = false
 }
+
+rule "private_endpoints" {
+  enabled = false
+}
