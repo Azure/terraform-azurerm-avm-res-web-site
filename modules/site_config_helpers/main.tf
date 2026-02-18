@@ -13,10 +13,12 @@ locals {
     tag                  = rule.service_tag != null ? "ServiceTag" : (rule.ip_address != null ? "Default" : null)
     vnetSubnetResourceId = rule.virtual_network_subnet_id
     headers = rule.headers != null ? {
-      x-azure-fdid     = rule.headers.x_azure_fdid
-      x-fd-healthprobe = rule.headers.x_fd_health_probe
-      x-forwarded-for  = rule.headers.x_forwarded_for
-      x-forwarded-host = rule.headers.x_forwarded_host
+      for k, v in {
+        "x-azure-fdid"     = rule.headers.x_azure_fdid
+        "x-fd-healthprobe" = rule.headers.x_fd_health_probe
+        "x-forwarded-for"  = rule.headers.x_forwarded_for
+        "x-forwarded-host" = rule.headers.x_forwarded_host
+      } : k => v if v != null
     } : null
   }]
   scm_ip_security_restrictions = [for rule in try(var.site_config.scm_ip_restriction, []) : {
@@ -27,10 +29,12 @@ locals {
     tag                  = rule.service_tag != null ? "ServiceTag" : (rule.ip_address != null ? "Default" : null)
     vnetSubnetResourceId = rule.virtual_network_subnet_id
     headers = rule.headers != null ? {
-      x-azure-fdid     = rule.headers.x_azure_fdid
-      x-fd-healthprobe = rule.headers.x_fd_health_probe
-      x-forwarded-for  = rule.headers.x_forwarded_for
-      x-forwarded-host = rule.headers.x_forwarded_host
+      for k, v in {
+        "x-azure-fdid"     = rule.headers.x_azure_fdid
+        "x-fd-healthprobe" = rule.headers.x_fd_health_probe
+        "x-forwarded-for"  = rule.headers.x_forwarded_for
+        "x-forwarded-host" = rule.headers.x_forwarded_host
+      } : k => v if v != null
     } : null
   }]
 }

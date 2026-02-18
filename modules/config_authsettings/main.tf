@@ -2,7 +2,7 @@
 # The ARM API uses flat property names (e.g. facebookAppId, microsoftAccountClientId)
 # rather than nested objects. Properties for disabled providers are set to null
 # and excluded by the azapi provider during serialization.
-resource "azapi_resource" "this" {
+resource "azapi_update_resource" "this" {
   name      = "authsettings"
   parent_id = var.parent_id
   type      = "Microsoft.Web/sites/config@2025-03-01"

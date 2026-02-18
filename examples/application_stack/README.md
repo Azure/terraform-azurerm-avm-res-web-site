@@ -37,8 +37,7 @@ resource "azapi_resource" "service_plan" {
       name = "S1"
     }
     properties = {
-      reserved      = true
-      zoneRedundant = true
+      reserved = true
     }
   }
   tags = {

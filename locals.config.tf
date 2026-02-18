@@ -34,7 +34,7 @@ locals {
 
 locals {
   site_config_body = {
-    alwaysOn            = var.site_config.always_on
+    alwaysOn            = var.function_app_uses_fc1 ? null : var.site_config.always_on
     apiDefinition       = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
     apiManagementConfig = var.site_config.api_management_api_id != null ? { id = var.site_config.api_management_api_id } : null
     appCommandLine      = var.site_config.app_command_line

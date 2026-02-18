@@ -38,7 +38,7 @@ resource "azapi_resource" "this" {
         imagePullTraffic     = var.vnet_image_pull_enabled
       }
       siteConfig = var.site_config != null ? {
-        alwaysOn                    = var.site_config.always_on
+        alwaysOn                    = var.function_app_uses_fc1 ? null : var.site_config.always_on
         apiDefinition               = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
         apiManagementConfig         = var.site_config.api_management_api_id != null ? { id = var.site_config.api_management_api_id } : null
         appCommandLine              = var.site_config.app_command_line
@@ -158,70 +158,55 @@ resource "azapi_resource" "this" {
 }
 
 # Slot app settings
-resource "azapi_resource" "appsettings" {
-  count = length(var.app_settings) > 0 || length(var.additional_app_settings) > 0 || (var.enable_application_insights && var.is_web_app) ? 1 : 0
+module "config_appsettings" {
+  source   = "../config_appsettings"
+  for_each = length(var.app_settings) > 0 || length(var.additional_app_settings) > 0 || (var.enable_application_insights && var.is_web_app) ? { "default" = {} } : {}
 
-  name      = "appsettings"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = local.merged_app_settings
-  }
-  response_export_values = []
+  app_settings = local.merged_app_settings
+  parent_id    = azapi_resource.this.id
+  is_slot      = true
 }
 
 # Slot connection strings
-resource "azapi_resource" "connectionstrings" {
-  count = length(var.connection_strings) > 0 ? 1 : 0
+module "config_connectionstrings" {
+  source   = "../config_connectionstrings"
+  for_each = length(var.connection_strings) > 0 ? { "default" = {} } : {}
 
-  name      = "connectionstrings"
-  parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = local.connection_strings_body
-  }
-  response_export_values = []
+  connection_strings = var.connection_strings
+  parent_id          = azapi_resource.this.id
+  is_slot            = true
 }
 
 # Slot storage account mounts
-resource "azapi_resource" "azurestorageaccounts" {
-  count = length(var.storage_shares_to_mount) > 0 ? 1 : 0
+module "config_azurestorageaccounts" {
+  source   = "../config_azurestorageaccounts"
+  for_each = length(var.storage_shares_to_mount) > 0 ? { "default" = {} } : {}
 
-  name      = "azurestorageaccounts"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots/config@2025-03-01"
-  body = {
-    properties = local.storage_mounts
-  }
-  response_export_values = []
+  storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
+    access_key = var.storage_shares_access_keys[k]
+  }) }
+  is_slot = true
 }
 
 # Slot FTP publishing credential policy
-resource "azapi_resource" "ftp_publishing_credential_policy" {
-  count = !var.ftp_publish_basic_authentication_enabled ? 1 : 0
+module "ftp_publishing_credential_policy" {
+  source   = "../publishing_credential_policy"
+  for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
   name      = "ftp"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  response_export_values = []
+  allow     = false
+  is_slot   = true
 }
 
 # Slot SCM publishing credential policy
-resource "azapi_resource" "scm_publishing_credential_policy" {
-  count = !var.webdeploy_publish_basic_authentication_enabled ? 1 : 0
+module "scm_publishing_credential_policy" {
+  source   = "../publishing_credential_policy"
+  for_each = !var.webdeploy_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
   name      = "scm"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies@2025-03-01"
-  body = {
-    properties = {
-      allow = false
-    }
-  }
-  response_export_values = []
+  allow     = false
+  is_slot   = true
 }

@@ -178,6 +178,12 @@ variable "ftp_publish_basic_authentication_enabled" {
   description = "Should FTP basic authentication be enabled? Defaults to `false`."
 }
 
+variable "function_app_uses_fc1" {
+  type        = bool
+  default     = false
+  description = "Whether the parent app uses Flex Consumption (FC1) plan."
+}
+
 variable "host_names_disabled" {
   type        = bool
   default     = null

@@ -29,6 +29,7 @@ module "slot" {
   enabled                                  = each.value.enabled
   end_to_end_encryption_enabled            = each.value.end_to_end_encryption_enabled
   ftp_publish_basic_authentication_enabled = each.value.ftp_publish_basic_authentication_enabled
+  function_app_uses_fc1                    = var.function_app_uses_fc1
   host_names_disabled                      = each.value.host_names_disabled
   hosting_environment_id                   = each.value.hosting_environment_id
   https_only                               = each.value.https_only

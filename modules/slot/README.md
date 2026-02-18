@@ -25,17 +25,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.appsettings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.azurestorageaccounts](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.connectionstrings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.ftp_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_dns_zone_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.scm_publishing_credential_policy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -258,6 +253,14 @@ Default: `null`
 ### <a name="input_ftp_publish_basic_authentication_enabled"></a> [ftp\_publish\_basic\_authentication\_enabled](#input\_ftp\_publish\_basic\_authentication\_enabled)
 
 Description: Should FTP basic authentication be enabled? Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
+
+Description: Whether the parent app uses Flex Consumption (FC1) plan.
 
 Type: `bool`
 
@@ -849,6 +852,36 @@ The following Modules are called:
 Source: Azure/avm-utl-interfaces/azure
 
 Version: 0.5.0
+
+### <a name="module_config_appsettings"></a> [config\_appsettings](#module\_config\_appsettings)
+
+Source: ../config_appsettings
+
+Version:
+
+### <a name="module_config_azurestorageaccounts"></a> [config\_azurestorageaccounts](#module\_config\_azurestorageaccounts)
+
+Source: ../config_azurestorageaccounts
+
+Version:
+
+### <a name="module_config_connectionstrings"></a> [config\_connectionstrings](#module\_config\_connectionstrings)
+
+Source: ../config_connectionstrings
+
+Version:
+
+### <a name="module_ftp_publishing_credential_policy"></a> [ftp\_publishing\_credential\_policy](#module\_ftp\_publishing\_credential\_policy)
+
+Source: ../publishing_credential_policy
+
+Version:
+
+### <a name="module_scm_publishing_credential_policy"></a> [scm\_publishing\_credential\_policy](#module\_scm\_publishing\_credential\_policy)
+
+Source: ../publishing_credential_policy
+
+Version:
 
 ### <a name="module_site_config_helpers"></a> [site\_config\_helpers](#module\_site\_config\_helpers)
 

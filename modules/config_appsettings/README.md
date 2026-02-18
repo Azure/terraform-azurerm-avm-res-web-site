@@ -19,7 +19,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_update_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -34,13 +34,21 @@ Type: `map(string)`
 
 ### <a name="input_parent_id"></a> [parent\_id](#input\_parent\_id)
 
-Description: The resource ID of the App Service site.
+Description: The resource ID of the App Service site or slot.
 
 Type: `string`
 
 ## Optional Inputs
 
-No optional inputs.
+The following input variables are optional (have default values):
+
+### <a name="input_is_slot"></a> [is\_slot](#input\_is\_slot)
+
+Description: Whether the parent resource is a deployment slot. Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
 
 ## Outputs
 

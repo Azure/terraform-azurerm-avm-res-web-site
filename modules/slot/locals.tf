@@ -29,13 +29,6 @@ locals {
 }
 
 locals {
-  # Connection strings
-  connection_strings_body = {
-    for k, v in var.connection_strings : coalesce(v.name, k) => {
-      type  = v.type
-      value = v.value
-    }
-  }
   # Merge app settings: slot-level + additional from main module + application insights
   merged_app_settings = merge(
     var.app_settings,
@@ -51,14 +44,4 @@ locals {
     } : {}),
     var.additional_app_settings,
   )
-  # Storage mounts
-  storage_mounts = {
-    for k, v in var.storage_shares_to_mount : v.name => {
-      type        = v.type
-      accountName = v.account_name
-      shareName   = v.share_name
-      mountPath   = v.mount_path
-      accessKey   = var.storage_shares_access_keys[k]
-    }
-  }
 }
