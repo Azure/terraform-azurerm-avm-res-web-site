@@ -8,7 +8,6 @@ module "slot" {
   os_type                  = var.os_type
   parent_id                = azapi_resource.this.id
   service_plan_resource_id = var.service_plan_resource_id
-  additional_app_settings  = lookup(var.slot_app_settings, each.key, {})
   # App settings and config
   app_settings                           = each.value.app_settings
   application_insights_connection_string = try(azapi_resource.application_insights["main"].output.properties.ConnectionString, null)
@@ -52,6 +51,7 @@ module "slot" {
   resource_config                         = each.value.resource_config
   role_assignments                        = each.value.role_assignments
   scm_site_also_stopped                   = each.value.scm_site_also_stopped
+  sensitive_app_settings                  = lookup(var.slot_sensitive_app_settings, each.key, {})
   server_farm_id                          = each.value.server_farm_id
   # Site config
   site_config              = each.value.site_config

@@ -160,7 +160,6 @@ resource "azapi_resource" "this" {
 # Slot app settings
 module "config_appsettings" {
   source   = "../config_appsettings"
-  for_each = length(var.app_settings) > 0 || length(var.additional_app_settings) > 0 || (var.enable_application_insights && var.is_web_app) ? { "default" = {} } : {}
 
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id
@@ -170,7 +169,6 @@ module "config_appsettings" {
 # Slot connection strings
 module "config_connectionstrings" {
   source   = "../config_connectionstrings"
-  for_each = length(var.connection_strings) > 0 ? { "default" = {} } : {}
 
   connection_strings = var.connection_strings
   parent_id          = azapi_resource.this.id
@@ -180,7 +178,6 @@ module "config_connectionstrings" {
 # Slot storage account mounts
 module "config_azurestorageaccounts" {
   source   = "../config_azurestorageaccounts"
-  for_each = length(var.storage_shares_to_mount) > 0 ? { "default" = {} } : {}
 
   parent_id = azapi_resource.this.id
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {

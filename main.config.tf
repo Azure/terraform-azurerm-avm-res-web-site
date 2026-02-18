@@ -1,22 +1,19 @@
 module "config_appsettings" {
-  source   = "./modules/config_appsettings"
-  for_each = length(var.app_settings) > 0 || local.is_function_app || local.is_logic_app ? { "default" = {} } : {}
+  source = "./modules/config_appsettings"
 
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id
 }
 
 module "config_connectionstrings" {
-  source   = "./modules/config_connectionstrings"
-  for_each = length(var.connection_strings) > 0 ? { "default" = {} } : {}
+  source = "./modules/config_connectionstrings"
 
   connection_strings = var.connection_strings
   parent_id          = azapi_resource.this.id
 }
 
 module "config_azurestorageaccounts" {
-  source   = "./modules/config_azurestorageaccounts"
-  for_each = length(var.storage_shares_to_mount) > 0 ? { "default" = {} } : {}
+  source = "./modules/config_azurestorageaccounts"
 
   parent_id               = azapi_resource.this.id
   storage_shares_to_mount = var.storage_shares_to_mount

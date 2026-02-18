@@ -42,6 +42,6 @@ locals {
         var.application_insights_key,
       )
     } : {}),
-    var.additional_app_settings,
+    var.sensitive_app_settings,
   )
 }

@@ -44,10 +44,10 @@ variable "service_plan_resource_id" {
   nullable    = false
 }
 
-variable "additional_app_settings" {
+variable "sensitive_app_settings" {
   type        = map(string)
   default     = {}
-  description = "Additional app settings to merge (e.g. from the parent module's `slot_app_settings` variable)."
+  description = "Sensitive app settings to merge (e.g. from the parent module's `slot_sensitive_app_settings` variable)."
 }
 
 # App settings and config

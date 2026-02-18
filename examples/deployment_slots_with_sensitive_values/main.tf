@@ -100,7 +100,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  slot_app_settings = {
+  slot_sensitive_app_settings = {
     staging = {
       "ASPNETCORE_ENVIRONMENT"     = "Staging"
       "DATABASE_CONNECTION_STRING" = var.staging_database_connection_string

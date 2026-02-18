@@ -1919,14 +1919,6 @@ An object that configures the App Service's site configuration. These map to the
 DESCRIPTION
 }
 
-variable "slot_app_settings" {
-  type        = map(map(string))
-  default     = {}
-  description = "A map of app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key."
-  nullable    = false
-  sensitive   = true
-}
-
 variable "slot_application_insights" {
   type = map(object({
     application_type                      = optional(string, "web")
@@ -1967,6 +1959,14 @@ Configures the Application Insights instance(s) for the deployment slot(s).
 - `internet_query_enabled` - (Optional) Should internet query be enabled? Defaults to `true`.
 - `force_customer_storage_for_profiler` - (Optional) Should customer storage be forced for the profiler? Defaults to `false`.
 DESCRIPTION
+}
+
+variable "slot_sensitive_app_settings" {
+  type        = map(map(string))
+  default     = {}
+  description = "A map of sensitive app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key."
+  nullable    = false
+  sensitive   = true
 }
 
 variable "slots_storage_shares_to_mount_sensitive_values" {
