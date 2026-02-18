@@ -3,6 +3,8 @@ resource "random_integer" "region_index" {
   min = 0
 }
 
+data "azapi_client_config" "current" {}
+
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -91,9 +93,12 @@ resource "azapi_resource" "role_assignment" {
   name      = random_uuid.role_assignment.result
   parent_id = azapi_resource.storage_account.id
   type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
+
+  ignore_null_property = true
+
   body = {
     properties = {
-      roleDefinitionId = "${azapi_resource.resource_group.id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+      roleDefinitionId = "/subscriptions/${data.azapi_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
       principalId      = module.avm_res_web_site.identity_principal_id
     }
   }

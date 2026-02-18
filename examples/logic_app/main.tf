@@ -51,13 +51,13 @@ resource "azapi_resource" "service_plan" {
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.Web/serverfarms@2025-03-01"
   body = {
-    kind = "app"
+    kind = "elastic"
     sku = {
       name = "WS1"
     }
     properties = {
       reserved      = false
-      zoneRedundant = true
+      zoneRedundant = false
     }
   }
   tags = {
@@ -161,7 +161,7 @@ module "avm_res_web_site" {
   }
   role_assignments = {
     role_assignment_1 = {
-      role_definition_id_or_name = "/subscriptions/${data.azapi_client_config.this.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+      role_definition_id_or_name = "Contributor"
       principal_id               = data.azapi_client_config.this.object_id
     }
   }

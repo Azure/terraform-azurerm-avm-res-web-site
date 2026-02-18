@@ -38,6 +38,7 @@ resource "azapi_resource" "role_assignment" {
   parent_id              = azapi_resource.this.id
   type                   = each.value.type
   body                   = each.value.body
+  ignore_null_property   = true
   response_export_values = []
 }
 

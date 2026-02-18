@@ -74,7 +74,7 @@ resource "azapi_resource" "storage_account" {
 
 resource "azapi_resource" "log_analytics_workspace" {
   location  = azapi_resource.resource_group.location
-  name      = "law-test-001"
+  name      = "${module.naming.log_analytics_workspace.name}-interfaces"
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
   body = {
@@ -174,6 +174,22 @@ module "avm_res_web_site" {
     diagnostic_settings_1 = {
       name                  = "dia_settings_1"
       workspace_resource_id = azapi_resource.log_analytics_workspace.id
+      logs = [
+        {
+          category = "FunctionAppLogs"
+          enabled  = true
+        },
+        {
+          category = "AppServiceAuthenticationLogs"
+          enabled  = true
+        }
+      ]
+      metrics = [
+        {
+          category = "AllMetrics"
+          enabled  = true
+        }
+      ]
     }
   }
   enable_telemetry = var.enable_telemetry
@@ -196,9 +212,7 @@ module "avm_res_web_site" {
       tags = {
         webapp = "${module.naming.function_app.name_unique}-interfaces"
       }
-
     }
-
   }
   public_network_access_enabled = false
   storage_account_access_key    = data.azapi_resource_action.storage_keys.output.keys[0].value
@@ -242,7 +256,7 @@ resource "azapi_resource" "network_security_group" {
 
 resource "azapi_resource" "network_interface" {
   location  = azapi_resource.resource_group.location
-  name      = "example-nic"
+  name      = "${module.naming.network_interface.name_unique}-interfaces"
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.Network/networkInterfaces@2025-03-01"
   body = {
@@ -264,7 +278,7 @@ resource "azapi_resource" "network_interface" {
 
 resource "azapi_resource" "windows_virtual_machine" {
   location  = azapi_resource.resource_group.location
-  name      = "example-machine"
+  name      = "${module.naming.virtual_machine.name_unique}-interfaces"
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.Compute/virtualMachines@2025-04-01"
   body = {
@@ -274,7 +288,7 @@ resource "azapi_resource" "windows_virtual_machine" {
         vmSize = "Standard_D2s_v5"
       }
       osProfile = {
-        computerName  = "example-machine"
+        computerName  = substr("${module.naming.virtual_machine.name_unique}-interfaces", 0, 15)
         adminUsername = "adminuser"
         adminPassword = "P@$$w0rd1234!"
       }

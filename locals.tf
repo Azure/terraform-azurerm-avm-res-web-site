@@ -8,7 +8,7 @@ locals {
   arm_kind = (
     var.kind == "webapp" ? (var.os_type == "Linux" ? (local._is_container ? "app,linux,container" : "app,linux") : "app") :
     var.kind == "functionapp" ? (var.os_type == "Linux" ? (local._is_container ? "functionapp,linux,container" : "functionapp,linux") : "functionapp") :
-    var.kind == "logicapp" ? "functionapp,linux,container,workflowapp" :
+    var.kind == "logicapp" ? (var.os_type == "Linux" ? "functionapp,linux,container,workflowapp" : "functionapp,workflowapp") :
     "app"
   )
   is_function_app = var.kind == "functionapp"
