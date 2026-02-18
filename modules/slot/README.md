@@ -78,14 +78,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_additional_app_settings"></a> [additional\_app\_settings](#input\_additional\_app\_settings)
-
-Description: Additional app settings to merge (e.g. from the parent module's `slot_app_settings` variable).
-
-Type: `map(string)`
-
-Default: `{}`
-
 ### <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings)
 
 Description: App settings for the slot.
@@ -487,6 +479,14 @@ Description: Should the SCM site also be stopped?
 Type: `bool`
 
 Default: `null`
+
+### <a name="input_sensitive_app_settings"></a> [sensitive\_app\_settings](#input\_sensitive\_app\_settings)
+
+Description: Sensitive app settings to merge (e.g. from the parent module's `slot_sensitive_app_settings` variable).
+
+Type: `map(string)`
+
+Default: `{}`
 
 ### <a name="input_server_farm_id"></a> [server\_farm\_id](#input\_server\_farm\_id)
 

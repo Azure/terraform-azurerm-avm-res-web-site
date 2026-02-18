@@ -97,11 +97,11 @@ module "avm_res_web_site" {
     }
     blob = {
       name           = "blob"
-      instance_count = 0
+      instance_count = 3
     }
     durable = {
       name           = "durable"
-      instance_count = 0
+      instance_count = 3
     }
   }
   enable_telemetry      = var.enable_telemetry

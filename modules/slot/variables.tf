@@ -44,12 +44,6 @@ variable "service_plan_resource_id" {
   nullable    = false
 }
 
-variable "sensitive_app_settings" {
-  type        = map(string)
-  default     = {}
-  description = "Sensitive app settings to merge (e.g. from the parent module's `slot_sensitive_app_settings` variable)."
-}
-
 # App settings and config
 variable "app_settings" {
   type        = map(string)
@@ -352,6 +346,12 @@ variable "scm_site_also_stopped" {
   type        = bool
   default     = null
   description = "Should the SCM site also be stopped?"
+}
+
+variable "sensitive_app_settings" {
+  type        = map(string)
+  default     = {}
+  description = "Sensitive app settings to merge (e.g. from the parent module's `slot_sensitive_app_settings` variable)."
 }
 
 variable "server_farm_id" {

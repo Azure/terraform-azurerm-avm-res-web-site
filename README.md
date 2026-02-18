@@ -2049,14 +2049,6 @@ object({
 
 Default: `{}`
 
-### <a name="input_slot_app_settings"></a> [slot\_app\_settings](#input\_slot\_app\_settings)
-
-Description: A map of app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key.
-
-Type: `map(map(string))`
-
-Default: `{}`
-
 ### <a name="input_slot_application_insights"></a> [slot\_application\_insights](#input\_slot\_application\_insights)
 
 Description: Configures the Application Insights instance(s) for the deployment slot(s).
@@ -2100,6 +2092,14 @@ map(object({
     force_customer_storage_for_profiler   = optional(bool, false)
   }))
 ```
+
+Default: `{}`
+
+### <a name="input_slot_sensitive_app_settings"></a> [slot\_sensitive\_app\_settings](#input\_slot\_sensitive\_app\_settings)
+
+Description: A map of sensitive app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key.
+
+Type: `map(map(string))`
 
 Default: `{}`
 

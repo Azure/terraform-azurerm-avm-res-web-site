@@ -159,7 +159,7 @@ resource "azapi_resource" "this" {
 
 # Slot app settings
 module "config_appsettings" {
-  source   = "../config_appsettings"
+  source = "../config_appsettings"
 
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id
@@ -168,7 +168,7 @@ module "config_appsettings" {
 
 # Slot connection strings
 module "config_connectionstrings" {
-  source   = "../config_connectionstrings"
+  source = "../config_connectionstrings"
 
   connection_strings = var.connection_strings
   parent_id          = azapi_resource.this.id
@@ -177,7 +177,7 @@ module "config_connectionstrings" {
 
 # Slot storage account mounts
 module "config_azurestorageaccounts" {
-  source   = "../config_azurestorageaccounts"
+  source = "../config_azurestorageaccounts"
 
   parent_id = azapi_resource.this.id
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
