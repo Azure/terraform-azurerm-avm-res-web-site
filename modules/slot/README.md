@@ -390,6 +390,7 @@ map(object({
     ip_configurations = optional(map(object({
       name               = string
       private_ip_address = string
+      member_name        = optional(string, null)
     })), {})
   }))
 ```
@@ -842,7 +843,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.5.0
+Version: 0.5.1
 
 ### <a name="module_config_appsettings"></a> [config\_appsettings](#module\_config\_appsettings)
 

@@ -280,6 +280,7 @@ variable "private_endpoints" {
     ip_configurations = optional(map(object({
       name               = string
       private_ip_address = string
+      member_name        = optional(string, null)
     })), {})
   }))
   default     = {}

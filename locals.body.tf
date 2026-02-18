@@ -59,10 +59,10 @@ locals {
       functionAppConfig = var.function_app_uses_fc1 ? {
         deployment = {
           storage = {
-            type  = var.storage_container_type
+            type  = lower(var.storage_container_type)
             value = var.storage_container_endpoint
             authentication = {
-              type                               = var.storage_authentication_type
+              type                               = lower(var.storage_authentication_type)
               storageAccountConnectionStringName = null
               userAssignedIdentityResourceId     = var.storage_user_assigned_identity_id
             }

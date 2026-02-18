@@ -1,6 +1,6 @@
 module "avm_interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
-  version = "0.5.0"
+  version = "0.5.1"
 
   lock               = var.lock
   managed_identities = var.managed_identities
@@ -8,10 +8,15 @@ module "avm_interfaces" {
     for k, v in var.private_endpoints : k => merge(v, {
       subresource_name = "sites-${var.name}"
       lock             = v.lock != null ? v.lock : (var.private_endpoints_inherit_lock && var.lock != null ? var.lock : null)
+      ip_configurations = {
+        for ip_key, ip_val in v.ip_configurations : ip_key => merge(ip_val, {
+          member_name = coalesce(ip_val.member_name, "sites-${var.name}")
+        })
+      }
     })
   }
   private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
-  private_endpoints_scope                 = azapi_resource.this.id
+  private_endpoints_scope                 = var.parent_id
   role_assignment_definition_scope        = azapi_resource.this.id
   role_assignments                        = var.role_assignments
 }
