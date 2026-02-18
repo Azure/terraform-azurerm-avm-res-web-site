@@ -1,8 +1,9 @@
 resource "azapi_resource" "this" {
-  location  = var.location
-  name      = var.name
-  parent_id = var.parent_id
-  type      = "Microsoft.Web/sites/slots@2025-03-01"
+  location             = var.location
+  name                 = var.name
+  parent_id            = var.parent_id
+  type                 = "Microsoft.Web/sites/slots@2025-03-01"
+  ignore_null_property = true
   body = {
     kind = var.kind
     properties = {
