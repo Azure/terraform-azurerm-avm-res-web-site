@@ -1,12 +1,12 @@
 locals {
-  application_insights_connection_string = coalesce(
+  application_insights_connection_string = try(coalesce(
     var.site_config.application_insights_connection_string,
     var.application_insights_connection_string,
-  )
-  application_insights_key = coalesce(
+  ), null)
+  application_insights_key = try(coalesce(
     var.site_config.application_insights_key,
     var.application_insights_key,
-  )
+  ), null)
   function_app_settings = local.is_function_app ? merge(
     {
       FUNCTIONS_EXTENSION_VERSION = var.functions_extension_version

@@ -12,26 +12,12 @@ moved {
 }
 
 # ===========================
-# Deployment Slots
-# ===========================
-
-moved {
-  from = module.slot.azapi_resource.this
-  to   = azapi_resource.slot
-}
-
-# ===========================
 # Custom Hostname Bindings
 # ===========================
 
 moved {
   from = azurerm_app_service_custom_hostname_binding.this
   to   = module.hostname_binding.azapi_resource.this
-}
-
-moved {
-  from = azurerm_app_service_slot_custom_hostname_binding.slot
-  to   = module.slot_hostname_binding.azapi_resource.this
 }
 
 # ===========================
