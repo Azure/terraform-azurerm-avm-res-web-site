@@ -8,12 +8,6 @@ module "site_config_helpers" {
 }
 
 locals {
-  virtual_applications_input = length(var.site_config.virtual_application) > 0 ? var.site_config.virtual_application : [{
-    physical_path     = "site\\wwwroot"
-    preload_enabled   = false
-    virtual_path      = "/"
-    virtual_directory = []
-  }]
   virtual_applications = var.os_type == "Windows" && local.is_web_app ? [for va in local.virtual_applications_input : {
     physicalPath   = va.physical_path
     preloadEnabled = va.preload_enabled
@@ -23,6 +17,12 @@ locals {
       virtualPath  = vd.virtual_path
     }]
   }] : null
+  virtual_applications_input = length(var.site_config.virtual_application) > 0 ? var.site_config.virtual_application : [{
+    physical_path     = "site\\wwwroot"
+    preload_enabled   = false
+    virtual_path      = "/"
+    virtual_directory = []
+  }]
 }
 
 locals {

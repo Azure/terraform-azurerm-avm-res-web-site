@@ -1,4 +1,4 @@
-resource "azapi_resource" "this" {
+resource "azapi_update_resource" "this" {
   name      = var.name
   parent_id = var.parent_id
   type      = local.type
