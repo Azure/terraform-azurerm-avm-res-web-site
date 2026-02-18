@@ -32,7 +32,6 @@ The following resources are used by this module:
 - [azapi_resource.role_assignment_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource_action.active_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
-- [azapi_resource_action.zip_deploy](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
@@ -2374,6 +2373,12 @@ Version:
 ### <a name="module_config_slotconfignames"></a> [config\_slotconfignames](#module\_config\_slotconfignames)
 
 Source: ./modules/config_slotconfignames
+
+Version:
+
+### <a name="module_extensions_zipdeploy"></a> [extensions\_zipdeploy](#module\_extensions\_zipdeploy)
+
+Source: ./modules/extensions_zipdeploy
 
 Version:
 

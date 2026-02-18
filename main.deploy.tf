@@ -1,13 +1,9 @@
-resource "azapi_resource_action" "zip_deploy" {
-  count = var.zip_deploy_file != null ? 1 : 0
+module "extensions_zipdeploy" {
+  source   = "./modules/extensions_zipdeploy"
+  for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
 
-  action      = "extensions/zipdeploy"
-  method      = "PUT"
-  resource_id = azapi_resource.this.id
-  type        = "Microsoft.Web/sites@2025-03-01"
-  body = {
-    packageUri = var.zip_deploy_file
-  }
+  parent_id       = azapi_resource.this.id
+  zip_deploy_file = var.zip_deploy_file
 
   depends_on = [
     module.config_appsettings,

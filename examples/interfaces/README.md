@@ -179,12 +179,24 @@ module "avm_res_web_site" {
       workspace_resource_id = azapi_resource.log_analytics_workspace.id
       logs = [
         {
+          category = "AppServiceAuthenticationLogs"
+          enabled  = true
+        },
+        {
           category = "FunctionAppLogs"
           enabled  = true
         },
         {
-          category = "AppServiceAuthenticationLogs"
-          enabled  = true
+          category = "AppServiceFileAuditLogs"
+          enabled  = false
+        },
+        {
+          category = "AppServiceAuditLogs"
+          enabled  = false
+        },
+        {
+          category = "AppServiceIPSecAuditLogs"
+          enabled  = false
         }
       ]
       metrics = [

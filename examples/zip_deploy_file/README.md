@@ -90,7 +90,7 @@ resource "azapi_resource" "storage_account" {
       name = "Standard_ZRS"
     }
     properties = {
-      allowBlobPublicAccess = true
+      allowBlobPublicAccess = false
       networkAcls = {
         defaultAction = "Allow"
         bypass        = "AzureServices"
@@ -105,7 +105,7 @@ resource "azapi_resource" "container" {
   type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2025-01-01"
   body = {
     properties = {
-      publicAccess = "Blob"
+      publicAccess = "None"
     }
   }
 }
@@ -117,6 +117,25 @@ resource "azurerm_storage_blob" "app_zip" {
   type                   = "Block"
   content_md5            = data.archive_file.app.output_md5
   source                 = data.archive_file.app.output_path
+}
+
+resource "time_static" "sas" {}
+
+data "azurerm_storage_account_blob_container_sas" "zip" {
+  connection_string = "DefaultEndpointsProtocol=https;AccountName=${azapi_resource.storage_account.name};AccountKey=${data.azapi_resource_action.storage_keys.output.keys[0].value};EndpointSuffix=core.windows.net"
+  container_name    = azapi_resource.container.name
+  expiry            = timeadd(time_static.sas.rfc3339, "8760h")
+  start             = time_static.sas.rfc3339
+  https_only        = true
+
+  permissions {
+    add    = false
+    create = false
+    delete = false
+    list   = false
+    read   = true
+    write  = false
+  }
 }
 
 module "avm_res_web_site" {
@@ -145,7 +164,9 @@ module "avm_res_web_site" {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
   }
-  zip_deploy_file = azurerm_storage_blob.app_zip.url
+  zip_deploy_file = nonsensitive("https://${azapi_resource.storage_account.name}.blob.core.windows.net/${azapi_resource.container.name}/app.zip${data.azurerm_storage_account_blob_container_sas.zip.sas}")
+
+  depends_on = [azurerm_storage_blob.app_zip]
 }
 ```
 
@@ -164,6 +185,8 @@ The following requirements are needed by this module:
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
+- <a name="requirement_time"></a> [time](#requirement\_time) (>= 0.9.0, < 1.0.0)
+
 ## Resources
 
 The following resources are used by this module:
@@ -176,8 +199,10 @@ The following resources are used by this module:
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_storage_blob.app_zip](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_blob) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [time_static.sas](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) (resource)
 - [archive_file.app](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) (data source)
 - [azapi_resource_action.storage_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
+- [azurerm_storage_account_blob_container_sas.zip](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account_blob_container_sas) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
