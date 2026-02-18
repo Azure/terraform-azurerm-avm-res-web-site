@@ -1,7 +1,8 @@
 # Deprecated but kept for backward compatibility.
+# Auth v1 settings cannot be applied when auth v2 is also configured.
 module "config_authsettings" {
   source   = "./modules/config_authsettings"
-  for_each = var.auth_settings != null ? { this = var.auth_settings } : {}
+  for_each = var.auth_settings != null && var.auth_settings_v2 == null ? { this = var.auth_settings } : {}
 
   parent_id                      = azapi_resource.this.id
   active_directory               = each.value.active_directory

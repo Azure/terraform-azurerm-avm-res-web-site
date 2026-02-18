@@ -1,9 +1,8 @@
 resource "azapi_resource" "this" {
-  location             = var.location
-  name                 = var.name
-  parent_id            = var.parent_id
-  type                 = "Microsoft.Web/sites/slots@2025-03-01"
-  ignore_null_property = true
+  location  = var.location
+  name      = var.name
+  parent_id = var.parent_id
+  type      = "Microsoft.Web/sites/slots@2025-03-01"
   body = {
     kind = var.kind
     properties = {
@@ -143,6 +142,7 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
+  ignore_null_property = true
   response_export_values = [
     "identity.principalId",
   ]
