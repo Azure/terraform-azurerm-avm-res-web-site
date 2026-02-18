@@ -41,6 +41,21 @@ resource "azapi_resource" "log_analytics_workspace" {
   }
 }
 
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-container"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 resource "azapi_resource" "service_plan" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.app_service_plan.name_unique
@@ -90,13 +105,12 @@ module "avm_res_web_site" {
   app_settings = {
 
   }
-  application_insights = {
-    workspace_resource_id = azapi_resource.log_analytics_workspace.id
-  }
-  enable_telemetry              = var.enable_telemetry
-  kind                          = "webapp"
-  os_type                       = "Linux"
-  public_network_access_enabled = true
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
+  enable_telemetry                       = var.enable_telemetry
+  kind                                   = "webapp"
+  os_type                                = "Linux"
+  public_network_access_enabled          = true
   site_config = {
     application_stack = {
       docker = {
@@ -127,6 +141,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)

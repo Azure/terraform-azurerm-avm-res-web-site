@@ -21,20 +21,6 @@ moved {
 }
 
 # ===========================
-# Application Insights
-# ===========================
-
-moved {
-  from = azurerm_application_insights.this[0]
-  to   = azapi_resource.application_insights["main"]
-}
-
-moved {
-  from = azurerm_application_insights.slot
-  to   = azapi_resource.application_insights
-}
-
-# ===========================
 # Custom Hostname Bindings
 # ===========================
 

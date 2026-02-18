@@ -218,14 +218,6 @@ object({
 
 Default: `null`
 
-### <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)
-
-Description: Whether application insights is enabled on the parent site.
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_enabled"></a> [enabled](#input\_enabled)
 
 Description: Is the slot enabled? Defaults to `true`.
@@ -656,7 +648,6 @@ object({
     worker_count                           = optional(number)
     application_insights_connection_string = optional(string)
     application_insights_key               = optional(string)
-    slot_application_insights_object_key   = optional(string)
     application_stack = optional(object({
       docker = optional(object({
         docker_image_name   = optional(string)

@@ -74,47 +74,18 @@ These are set via the `Microsoft.Web/sites/config` (name: `appsettings`) sub-res
 DESCRIPTION
 }
 
-variable "application_insights" {
-  type = object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    parent_id                             = optional(string)
-    resource_group_name                   = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  })
-  default     = {}
-  description = <<DESCRIPTION
-The Application Insights settings for the App Service.
+variable "application_insights_connection_string" {
+  type        = string
+  default     = null
+  description = "The Application Insights connection string. Provide this from an externally managed Application Insights resource."
+  sensitive   = true
+}
 
-- `application_type` - The type of Application Insights. Defaults to `web`.
-- `inherit_tags` - Should Application Insights inherit tags from the parent? Defaults to `false`.
-- `location` - The location of the Application Insights.
-- `name` - The name of the Application Insights.
-- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
-- `tags` - (Optional) Tags to apply to the Application Insights resource.
-- `workspace_resource_id` - The Log Analytics Workspace resource ID.
-- `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
-- `daily_data_cap_notifications_disabled` - (Optional) Should notifications be disabled when the daily data cap is reached?
-- `retention_in_days` - (Optional) The retention period in days. Defaults to `90`.
-- `sampling_percentage` - (Optional) The percentage of telemetry items to sample. Defaults to `100`.
-- `disable_ip_masking` - (Optional) Should IP masking be disabled? Defaults to `false`.
-- `local_authentication_disabled` - (Optional) Should local authentication be disabled? Defaults to `false`.
-- `internet_ingestion_enabled` - (Optional) Should internet ingestion be enabled? Defaults to `true`.
-- `internet_query_enabled` - (Optional) Should internet query be enabled? Defaults to `true`.
-- `force_customer_storage_for_profiler` - (Optional) Should customer storage be forced for the profiler? Defaults to `false`.
-DESCRIPTION
+variable "application_insights_key" {
+  type        = string
+  default     = null
+  description = "The Application Insights instrumentation key. Provide this from an externally managed Application Insights resource."
+  sensitive   = true
 }
 
 variable "auth_settings" {
@@ -823,7 +794,6 @@ variable "deployment_slots" {
       worker_count                           = optional(number)
       application_insights_connection_string = optional(string)
       application_insights_key               = optional(string)
-      slot_application_insights_object_key   = optional(string)
       application_stack = optional(object({
         docker = optional(object({
           docker_image_name   = optional(string)
@@ -1013,7 +983,6 @@ A map of deployment slots to create for the App Service.
   - `worker_count` - (Optional) The number of Workers.
   - `application_insights_connection_string` - (Optional) The connection string for Application Insights.
   - `application_insights_key` - (Optional) The instrumentation key for Application Insights.
-  - `slot_application_insights_object_key` - (Optional) The key to the slot Application Insights object.
   - `application_stack` - (Optional) Application stack configuration.
     - `docker` - (Optional) Docker configuration with `docker_image_name`, `docker_registry_url`, and `docker_image_tag`.
     - `dotnet` - (Optional) .NET configuration with `dotnet_version`, `current_stack`, `use_custom_runtime`, and `use_dotnet_isolated_runtime`.
@@ -1167,12 +1136,6 @@ variable "dns_configuration" {
 - `dns_retry_attempt_timeout` - (Optional) Timeout for a single DNS lookup in seconds.
 - `dns_servers` - (Optional) List of custom DNS servers to be used by the App Service.
 DESCRIPTION
-}
-
-variable "enable_application_insights" {
-  type        = bool
-  default     = true
-  description = "Should Application Insights be enabled for the App Service? Defaults to `true`."
 }
 
 variable "enable_telemetry" {
@@ -1916,48 +1879,6 @@ An object that configures the App Service's site configuration. These map to the
   - `virtual_directory` - (Optional) A list of virtual directories.
     - `physical_path` - (Optional) The physical path.
     - `virtual_path` - (Optional) The virtual path.
-DESCRIPTION
-}
-
-variable "slot_application_insights" {
-  type = map(object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    parent_id                             = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-Configures the Application Insights instance(s) for the deployment slot(s).
-
-- `application_type` - (Optional) The type of Application Insights. Defaults to `web`.
-- `inherit_tags` - (Optional) Should Application Insights inherit tags from the parent? Defaults to `false`.
-- `location` - (Optional) The location of the Application Insights.
-- `name` - (Optional) The name of the Application Insights.
-- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
-- `tags` - (Optional) Tags to apply to the Application Insights resource.
-- `workspace_resource_id` - (Optional) The Log Analytics Workspace resource ID.
-- `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
-- `daily_data_cap_notifications_disabled` - (Optional) Should notifications be disabled when the daily data cap is reached?
-- `retention_in_days` - (Optional) The retention period in days. Defaults to `90`.
-- `sampling_percentage` - (Optional) The percentage of telemetry items to sample. Defaults to `100`.
-- `disable_ip_masking` - (Optional) Should IP masking be disabled? Defaults to `false`.
-- `local_authentication_disabled` - (Optional) Should local authentication be disabled? Defaults to `false`.
-- `internet_ingestion_enabled` - (Optional) Should internet ingestion be enabled? Defaults to `true`.
-- `internet_query_enabled` - (Optional) Should internet query be enabled? Defaults to `true`.
-- `force_customer_storage_for_profiler` - (Optional) Should customer storage be forced for the profiler? Defaults to `false`.
 DESCRIPTION
 }
 

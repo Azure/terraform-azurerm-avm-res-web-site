@@ -67,13 +67,45 @@ resource "azapi_resource" "storage_account" {
   }
 }
 
+resource "azapi_resource" "log_analytics_workspace" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-basic-auth"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-basic-auth"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-basic-auth"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.function_app.name_unique}-basic-auth"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
   auth_settings = {
     enabled = true
     active_directory = {
@@ -130,6 +162,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.log_analytics_workspace](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)

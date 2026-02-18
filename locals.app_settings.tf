@@ -1,4 +1,12 @@
 locals {
+  application_insights_connection_string = coalesce(
+    var.site_config.application_insights_connection_string,
+    var.application_insights_connection_string,
+  )
+  application_insights_key = coalesce(
+    var.site_config.application_insights_key,
+    var.application_insights_key,
+  )
   function_app_settings = local.is_function_app ? merge(
     {
       FUNCTIONS_EXTENSION_VERSION = var.functions_extension_version
@@ -17,12 +25,6 @@ locals {
     },
     var.content_share_force_disabled ? {
       WEBSITE_CONTENTSHARE = ""
-    } : {},
-    var.site_config.application_insights_connection_string != null ? {
-      APPLICATIONINSIGHTS_CONNECTION_STRING = var.site_config.application_insights_connection_string
-    } : {},
-    var.site_config.application_insights_key != null ? {
-      APPINSIGHTS_INSTRUMENTATIONKEY = var.site_config.application_insights_key
     } : {},
   ) : {}
   logic_app_settings = local.is_logic_app ? merge(
@@ -45,5 +47,11 @@ locals {
     var.app_settings,
     local.is_function_app ? local.function_app_settings : {},
     local.is_logic_app ? local.logic_app_settings : {},
+    local.application_insights_connection_string != null ? {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING" = local.application_insights_connection_string
+    } : {},
+    local.application_insights_key != null ? {
+      "APPINSIGHTS_INSTRUMENTATIONKEY" = local.application_insights_key
+    } : {},
   )
 }

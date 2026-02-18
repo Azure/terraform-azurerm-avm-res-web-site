@@ -68,19 +68,51 @@ resource "azapi_resource" "storage_container" {
   body      = {}
 }
 
+resource "azapi_resource" "log_analytics_workspace" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-flex"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-flex"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-flex"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  enable_telemetry         = var.enable_telemetry
-  fc1_runtime_name         = "node"
-  fc1_runtime_version      = "20"
-  function_app_uses_fc1    = true
-  instance_memory_in_mb    = 2048
-  kind                     = "functionapp"
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.function_app.name_unique}-flex"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
+  enable_telemetry                       = var.enable_telemetry
+  fc1_runtime_name                       = "node"
+  fc1_runtime_version                    = "20"
+  function_app_uses_fc1                  = true
+  instance_memory_in_mb                  = 2048
+  kind                                   = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
     system_assigned = true

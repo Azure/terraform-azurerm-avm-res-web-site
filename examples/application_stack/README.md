@@ -90,6 +90,21 @@ resource "azapi_resource" "log_analytics_workspace_production" {
   }
 }
 
+resource "azapi_resource" "application_insights_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_production.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 resource "azapi_resource" "log_analytics_workspace_development" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-development"
@@ -105,23 +120,38 @@ resource "azapi_resource" "log_analytics_workspace_development" {
   }
 }
 
+resource "azapi_resource" "application_insights_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_development.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 module "avm_res_web_site" {
   source = "../.."
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.app_service.name_unique}-app-stack"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  application_insights = {
-    workspace_resource_id = azapi_resource.log_analytics_workspace_production.id
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.app_service.name_unique}-app-stack"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights_production.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights_production.output.properties.InstrumentationKey
   deployment_slots = {
     slot1 = {
       name                                           = "development-app-stack"
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
+        application_insights_connection_string = azapi_resource.application_insights_development.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_development.output.properties.InstrumentationKey
         application_stack = {
           python = {
             python_version = "3.13"
@@ -155,13 +185,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  slot_application_insights = {
-    development = {
-      name                  = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azapi_resource.log_analytics_workspace_development.id
-      inherit_tags          = true
-    }
-  }
   tags = {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.19.3"
@@ -184,6 +207,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.application_insights_development](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.application_insights_production](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.application_insights_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace_development](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace_production](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)

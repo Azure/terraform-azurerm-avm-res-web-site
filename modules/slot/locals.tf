@@ -30,18 +30,22 @@ locals {
 
 locals {
   # Merge app settings: slot-level + additional from main module + application insights
+  application_insights_connection_string = coalesce(
+    var.site_config.application_insights_connection_string,
+    var.application_insights_connection_string,
+  )
+  application_insights_key = coalesce(
+    var.site_config.application_insights_key,
+    var.application_insights_key,
+  )
   merged_app_settings = merge(
     var.app_settings,
-    (var.enable_application_insights && var.is_web_app ? {
-      "APPLICATIONINSIGHTS_CONNECTION_STRING" = coalesce(
-        var.site_config.application_insights_connection_string,
-        var.application_insights_connection_string,
-      )
-      "APPINSIGHTS_INSTRUMENTATIONKEY" = coalesce(
-        var.site_config.application_insights_key,
-        var.application_insights_key,
-      )
-    } : {}),
+    local.application_insights_connection_string != null ? {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING" = local.application_insights_connection_string
+    } : {},
+    local.application_insights_key != null ? {
+      "APPINSIGHTS_INSTRUMENTATIONKEY" = local.application_insights_key
+    } : {},
     var.sensitive_app_settings,
   )
 }

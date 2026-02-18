@@ -3,11 +3,6 @@ output "active_slot" {
   value       = var.app_service_active_slot != null ? azapi_resource_action.active_slot[0].id : azapi_resource.this.id
 }
 
-output "application_insights" {
-  description = "The application insights resource."
-  value       = var.enable_application_insights ? azapi_resource.application_insights["main"] : null
-}
-
 output "deployment_slot_locks" {
   description = "The locks of the deployment slots."
   value = length(module.slot) > 0 ? {

@@ -117,14 +117,12 @@ resource "azapi_resource" "application_insights_staging" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-existing-resources"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  app_settings = {
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = azapi_resource.application_insights.output.properties.ConnectionString
-    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azapi_resource.application_insights.output.properties.InstrumentationKey
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.function_app.name_unique}-existing-resources"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
   deployment_slots = {
     slot2 = {
       name                                           = "staging"
@@ -143,7 +141,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_application_insights   = false
   enable_telemetry              = var.enable_telemetry
   kind                          = "webapp"
   os_type                       = "Linux"

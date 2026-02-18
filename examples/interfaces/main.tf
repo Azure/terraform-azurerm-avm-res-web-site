@@ -71,6 +71,24 @@ resource "azapi_resource" "log_analytics_workspace" {
   }
 }
 
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.application_insights.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+  tags = {
+    environment = "dev-tf"
+  }
+}
+
 resource "azapi_resource" "virtual_network" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.virtual_network.name_unique
@@ -130,29 +148,20 @@ resource "azapi_resource" "user_assigned_identity" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-interfaces"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  application_insights = {
-    name                  = module.naming.application_insights.name_unique
-    parent_id             = azapi_resource.resource_group.id
-    location              = azapi_resource.resource_group.location
-    application_type      = "web"
-    workspace_resource_id = azapi_resource.log_analytics_workspace.id
-    tags = {
-      environment = "dev-tf"
-    }
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.function_app.name_unique}-interfaces"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
   diagnostic_settings = {
     diagnostic_settings_1 = {
       name                  = "dia_settings_1"
       workspace_resource_id = azapi_resource.log_analytics_workspace.id
     }
   }
-  enable_application_insights = true
-  enable_telemetry            = var.enable_telemetry
-  kind                        = "functionapp"
+  enable_telemetry = var.enable_telemetry
+  kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
     system_assigned = true

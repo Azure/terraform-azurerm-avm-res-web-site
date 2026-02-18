@@ -10,8 +10,8 @@ module "slot" {
   service_plan_resource_id = var.service_plan_resource_id
   # App settings and config
   app_settings                           = each.value.app_settings
-  application_insights_connection_string = try(azapi_resource.application_insights["main"].output.properties.ConnectionString, null)
-  application_insights_key               = try(azapi_resource.application_insights["main"].output.properties.InstrumentationKey, null)
+  application_insights_connection_string = var.application_insights_connection_string
+  application_insights_key               = var.application_insights_key
   # Slot-specific properties
   auto_generated_domain_name_label_scope   = each.value.auto_generated_domain_name_label_scope
   client_affinity_enabled                  = each.value.client_affinity_enabled
@@ -24,7 +24,6 @@ module "slot" {
   container_size                           = each.value.container_size
   dapr_config                              = each.value.dapr_config
   dns_configuration                        = each.value.dns_configuration
-  enable_application_insights              = var.enable_application_insights
   enabled                                  = each.value.enabled
   end_to_end_encryption_enabled            = each.value.end_to_end_encryption_enabled
   ftp_publish_basic_authentication_enabled = each.value.ftp_publish_basic_authentication_enabled

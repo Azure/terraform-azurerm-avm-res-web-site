@@ -23,7 +23,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.diagnostic_setting](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.lock_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -124,52 +123,21 @@ Type: `map(string)`
 
 Default: `{}`
 
-### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
+### <a name="input_application_insights_connection_string"></a> [application\_insights\_connection\_string](#input\_application\_insights\_connection\_string)
 
-Description: The Application Insights settings for the App Service.
+Description: The Application Insights connection string. Provide this from an externally managed Application Insights resource.
 
-- `application_type` - The type of Application Insights. Defaults to `web`.
-- `inherit_tags` - Should Application Insights inherit tags from the parent? Defaults to `false`.
-- `location` - The location of the Application Insights.
-- `name` - The name of the Application Insights.
-- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
-- `tags` - (Optional) Tags to apply to the Application Insights resource.
-- `workspace_resource_id` - The Log Analytics Workspace resource ID.
-- `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
-- `daily_data_cap_notifications_disabled` - (Optional) Should notifications be disabled when the daily data cap is reached?
-- `retention_in_days` - (Optional) The retention period in days. Defaults to `90`.
-- `sampling_percentage` - (Optional) The percentage of telemetry items to sample. Defaults to `100`.
-- `disable_ip_masking` - (Optional) Should IP masking be disabled? Defaults to `false`.
-- `local_authentication_disabled` - (Optional) Should local authentication be disabled? Defaults to `false`.
-- `internet_ingestion_enabled` - (Optional) Should internet ingestion be enabled? Defaults to `true`.
-- `internet_query_enabled` - (Optional) Should internet query be enabled? Defaults to `true`.
-- `force_customer_storage_for_profiler` - (Optional) Should customer storage be forced for the profiler? Defaults to `false`.
+Type: `string`
 
-Type:
+Default: `null`
 
-```hcl
-object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    parent_id                             = optional(string)
-    resource_group_name                   = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  })
-```
+### <a name="input_application_insights_key"></a> [application\_insights\_key](#input\_application\_insights\_key)
 
-Default: `{}`
+Description: The Application Insights instrumentation key. Provide this from an externally managed Application Insights resource.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_auth_settings"></a> [auth\_settings](#input\_auth\_settings)
 
@@ -797,7 +765,6 @@ Description: A map of deployment slots to create for the App Service.
   - `worker_count` - (Optional) The number of Workers.
   - `application_insights_connection_string` - (Optional) The connection string for Application Insights.
   - `application_insights_key` - (Optional) The instrumentation key for Application Insights.
-  - `slot_application_insights_object_key` - (Optional) The key to the slot Application Insights object.
   - `application_stack` - (Optional) Application stack configuration.
     - `docker` - (Optional) Docker configuration with `docker_image_name`, `docker_registry_url`, and `docker_image_tag`.
     - `dotnet` - (Optional) .NET configuration with `dotnet_version`, `current_stack`, `use_custom_runtime`, and `use_dotnet_isolated_runtime`.
@@ -1067,7 +1034,6 @@ map(object({
       worker_count                           = optional(number)
       application_insights_connection_string = optional(string)
       application_insights_key               = optional(string)
-      slot_application_insights_object_key   = optional(string)
       application_stack = optional(object({
         docker = optional(object({
           docker_image_name   = optional(string)
@@ -1258,14 +1224,6 @@ object({
 ```
 
 Default: `null`
-
-### <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)
-
-Description: Should Application Insights be enabled for the App Service? Defaults to `true`.
-
-Type: `bool`
-
-Default: `true`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -2049,52 +2007,6 @@ object({
 
 Default: `{}`
 
-### <a name="input_slot_application_insights"></a> [slot\_application\_insights](#input\_slot\_application\_insights)
-
-Description: Configures the Application Insights instance(s) for the deployment slot(s).
-
-- `application_type` - (Optional) The type of Application Insights. Defaults to `web`.
-- `inherit_tags` - (Optional) Should Application Insights inherit tags from the parent? Defaults to `false`.
-- `location` - (Optional) The location of the Application Insights.
-- `name` - (Optional) The name of the Application Insights.
-- `parent_id` - (Optional) The resource ID of the Resource Group for Application Insights. Defaults to `var.parent_id`.
-- `tags` - (Optional) Tags to apply to the Application Insights resource.
-- `workspace_resource_id` - (Optional) The Log Analytics Workspace resource ID.
-- `daily_data_cap_in_gb` - (Optional) The daily data volume cap in GB.
-- `daily_data_cap_notifications_disabled` - (Optional) Should notifications be disabled when the daily data cap is reached?
-- `retention_in_days` - (Optional) The retention period in days. Defaults to `90`.
-- `sampling_percentage` - (Optional) The percentage of telemetry items to sample. Defaults to `100`.
-- `disable_ip_masking` - (Optional) Should IP masking be disabled? Defaults to `false`.
-- `local_authentication_disabled` - (Optional) Should local authentication be disabled? Defaults to `false`.
-- `internet_ingestion_enabled` - (Optional) Should internet ingestion be enabled? Defaults to `true`.
-- `internet_query_enabled` - (Optional) Should internet query be enabled? Defaults to `true`.
-- `force_customer_storage_for_profiler` - (Optional) Should customer storage be forced for the profiler? Defaults to `false`.
-
-Type:
-
-```hcl
-map(object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    parent_id                             = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  }))
-```
-
-Default: `{}`
-
 ### <a name="input_slot_sensitive_app_settings"></a> [slot\_sensitive\_app\_settings](#input\_slot\_sensitive\_app\_settings)
 
 Description: A map of sensitive app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key.
@@ -2344,10 +2256,6 @@ The following outputs are exported:
 ### <a name="output_active_slot"></a> [active\_slot](#output\_active\_slot)
 
 Description: The active slot resource ID.
-
-### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
-
-Description: The application insights resource.
 
 ### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
 

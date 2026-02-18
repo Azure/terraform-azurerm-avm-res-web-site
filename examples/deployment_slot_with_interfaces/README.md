@@ -143,6 +143,21 @@ resource "azapi_resource" "log_analytics_workspace_production" {
   }
 }
 
+resource "azapi_resource" "application_insights_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_production.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 resource "azapi_resource" "log_analytics_workspace_staging" {
   location  = azapi_resource.resource_group.location
   name      = "${module.naming.log_analytics_workspace.name}-staging"
@@ -173,6 +188,21 @@ resource "azapi_resource" "log_analytics_workspace_development" {
   }
 }
 
+resource "azapi_resource" "application_insights_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_development.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 resource "azapi_resource" "user_assigned_identity" {
   location  = azapi_resource.resource_group.location
   name      = module.naming.user_assigned_identity.name_unique
@@ -184,19 +214,18 @@ resource "azapi_resource" "user_assigned_identity" {
 module "avm_res_web_site" {
   source = "../../"
 
-  location                 = azapi_resource.resource_group.location
-  name                     = "${module.naming.function_app.name_unique}-slots"
-  parent_id                = azapi_resource.resource_group.id
-  service_plan_resource_id = azapi_resource.service_plan.id
-  application_insights = {
-    name                  = "${module.naming.application_insights.name_unique}-production"
-    workspace_resource_id = azapi_resource.log_analytics_workspace_production.id
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.function_app.name_unique}-slots"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights_production.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights_production.output.properties.InstrumentationKey
   deployment_slots = {
     slot1 = {
       name = "development-env"
       site_config = {
-        slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
+        application_insights_connection_string = azapi_resource.application_insights_development.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_development.output.properties.InstrumentationKey
         application_stack = {
           dotnet = {
             dotnet_version              = "v8.0"
@@ -259,13 +288,6 @@ module "avm_res_web_site" {
       }
     }
   }
-  slot_application_insights = {
-    development = {
-      name                  = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azapi_resource.log_analytics_workspace_development.id
-      inherit_tags          = true
-    }
-  }
   storage_account_access_key = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_account_name       = azapi_resource.storage_account.name
   tags = {
@@ -290,6 +312,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.application_insights_development](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.application_insights_production](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.application_insights_staging](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace_development](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace_production](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)

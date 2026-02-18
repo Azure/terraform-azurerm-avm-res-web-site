@@ -148,12 +148,6 @@ variable "dns_configuration" {
   description = "DNS configuration for the slot."
 }
 
-variable "enable_application_insights" {
-  type        = bool
-  default     = false
-  description = "Whether application insights is enabled on the parent site."
-}
-
 variable "enabled" {
   type        = bool
   default     = true
@@ -514,7 +508,6 @@ variable "site_config" {
     worker_count                           = optional(number)
     application_insights_connection_string = optional(string)
     application_insights_key               = optional(string)
-    slot_application_insights_object_key   = optional(string)
     application_stack = optional(object({
       docker = optional(object({
         docker_image_name   = optional(string)
