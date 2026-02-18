@@ -14,6 +14,8 @@ resource "random_integer" "region_index" {
   min = 0
 }
 
+data "azapi_client_config" "current" {}
+
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
@@ -24,6 +26,9 @@ resource "azapi_resource" "resource_group" {
   name     = module.naming.resource_group.name_unique
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
 resource "azapi_resource" "service_plan" {
@@ -104,10 +109,11 @@ resource "azapi_resource" "role_assignment" {
   type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
   body = {
     properties = {
-      roleDefinitionId = "${azapi_resource.resource_group.id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+      roleDefinitionId = "/subscriptions/${data.azapi_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
       principalId      = module.avm_res_web_site.identity_principal_id
     }
   }
+  ignore_null_property = true
 }
 
 module "avm_res_web_site" {
@@ -158,6 +164,7 @@ The following resources are used by this module:
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_uuid.role_assignment](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
+- [azapi_client_config.current](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

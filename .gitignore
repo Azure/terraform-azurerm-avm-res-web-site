@@ -52,3 +52,6 @@ examples/*/policy
 sensitive.variables.tf
 *.mptfbackup
 .avm
+
+# Generated zip files
+examples/zip_deploy_file/resources_for_zip_deploy.zip

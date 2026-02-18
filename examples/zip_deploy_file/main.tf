@@ -13,6 +13,9 @@ resource "azapi_resource" "resource_group" {
   name     = module.naming.resource_group.name_unique
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
 resource "azapi_resource" "log_analytics_workspace" {
@@ -76,12 +79,33 @@ resource "azapi_resource" "storage_account" {
       name = "Standard_ZRS"
     }
     properties = {
+      allowBlobPublicAccess = true
       networkAcls = {
         defaultAction = "Allow"
         bypass        = "AzureServices"
       }
     }
   }
+}
+
+resource "azapi_resource" "container" {
+  name      = "deployments"
+  parent_id = "${azapi_resource.storage_account.id}/blobServices/default"
+  type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2025-01-01"
+  body = {
+    properties = {
+      publicAccess = "Blob"
+    }
+  }
+}
+
+resource "azurerm_storage_blob" "app_zip" {
+  name                   = "app.zip"
+  storage_account_name   = azapi_resource.storage_account.name
+  storage_container_name = azapi_resource.container.name
+  type                   = "Block"
+  content_md5            = data.archive_file.app.output_md5
+  source                 = data.archive_file.app.output_path
 }
 
 module "avm_res_web_site" {
@@ -110,4 +134,5 @@ module "avm_res_web_site" {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
   }
+  zip_deploy_file = azurerm_storage_blob.app_zip.url
 }

@@ -15,6 +15,9 @@ resource "azapi_resource" "resource_group" {
   name     = module.naming.resource_group.name_unique
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
 resource "azapi_resource" "service_plan" {
@@ -93,15 +96,13 @@ resource "azapi_resource" "role_assignment" {
   name      = random_uuid.role_assignment.result
   parent_id = azapi_resource.storage_account.id
   type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
-
-  ignore_null_property = true
-
   body = {
     properties = {
       roleDefinitionId = "/subscriptions/${data.azapi_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
       principalId      = module.avm_res_web_site.identity_principal_id
     }
   }
+  ignore_null_property = true
 }
 
 module "avm_res_web_site" {

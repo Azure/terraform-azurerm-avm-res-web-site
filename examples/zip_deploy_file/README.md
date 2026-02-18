@@ -24,6 +24,9 @@ resource "azapi_resource" "resource_group" {
   name     = module.naming.resource_group.name_unique
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
 resource "azapi_resource" "log_analytics_workspace" {
@@ -87,12 +90,33 @@ resource "azapi_resource" "storage_account" {
       name = "Standard_ZRS"
     }
     properties = {
+      allowBlobPublicAccess = true
       networkAcls = {
         defaultAction = "Allow"
         bypass        = "AzureServices"
       }
     }
   }
+}
+
+resource "azapi_resource" "container" {
+  name      = "deployments"
+  parent_id = "${azapi_resource.storage_account.id}/blobServices/default"
+  type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2025-01-01"
+  body = {
+    properties = {
+      publicAccess = "Blob"
+    }
+  }
+}
+
+resource "azurerm_storage_blob" "app_zip" {
+  name                   = "app.zip"
+  storage_account_name   = azapi_resource.storage_account.name
+  storage_container_name = azapi_resource.container.name
+  type                   = "Block"
+  content_md5            = data.archive_file.app.output_md5
+  source                 = data.archive_file.app.output_path
 }
 
 module "avm_res_web_site" {
@@ -121,6 +145,7 @@ module "avm_res_web_site" {
     module  = "Azure/avm-res-web-site/azurerm"
     version = "0.17.2"
   }
+  zip_deploy_file = azurerm_storage_blob.app_zip.url
 }
 ```
 
@@ -131,7 +156,11 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
+- <a name="requirement_archive"></a> [archive](#requirement\_archive) (>= 2.0.0, < 3.0.0)
+
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
+
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -140,11 +169,14 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.container](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.service_plan](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azurerm_storage_blob.app_zip](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_blob) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [archive_file.app](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) (data source)
 - [azapi_resource_action.storage_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
 
 <!-- markdownlint-disable MD013 -->

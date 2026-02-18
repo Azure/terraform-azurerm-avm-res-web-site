@@ -36,6 +36,9 @@ resource "azapi_resource" "resource_group" {
   name     = module.naming.resource_group.name_unique
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
 resource "azapi_resource" "service_plan" {
