@@ -1,74 +1,103 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
-}
-
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
+  body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Windows"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "P1v2"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2025-03-01"
+  body = {
+    kind = "app"
+    sku = {
+      name = "P1v2"
+    }
+    properties = {
+      reserved      = false
+      zoneRedundant = true
+    }
+  }
   tags = {
     app = module.naming.function_app.name_unique
   }
 }
 
-resource "azurerm_log_analytics_workspace" "example_production" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-production"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
 module "avm_res_web_site" {
   source = "../../"
 
-  kind     = "webapp"
-  location = azurerm_resource_group.example.location
-  name     = module.naming.app_service.name_unique
-  # Uses an existing app service plan
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
-  application_insights = {
-    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = module.naming.app_service.name_unique
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
   auth_settings_v2 = {
-    default = {
-      auth_enabled     = true
-      default_provider = "okta"
-      custom_oidc_v2 = {
+    auth_enabled         = true
+    redirect_to_provider = "okta"
+    identity_providers = {
+      custom_open_id_connect_providers = {
         default = {
-          name                          = "example_oidc_provider"
-          client_id                     = "your-client-id"
-          openid_configuration_endpoint = "https://test-config-endpoint.com/.well-known/openid-configuration"
+          enabled = true
+          registration = {
+            client_id = "your-client-id"
+            open_id_connect_configuration = {
+              well_known_open_id_configuration = "https://test-config-endpoint.com/.well-known/openid-configuration"
+            }
+          }
         }
       }
     }
   }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry              = var.enable_telemetry
+  kind                          = "webapp"
+  os_type                       = "Windows"
+  public_network_access_enabled = true
   site_config = {
 
   }

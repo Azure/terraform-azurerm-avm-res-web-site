@@ -1,9 +1,5 @@
-# terraform-azurerm-avm-res-web-site
+# Azure Verified Module for App Service (Web Apps, Function Apps, and Logic Apps)
 
-This is the module to deploy function apps in Azure.
+This is an Azure Verified Module (AVM) for deploying and managing Azure App Service resources, including Web Apps, Function Apps, and Logic Apps (Standard).
 
-NOTES:
-
-- `0.13.0` supports `azurerm` `4.8` and later versions.
-- For `azurerm` `4.x` support, please use `0.12.x` and later versions.
-- For `azurerm` `3.x` support, please use `0.11.x` and prior versions.
+It supports Linux and Windows operating systems, deployment slots, custom domains, managed identities, private endpoints, diagnostic settings, Application Insights integration, IP restrictions, auto heal, storage mounts, and Flex Consumption plans.

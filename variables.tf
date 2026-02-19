@@ -1,28 +1,3 @@
-# variable "storage_shares_to_mount_sensitive_values" {
-#   type = map(string)
-#   default = {
-
-#   }
-#   description = <<DESCRIPTION
-#   A map of sensitive values (Storage Access Key) for the Storage Account FILE SHARES to mount to the Function App.
-#   A map of storage access key keys to values.
-#   The map key is the supplied input to `var.storage_shares_to_mount`.
-#   The map value is the secret value.
-#   DESCRIPTION
-#   sensitive = true
-# }
-
-# Required Inputs
-variable "kind" {
-  type        = string
-  description = "The type of App Service to deploy. Possible values are `functionapp`, `webapp` and `logicapp`."
-
-  validation {
-    error_message = "The value must be on of: `functionapp`, `webapp` or `logicapp`"
-    condition     = contains(["functionapp", "webapp", "logicapp"], var.kind)
-  }
-}
-
 variable "location" {
   type        = string
   description = "Azure region where the resource should be deployed."
@@ -31,152 +6,90 @@ variable "location" {
 
 variable "name" {
   type        = string
-  description = "The name which should be used for the Function App."
+  description = "The name which should be used for the App Service."
+  nullable    = false
 }
 
-variable "os_type" {
+variable "parent_id" {
   type        = string
-  description = "The operating system that should be the same type of the App Service Plan to deploy the App Service in."
+  description = "The resource ID of the Resource Group where the App Service will be deployed."
+  nullable    = false
 
   validation {
-    error_message = "The value must be on of: `Linux` or `Windows`"
-    condition     = contains(["Linux", "Windows"], var.os_type)
+    error_message = "The value must be a valid Azure Resource Group resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}`"
+    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+$", var.parent_id))
   }
-}
-
-variable "resource_group_name" {
-  type        = string
-  description = "The name of the Resource Group where the App Service will be deployed."
 }
 
 variable "service_plan_resource_id" {
   type        = string
-  description = "The resource ID of the App Service Plan to deploy the App Service in in."
-}
+  description = "The resource ID of the App Service Plan to deploy the App Service in."
+  nullable    = false
 
-variable "all_child_resources_inherit_lock" {
-  type        = bool
-  default     = true
-  description = "Should the Function App inherit the lock from the parent resource? Defaults to `true`."
+  validation {
+    error_message = "The value must be a valid Azure App Service Plan resource ID. e.g. `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/serverFarms/{serverFarmName}`"
+    condition     = can(regex("^/subscriptions/[a-f0-9-]+/resourceGroups/[a-zA-Z0-9._-]+/providers/Microsoft.Web/[sS]erver[fF]arms/[a-zA-Z0-9._-]+$", var.service_plan_resource_id))
+  }
 }
 
 variable "all_child_resources_inherit_tags" {
   type        = bool
   default     = true
-  description = "Should the Function App inherit tags from the parent resource? Defaults to `true`."
+  description = "Should child resources inherit tags from the parent resource? Defaults to `true`."
 }
 
-# Optional Inputs
 variable "always_ready" {
   type = map(object({
     name           = optional(string)
     instance_count = optional(number, 0)
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of choosing instances that are always running and assigned to each of your per-function scale groups or functions.
-  - `name`: The name of the always-ready trigger type or function app name. Required if using `always_ready`. Valid values are: `http`, `blob`, `durable`, and `function:<target-function-app-name>`.
-  - `instance_count`: The number of always-ready instances to maintain. Defaults to `0`.
+A map of always-ready instances for Flex Consumption Function Apps.
+- `name`: The trigger type or function name. Valid values: `http`, `blob`, `durable`, `function:<target-function-app-name>`.
+- `instance_count`: The number of always-ready instances. Defaults to `0`.
+DESCRIPTION
+}
 
-  ```terraform
-  always_ready = {
-    http = {
-      name           = "http"
-      instance_count = 3
-    }
-  }
-  ```
-  DESCRIPTION
+variable "app_service_active_slot" {
+  type = object({
+    slot_key                 = optional(string)
+    overwrite_network_config = optional(bool, true)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Object that sets the active slot for the App Service.
+
+- `slot_key` - The key of the slot object to set as active.
+- `overwrite_network_config` - Determines if the network configuration should be overwritten. Defaults to `true`.
+DESCRIPTION
 }
 
 variable "app_settings" {
-  type = map(string)
-  default = {
-
-  }
+  type        = map(string)
+  default     = {}
   description = <<DESCRIPTION
-  A map of key-value pairs for [App Settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings) and custom values to assign to the Function App.
-
-  ```terraform
-  app_settings = {
-    WEBSITE_NODE_DEFAULT_VERSION = "10.14.1"
-    WEBSITE_TIME_ZONE            = "Pacific Standard Time"
-    WEB_CONCURRENCY              = "1"
-    WEBSITE_RUN_FROM_PACKAGE     = "1"
-    WEBSITE_ENABLE_SYNC_UPDATE_SITE = "true"
-    WEBSITE_ENABLE_SYNC_UPDATE_SITE_LOCKED = "false"
-    WEBSITE_NODE_DEFAULT_VERSION_LOCKED = "false"
-    WEBSITE_TIME_ZONE_LOCKED = "false"
-    WEB_CONCURRENCY_LOCKED = "false"
-    WEBSITE_RUN_FROM_PACKAGE_LOCKED = "false"
-  }
-  ```
-  DESCRIPTION
+A map of key-value pairs for App Settings and custom values to assign to the App Service.
+These are set via the `Microsoft.Web/sites/config` (name: `appsettings`) sub-resource.
+DESCRIPTION
 }
 
-variable "application_insights" {
-  type = object({
-    application_type                      = optional(string, "web")
-    inherit_tags                          = optional(bool, false)
-    location                              = optional(string)
-    name                                  = optional(string)
-    resource_group_name                   = optional(string)
-    tags                                  = optional(map(any), null)
-    workspace_resource_id                 = optional(string)
-    daily_data_cap_in_gb                  = optional(number)
-    daily_data_cap_notifications_disabled = optional(bool)
-    retention_in_days                     = optional(number, 90)
-    sampling_percentage                   = optional(number, 100)
-    disable_ip_masking                    = optional(bool, false)
-    local_authentication_disabled         = optional(bool, false)
-    internet_ingestion_enabled            = optional(bool, true)
-    internet_query_enabled                = optional(bool, true)
-    force_customer_storage_for_profiler   = optional(bool, false)
-  })
-  default = {
+variable "application_insights_connection_string" {
+  type        = string
+  default     = null
+  description = "The Application Insights connection string. Provide this from an externally managed Application Insights resource."
+  sensitive   = true
+}
 
-  }
-  description = <<DESCRIPTION
-
-  The Application Insights settings to assign to the Function App.
-
-  -`application_type`: The type of Application Insights to create. Valid values are `ios`, `java`, `MobileCenter`, `Node.JS`, `other`, `phone`, `store`, and `web`. Defaults to `web`.
-  -`inherit_tags`: Should the Application Insights inherit tags from the parent resource? Defaults to `false`.
-  -`location`: The location of the Application Insights.
-  -`name`: The name of the Application Insights.
-  -`resource_group_name`: The name of the Resource Group where the Application Insights will be deployed.
-  -`tags`: A map of tags to assign to the Application Insights.
-  -`workspace_resource_id`: The resource ID of the Log Analytics Workspace to use for the Application Insights.
-  -`daily_data_cap_in_gb`: The daily data cap in GB for the Application Insights.
-  -`daily_data_cap_notifications_disabled`: Should the daily data cap notifications be disabled for the Application Insights?
-  -`retention_in_days`: The retention period in days for the Application Insights. Defaults to `90`.
-  -`sampling_percentage`: The sampling percentage for the Application Insights. Defaults to `100`.
-  -`disable_ip_masking`: Should the IP masking be disabled for the Application Insights? Defaults to `false`.
-  -`local_authentication_disabled`: Should the local authentication be disabled for the Application Insights? Defaults to `false`.
-  -`internet_ingestion_enabled`: Should the internet ingestion be enabled for the Application Insights? Defaults to `true`.
-  -`internet_query_enabled`: Should the internet query be enabled for the Application Insights? Defaults to `true`.
-  -`force_customer_storage_for_profiler`: Should the customer storage be forced for the profiler for the Application Insights? Defaults to `false`.
-
-  ```terraform
-  application_insights = {
-    name                  = module.naming.application_insights.name_unique
-    resource_group_name   = module.avm_res_resources_resourcegroup.name
-    location              = module.avm_res_resources_resourcegroup.resource.location
-    application_type      = "web"
-    workspace_resource_id = azurerm_log_analytics_workspace.example.id
-    tags = {
-      environment = "dev-tf"
-    }
-  }
-  ```
-
-  DESCRIPTION
+variable "application_insights_key" {
+  type        = string
+  default     = null
+  description = "The Application Insights instrumentation key. Provide this from an externally managed Application Insights resource."
+  sensitive   = true
 }
 
 variable "auth_settings" {
-  type = map(object({
+  type = object({
     additional_login_parameters    = optional(map(string))
     allowed_external_redirect_urls = optional(list(string))
     default_provider               = optional(string)
@@ -186,434 +99,280 @@ variable "auth_settings" {
     token_refresh_extension_hours  = optional(number, 72)
     token_store_enabled            = optional(bool, false)
     unauthenticated_client_action  = optional(string)
-    active_directory = optional(map(object({
+    active_directory = optional(object({
       client_id                  = optional(string)
       allowed_audiences          = optional(list(string))
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
-    })), {})
-    facebook = optional(map(object({
+    }))
+    facebook = optional(object({
       app_id                  = optional(string)
       app_secret              = optional(string)
       app_secret_setting_name = optional(string)
       oauth_scopes            = optional(list(string))
-    })), {})
-    github = optional(map(object({
+    }))
+    github = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    google = optional(map(object({
+    }))
+    google = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    microsoft = optional(map(object({
+    }))
+    microsoft = optional(object({
       client_id                  = optional(string)
       client_secret              = optional(string)
       client_secret_setting_name = optional(string)
       oauth_scopes               = optional(list(string))
-    })), {})
-    twitter = optional(map(object({
+    }))
+    twitter = optional(object({
       consumer_key                 = optional(string)
       consumer_secret              = optional(string)
       consumer_secret_setting_name = optional(string)
-    })), {})
-  }))
-  default = {
-
-  }
+    }))
+  })
+  default     = null
   description = <<DESCRIPTION
-  A map of authentication settings to assign to the Function App.
- - `additional_login_parameters` - (Optional) Specifies a map of login Parameters to send to the OpenID Connect authorization endpoint when a user logs in.
- - `allowed_external_redirect_urls` - (Optional) Specifies a list of External URLs that can be redirected to as part of logging in or logging out of the Linux Web App.
- - `default_provider` - (Optional) The default authentication provider to use when multiple providers are configured. Possible values include: `AzureActiveDirectory`, `Facebook`, `Google`, `MicrosoftAccount`, `Twitter`, `Github`
- - `enabled` - (Required) Should the Authentication / Authorization feature be enabled for the Linux Web App?
- - `issuer` - (Optional) The OpenID Connect Issuer URI that represents the entity which issues access tokens for this Linux Web App.
- - `runtime_version` - (Optional) The RuntimeVersion of the Authentication / Authorization feature in use for the Linux Web App.
- - `token_refresh_extension_hours` - (Optional) The number of hours after session token expiration that a session token can be used to call the token refresh API. Defaults to `72` hours.
- - `token_store_enabled` - (Optional) Should the Linux Web App durably store platform-specific security tokens that are obtained during login flows? Defaults to `false`.
- - `unauthenticated_client_action` - (Optional) The action to take when an unauthenticated client attempts to access the app. Possible values include: `RedirectToLoginPage`, `AllowAnonymous`.
+A map of authentication settings to assign to the App Service.
 
- ---
- `active_directory` block supports the following:
- - `allowed_audiences` - (Optional) Specifies a list of Allowed audience values to consider when validating JWTs issued by Azure Active Directory.
- - `client_id` - (Required) The ID of the Client to use to authenticate with Azure Active Directory.
- - `client_secret` - (Optional) The Client Secret for the Client ID. Cannot be used with `client_secret_setting_name`.
- - `client_secret_setting_name` - (Optional) The App Setting name that contains the client secret of the Client. Cannot be used with `client_secret`.
-
- ---
- `facebook` block supports the following:
- - `app_id` - (Required) The App ID of the Facebook app used for login.
- - `app_secret` - (Optional) The App Secret of the Facebook app used for Facebook login. Cannot be specified with `app_secret_setting_name`.
- - `app_secret_setting_name` - (Optional) The app setting name that contains the `app_secret` value used for Facebook login. Cannot be specified with `app_secret`.
- - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes to be requested as part of Facebook login authentication.
-
- ---
- `github` block supports the following:
- - `client_id` - (Required) The ID of the GitHub app used for login.
- - `client_secret` - (Optional) The Client Secret of the GitHub app used for GitHub login. Cannot be specified with `client_secret_setting_name`.
- - `client_secret_setting_name` - (Optional) The app setting name that contains the `client_secret` value used for GitHub login. Cannot be specified with `client_secret`.
- - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of GitHub login authentication.
-
- ---
- `google` block supports the following:
- - `client_id` - (Required) The OpenID Connect Client ID for the Google web application.
- - `client_secret` - (Optional) The client secret associated with the Google web application. Cannot be specified with `client_secret_setting_name`.
- - `client_secret_setting_name` - (Optional) The app setting name that contains the `client_secret` value used for Google login. Cannot be specified with `client_secret`.
- - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of Google Sign-In authentication. If not specified, `openid`, `profile`, and `email` are used as default scopes.
-
- ---
- `microsoft` block supports the following:
- - `client_id` - (Required) The OAuth 2.0 client ID that was created for the app used for authentication.
- - `client_secret` - (Optional) The OAuth 2.0 client secret that was created for the app used for authentication. Cannot be specified with `client_secret_setting_name`.
- - `client_secret_setting_name` - (Optional) The app setting name containing the OAuth 2.0 client secret that was created for the app used for authentication. Cannot be specified with `client_secret`.
- - `oauth_scopes` - (Optional) Specifies a list of OAuth 2.0 scopes that will be requested as part of Microsoft Account authentication. If not specified, `wl.basic` is used as the default scope.
-
- ---
- `twitter` block supports the following:
- - `consumer_key` - (Required) The OAuth 1.0a consumer key of the Twitter application used for sign-in.
- - `consumer_secret` - (Optional) The OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret_setting_name`.
- - `consumer_secret_setting_name` - (Optional) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in. Cannot be specified with `consumer_secret`.
-
-  ```terraform
-  auth_settings = {
-    example = {
-      enabled = true
-      active_directory = {
-        client_id                  = "00000000-0000-0000-0000-000000000000"
-        allowed_audiences          = ["00000000-0000-0000-0000-000000000000"]
-        client_secret              = "00000000-0000-0000-0000-000000000000"
-        client_secret_setting_name = "00000000-0000-0000-0000-000000000000"
-      }
-    }
-  }
-  ```
-  DESCRIPTION
+- `additional_login_parameters` - (Optional) A map of additional login parameters.
+- `allowed_external_redirect_urls` - (Optional) A list of allowed external redirect URLs.
+- `default_provider` - (Optional) The default authentication provider.
+- `enabled` - (Optional) Is authentication enabled? Defaults to `false`.
+- `issuer` - (Optional) The issuer URI.
+- `runtime_version` - (Optional) The runtime version of the authentication module.
+- `token_refresh_extension_hours` - (Optional) Hours before token expiry to refresh. Defaults to `72`.
+- `token_store_enabled` - (Optional) Should the token store be enabled? Defaults to `false`.
+- `unauthenticated_client_action` - (Optional) The action to take for unauthenticated requests.
+- `active_directory` - (Optional) An Active Directory authentication block.
+  - `client_id` - (Optional) The Client ID of the Azure AD application.
+  - `allowed_audiences` - (Optional) A list of allowed audience values.
+  - `client_secret` - (Optional) The Client Secret of the Azure AD application.
+  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
+- `facebook` - (Optional) A Facebook authentication block.
+  - `app_id` - (Optional) The App ID of the Facebook application.
+  - `app_secret` - (Optional) The App Secret of the Facebook application.
+  - `app_secret_setting_name` - (Optional) The app setting name that contains the app secret.
+  - `oauth_scopes` - (Optional) A list of OAuth scopes to request.
+- `github` - (Optional) A GitHub authentication block.
+  - `client_id` - (Optional) The Client ID of the GitHub application.
+  - `client_secret` - (Optional) The Client Secret of the GitHub application.
+  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
+  - `oauth_scopes` - (Optional) A list of OAuth scopes to request.
+- `google` - (Optional) A Google authentication block.
+  - `client_id` - (Optional) The Client ID of the Google application.
+  - `client_secret` - (Optional) The Client Secret of the Google application.
+  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
+  - `oauth_scopes` - (Optional) A list of OAuth scopes to request.
+- `microsoft` - (Optional) A Microsoft authentication block.
+  - `client_id` - (Optional) The Client ID of the Microsoft application.
+  - `client_secret` - (Optional) The Client Secret of the Microsoft application.
+  - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
+  - `oauth_scopes` - (Optional) A list of OAuth scopes to request.
+- `twitter` - (Optional) A Twitter authentication block.
+  - `consumer_key` - (Optional) The consumer key of the Twitter application.
+  - `consumer_secret` - (Optional) The consumer secret of the Twitter application.
+  - `consumer_secret_setting_name` - (Optional) The app setting name that contains the consumer secret.
+DESCRIPTION
 }
 
 variable "auth_settings_v2" {
-  type = map(object({
-    auth_enabled                            = optional(bool, false)
-    config_file_path                        = optional(string)
-    default_provider                        = optional(string)
-    excluded_paths                          = optional(list(string))
-    forward_proxy_convention                = optional(string, "NoProxy")
-    forward_proxy_custom_host_header_name   = optional(string)
-    forward_proxy_custom_scheme_header_name = optional(string)
-    http_route_api_prefix                   = optional(string, "/.auth")
-    require_authentication                  = optional(bool, false)
-    require_https                           = optional(bool, true)
-    runtime_version                         = optional(string, "~1")
-    unauthenticated_action                  = optional(string, "RedirectToLoginPage")
-    active_directory_v2 = optional(map(object({
-      allowed_applications                 = optional(list(string))
-      allowed_audiences                    = optional(list(string))
-      allowed_groups                       = optional(list(string))
-      allowed_identities                   = optional(list(string))
-      client_id                            = optional(string)
-      client_secret_certificate_thumbprint = optional(string)
-      client_secret_setting_name           = optional(string)
-      jwt_allowed_client_applications      = optional(list(string))
-      jwt_allowed_groups                   = optional(list(string))
-      login_parameters                     = optional(map(any))
-      tenant_auth_endpoint                 = optional(string)
-      www_authentication_disabled          = optional(bool, false)
-    })), {})
-    apple_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
-    })), {})
-    azure_static_web_app_v2 = optional(map(object({
-      client_id = optional(string)
-    })), {})
-    custom_oidc_v2 = optional(map(object({
-      authorisation_endpoint        = optional(string)
-      certification_uri             = optional(string)
-      client_credential_method      = optional(string)
-      client_id                     = optional(string)
-      client_secret_setting_name    = optional(string)
-      issuer_endpoint               = optional(string)
-      name                          = optional(string)
-      name_claim_type               = optional(string)
-      openid_configuration_endpoint = optional(string)
-      scopes                        = optional(list(string))
-      token_endpoint                = optional(string)
-    })), {})
-    facebook_v2 = optional(map(object({
-      app_id                  = optional(string)
-      app_secret_setting_name = optional(string)
-      graph_api_version       = optional(string)
-      login_scopes            = optional(list(string))
-    })), {})
-    github_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      login_scopes               = optional(list(string))
-    })), {})
-    google_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      allowed_audiences          = optional(list(string))
-      login_scopes               = optional(list(string))
-    })), {})
-    login = optional(map(object({
-      allowed_external_redirect_urls    = optional(list(string))
-      cookie_expiration_convention      = optional(string, "FixedTime")
-      cookie_expiration_time            = optional(string, "08:00:00")
-      logout_endpoint                   = optional(string)
-      nonce_expiration_time             = optional(string, "00:05:00")
+  type = object({
+    auth_enabled                           = optional(bool, false)
+    config_file_path                       = optional(string)
+    excluded_paths                         = optional(list(string))
+    forward_proxy_convention               = optional(string, "NoProxy")
+    forward_proxy_custom_host_header_name  = optional(string)
+    forward_proxy_custom_proto_header_name = optional(string)
+    http_route_api_prefix                  = optional(string, "/.auth")
+    redirect_to_provider                   = optional(string)
+    require_authentication                 = optional(bool, false)
+    require_https                          = optional(bool, true)
+    runtime_version                        = optional(string, "~1")
+    unauthenticated_client_action          = optional(string, "RedirectToLoginPage")
+    identity_providers = optional(object({
+      apple = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+      }))
+      azure_active_directory = optional(object({
+        enabled             = optional(bool)
+        is_auto_provisioned = optional(bool)
+        login = optional(object({
+          disable_www_authenticate = optional(bool)
+          login_parameters         = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                                          = optional(string)
+          client_secret_certificate_issuer                   = optional(string)
+          client_secret_certificate_subject_alternative_name = optional(string)
+          client_secret_certificate_thumbprint               = optional(string)
+          client_secret_setting_name                         = optional(string)
+          open_id_issuer                                     = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+          default_authorization_policy = optional(object({
+            allowed_applications = optional(list(string))
+            allowed_principals = optional(object({
+              groups     = optional(list(string))
+              identities = optional(list(string))
+            }))
+          }))
+          jwt_claim_checks = optional(object({
+            allowed_client_applications = optional(list(string))
+            allowed_groups              = optional(list(string))
+          }))
+        }))
+      }))
+      azure_static_web_apps = optional(object({
+        enabled = optional(bool)
+        registration = optional(object({
+          client_id = optional(string)
+        }))
+      }))
+      custom_open_id_connect_providers = optional(map(object({
+        enabled = optional(bool)
+        login = optional(object({
+          name_claim_type = optional(string)
+          scopes          = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id = optional(string)
+          client_credential = optional(object({
+            method                     = optional(string)
+            client_secret_setting_name = optional(string)
+          }))
+          open_id_connect_configuration = optional(object({
+            authorization_endpoint           = optional(string)
+            certification_uri                = optional(string)
+            issuer                           = optional(string)
+            token_endpoint                   = optional(string)
+            well_known_open_id_configuration = optional(string)
+          }))
+        }))
+      })))
+      facebook = optional(object({
+        enabled           = optional(bool)
+        graph_api_version = optional(string)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          app_id                  = optional(string)
+          app_secret_setting_name = optional(string)
+        }))
+      }))
+      github = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+      }))
+      google = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+        }))
+      }))
+      legacy_microsoft_account = optional(object({
+        enabled = optional(bool)
+        login = optional(object({
+          scopes = optional(list(string))
+        }))
+        registration = optional(object({
+          client_id                  = optional(string)
+          client_secret_setting_name = optional(string)
+        }))
+        validation = optional(object({
+          allowed_audiences = optional(list(string))
+        }))
+      }))
+      twitter = optional(object({
+        enabled = optional(bool)
+        registration = optional(object({
+          consumer_key                 = optional(string)
+          consumer_secret_setting_name = optional(string)
+        }))
+      }))
+    }))
+    login = optional(object({
+      allowed_external_redirect_urls = optional(list(string))
+      cookie_expiration = optional(object({
+        convention         = optional(string, "FixedTime")
+        time_to_expiration = optional(string, "08:00:00")
+      }))
+      nonce = optional(object({
+        nonce_expiration_interval = optional(string, "00:05:00")
+        validate_nonce            = optional(bool, true)
+      }))
       preserve_url_fragments_for_logins = optional(bool, false)
-      token_refresh_extension_time      = optional(number, 72)
-      token_store_enabled               = optional(bool, false)
-      token_store_path                  = optional(string)
-      token_store_sas_setting_name      = optional(string)
-      validate_nonce                    = optional(bool, true)
-      })),
-      {
-        login = {
-
-        }
-    })
-    microsoft_v2 = optional(map(object({
-      client_id                  = optional(string)
-      client_secret_setting_name = optional(string)
-      allowed_audiences          = optional(list(string))
-      login_scopes               = optional(list(string))
-    })), {})
-    twitter_v2 = optional(map(object({
-      consumer_key                 = optional(string)
-      consumer_secret_setting_name = optional(string)
-    })), {})
-
-  }))
-  default = {
-
-  }
+      routes = optional(object({
+        logout_endpoint = optional(string)
+      }))
+      token_store = optional(object({
+        azure_blob_storage = optional(object({
+          sas_url_setting_name = optional(string)
+        }))
+        enabled = optional(bool, false)
+        file_system = optional(object({
+          directory = optional(string)
+        }))
+        token_refresh_extension_hours = optional(number, 72)
+      }))
+    }))
+  })
+  default     = null
   description = <<DESCRIPTION
-A map of authentication settings (V2) to assign to the Function App.
+Authentication settings V2 configuration for the App Service. Mirrors the API structure.
 
-- `auth_enabled` - (Optional) Should the AuthV2 Settings be enabled. Defaults to `false`.
-- `config_file_path` - (Optional) The path to the App Auth settings.
-- `default_provider` - (Optional) The Default Authentication Provider to use when the `unauthenticated_action` is set to `RedirectToLoginPage`. Possible values include: `apple`, `azureactivedirectory`, `facebook`, `github`, `google`, `twitter` and the `name` of your `custom_oidc_v2` provider.
-- `excluded_paths` - (Optional) The paths which should be excluded from the `unauthenticated_action` when it is set to `RedirectToLoginPage`.
-- `forward_proxy_convention` - (Optional) The convention used to determine the url of the request made. Possible values include `NoProxy`, `Standard`, `Custom`. Defaults to `NoProxy`.
-- `forward_proxy_custom_host_header_name` - (Optional) The name of the custom header containing the host of the request.
-- `forward_proxy_custom_scheme_header_name` - (Optional) The name of the custom header containing the scheme of the request.
-- `http_route_api_prefix` - (Optional) The prefix that should precede all the authentication and authorisation paths. Defaults to `/.auth`.
-- `require_authentication` - (Optional) Should the authentication flow be used for all requests.
-- `require_https` - (Optional) Should HTTPS be required on connections? Defaults to `true`.
-- `runtime_version` - (Optional) The Runtime Version of the Authentication and Authorisation feature of this App. Defaults to `~1`.
-- `unauthenticated_action` - (Optional) The action to take for requests made without authentication. Possible values include `RedirectToLoginPage`, `AllowAnonymous`, `Return401`, and `Return403`. Defaults to `RedirectToLoginPage`.
-
----
-`active_directory_v2` block supports the following:
-- `allowed_applications` - (Optional) The list of allowed Applications for the Default Authorisation Policy.
-- `allowed_audiences` - (Optional) Specifies a list of Allowed audience values to consider when validating JWTs issued by Azure Active Directory.
-- `allowed_groups` - (Optional) The list of allowed Group Names for the Default Authorisation Policy.
-- `allowed_identities` - (Optional) The list of allowed Identities for the Default Authorisation Policy.
-- `client_id` - (Required) The ID of the Client to use to authenticate with Azure Active Directory.
-- `client_secret_certificate_thumbprint` - (Optional) The thumbprint of the certificate used for signing purposes.
-- `client_secret_setting_name` - (Optional) The App Setting name that contains the client secret of the Client.
-- `jwt_allowed_client_applications` - (Optional) A list of Allowed Client Applications in the JWT Claim.
-- `jwt_allowed_groups` - (Optional) A list of Allowed Groups in the JWT Claim.
-- `login_parameters` - (Optional) A map of key-value pairs to send to the Authorisation Endpoint when a user logs in.
-- `tenant_auth_endpoint` - (Required) The Azure Tenant Endpoint for the Authenticating Tenant. e.g. `https://login.microsoftonline.com/v2.0/{tenant-guid}/`
-- `www_authentication_disabled` - (Optional) Should the www-authenticate provider should be omitted from the request? Defaults to `false`.
-
----
-`apple_v2` block supports the following:
-- `client_id` - (Required) The OpenID Connect Client ID for the Apple web application.
-- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for Apple Login.
-
----
-`azure_static_web_app_v2` block supports the following:
-- `client_id` - (Required) The ID of the Client to use to authenticate with Azure Static Web App Authentication.
-
----
-`custom_oidc_v2` block supports the following:
-- `client_id` - (Required) The ID of the Client to use to authenticate with the Custom OIDC.
-- `name` - (Required) The name of the Custom OIDC Authentication Provider.
-- `name_claim_type` - (Optional) The name of the claim that contains the users name.
-- `openid_configuration_endpoint` - (Required) The app setting name that contains the `client_secret` value used for the Custom OIDC Login.
-- `scopes` - (Optional) The list of the scopes that should be requested while authenticating.
-
----
-`facebook_v2` block supports the following:
-- `app_id` - (Required) The App ID of the Facebook app used for login.
-- `app_secret_setting_name` - (Required) The app setting name that contains the `app_secret` value used for Facebook Login.
-- `graph_api_version` - (Optional) The version of the Facebook API to be used while logging in.
-- `login_scopes` - (Optional) The list of scopes that should be requested as part of Facebook Login authentication.
-
----
-`github_v2` block supports the following:
-- `client_id` - (Required) The ID of the GitHub app used for login..
-- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for GitHub Login.
-- `login_scopes` - (Optional) The list of OAuth 2.0 scopes that should be requested as part of GitHub Login authentication.
-
----
-`google_v2` block supports the following:
-- `allowed_audiences` - (Optional) Specifies a list of Allowed Audiences that should be requested as part of Google Sign-In authentication.
-- `client_id` - (Required) The OpenID Connect Client ID for the Google web application.
-- `client_secret_setting_name` - (Required) The app setting name that contains the `client_secret` value used for Google Login.
-- `login_scopes` - (Optional) The list of OAuth 2.0 scopes that should be requested as part of Google Sign-In authentication.
-
----
-`login` block supports the following:
-- `allowed_external_redirect_urls` - (Optional) External URLs that can be redirected to as part of logging in or logging out of the app. This is an advanced setting typically only needed by Windows Store application backends.
-- `cookie_expiration_convention` - (Optional) The method by which cookies expire. Possible values include: `FixedTime`, and `IdentityProviderDerived`. Defaults to `FixedTime`.
-- `cookie_expiration_time` - (Optional) The time after the request is made when the session cookie should expire. Defaults to `08:00:00`.
-- `logout_endpoint` - (Optional) The endpoint to which logout requests should be made.
-- `nonce_expiration_time` - (Optional) The time after the request is made when the nonce should expire. Defaults to `00:05:00`.
-- `preserve_url_fragments_for_logins` - (Optional) Should the fragments from the request be preserved after the login request is made. Defaults to `false`.
-- `token_refresh_extension_time` - (Optional) The number of hours after session token expiration that a session token can be used to call the token refresh API. Defaults to `72` hours.
-- `token_store_enabled` - (Optional) Should the Token Store configuration Enabled. Defaults to `false`
-- `token_store_path` - (Optional) The directory path in the App Filesystem in which the tokens will be stored.
-- `token_store_sas_setting_name` - (Optional) The name of the app setting which contains the SAS URL of the blob storage containing the tokens.
-- `validate_nonce` - (Optional) Should the nonce be validated while completing the login flow. Defaults to `true`.
-
----
-`microsoft_v2` block supports the following:
-- `allowed_audiences` - (Optional) Specifies a list of Allowed Audiences that will be requested as part of Microsoft Sign-In authentication.
-- `client_id` - (Required) The OAuth 2.0 client ID that was created for the app used for authentication.
-- `client_secret_setting_name` - (Required) The app setting name containing the OAuth 2.0 client secret that was created for the app used for authentication.
-- `login_scopes` - (Optional) The list of Login scopes that should be requested as part of Microsoft Account authentication.
-
----
-`twitter_v2` block supports the following:
-- `consumer_key` - (Required) The OAuth 1.0a consumer key of the Twitter application used for sign-in.
-- `consumer_secret_setting_name` - (Required) The app setting name that contains the OAuth 1.0a consumer secret of the Twitter application used for sign-in.
-
-```terraform
-  auth_settings_v2 = {
-    setting1 = {
-      auth_enabled     = true
-      default_provider = "AzureActiveDirectory"
-      active_directory_v2 = {
-        aad1 = {
-          client_id            = "<client-id>"
-          tenant_auth_endpoint = "https://login.microsoftonline.com/{tenant-guid}/v2.0/"
-        }
-      }
-      login = {
-        login1 = {
-          token_store_enabled = true
-        }
-      }
-    }
-  }
-  ```
-  DESCRIPTION
+- `auth_enabled` - (Optional) Is authentication enabled? Defaults to `false`.
+- `config_file_path` - (Optional) The path to the auth configuration file.
+- `excluded_paths` - (Optional) A list of paths excluded from authentication.
+- `forward_proxy_convention` - (Optional) The convention for forwarding proxy headers. Defaults to `NoProxy`.
+- `forward_proxy_custom_host_header_name` - (Optional) The custom host header name for the forward proxy.
+- `forward_proxy_custom_proto_header_name` - (Optional) The custom proto header name for the forward proxy.
+- `http_route_api_prefix` - (Optional) The prefix for the HTTP route API. Defaults to `/.auth`.
+- `redirect_to_provider` - (Optional) The default authentication provider when multiple providers are configured.
+- `require_authentication` - (Optional) Should authentication be required? Defaults to `false`.
+- `require_https` - (Optional) Should HTTPS be required? Defaults to `true`.
+- `runtime_version` - (Optional) The runtime version of the auth module. Defaults to `~1`.
+- `unauthenticated_client_action` - (Optional) The action for unauthenticated requests. Defaults to `RedirectToLoginPage`.
+- `identity_providers` - (Optional) The identity providers configuration. See variable description in the submodule for full details.
+- `login` - (Optional) The login configuration. See variable description in the submodule for full details.
+DESCRIPTION
 }
 
-variable "auto_heal_setting" {
-  type = map(object({
-    action = optional(object({
-      action_type = string
-      custom_action = optional(object({
-        executable = string
-        parameters = optional(string)
-      }))
-      minimum_process_execution_time = optional(string, "00:00:00")
-    }))
-    trigger = optional(object({
-      private_memory_kb = optional(number)
-      requests = optional(map(object({
-        count    = number
-        interval = string
-      })), {})
-      slow_request = optional(map(object({
-        count      = number
-        interval   = string
-        time_taken = string
-        path       = optional(string)
-      })), {})
-      slow_request_with_path = optional(map(object({
-        count      = number
-        interval   = string
-        time_taken = string
-        path       = optional(string)
-      })), {})
-      status_code = optional(map(object({
-        count             = number
-        interval          = string
-        status_code_range = string
-        path              = optional(string)
-        sub_status        = optional(number)
-        win32_status_code = optional(number)
-      })), {})
-    }))
-  }))
-  default = {
+variable "auto_generated_domain_name_label_scope" {
+  type        = string
+  default     = null
+  description = "(Optional) The scope of the auto-generated domain name label. Possible values are `NoReuse`, `ResourceGroupReuse`, `SubscriptionReuse`, and `TenantReuse`."
 
+  validation {
+    error_message = "The value must be one of: `NoReuse`, `ResourceGroupReuse`, `SubscriptionReuse`, or `TenantReuse`."
+    condition     = var.auto_generated_domain_name_label_scope == null || can(index(["NoReuse", "ResourceGroupReuse", "SubscriptionReuse", "TenantReuse"], var.auto_generated_domain_name_label_scope))
   }
-  description = <<DESCRIPTION
-
-  Configures the Auto Heal settings for the Function App. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-  - `action` - (Optional) The action to take when the trigger is activated.
-    - `action_type` - (Required) The type of action to take. Possible values include: `CustomAction`, `Recycle`, `LogEvent`, `HttpRequst`.
-    - `custom_action` - (Optional) The custom action to take when the trigger is activated.
-      - `executable` - (Required) The executable to run when the trigger is activated.
-      - `parameters` - (Optional) The parameters to pass to the executable.
-    - `minimum_process_execution_time` - (Optional) The minimum process execution time before the action is taken. Defaults to `00:00:00`.
-  - `trigger` - (Optional) The trigger to activate the action.
-    - `private_memory_kb` - (Optional) The private memory in kilobytes to trigger the action.
-    - `requests` - (Optional) The requests trigger to activate the action.
-      - `count` - (Required) The number of requests to trigger the action.
-      - `interval` - (Required) The interval to trigger the action.
-    - `slow_request` - (Optional) The slow request trigger to activate the action.
-      - `count` - (Required) The number of slow requests to trigger the action.
-      - `interval` - (Required) The interval to trigger the action.
-      - `time_taken` - (Required) The time taken to trigger the action.
-      - `path` - (Optional) The path to trigger the action.
-      > NOTE: The `path` property in the `slow_request` block is deprecated and will be removed in 4.0 of provider. Please use `slow_request_with_path` to set a slow request trigger with `path` specified.
-    - `status_code` - (Optional) The status code trigger to activate the action.
-      - `count` - (Required) The number of status codes to trigger the action.
-      - `interval` - (Required) The interval to trigger the action.
-      - `status_code_range` - (Required) The status code range to trigger the action.
-      - `path` - (Optional) The path to trigger the action.
-      - `sub_status` - (Optional) The sub status to trigger the action.
-      - `win32_status_code` - (Optional) The Win32 status code to trigger the action.
-
-  ```terraform
-  auto_heal_setting = {
-    setting_1 = {
-      action = {
-        action_type                    = "Recycle"
-        minimum_process_execution_time = "00:01:00"
-      }
-      trigger = {
-        requests = {
-          count    = 100
-          interval = "00:00:30"
-        }
-        status_code = {
-          status_5000 = {
-            count             = 5000
-            interval          = "00:05:00"
-            path              = "/HealthCheck"
-            status_code_range = 500
-            sub_status        = 0
-          }
-          status_6000 = {
-            count             = 6000
-            interval          = "00:05:00"
-            path              = "/Get"
-            status_code_range = 500
-            sub_status        = 0
-          }
-        }
-      }
-    }
-  }
-  ```
-
-  DESCRIPTION
-  nullable    = false
 }
 
 variable "backup" {
@@ -629,44 +388,26 @@ variable "backup" {
       start_time               = optional(string)
     })))
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of backup settings to assign to the Function App.
-  - `name` - (Optional) The name of the backup. One will be generated if not set.
-  - `schedule` - (Optional) A map of backup schedule settings.
-    - `frequency_interval` - (Optional) The frequency interval of the backup.
-    - `frequency_unit` - (Optional) The frequency unit of the backup.
-    - `keep_at_least_one_backup` - (Optional) Should at least one backup be kept?.
-    - `retention_period_in_days` - (Optional) The retention period in days of the backup.
-    - `start_time` - (Optional) The start time of the backup.
-  - `storage_account_url` - (Optional) The URL of the Storage Account to store the backup in.
-  - `enabled` - (Optional) Is the backup enabled? Defaults to `true`.
+A map of backup settings for the App Service.
 
-  ```terraform
-  backup = {
-    example = {
-      name               = "example"
-      schedule = {
-        frequency_interval       = 1
-        frequency_unit           = "Day"
-        keep_at_least_one_backup = true
-        retention_period_in_days = 7
-        start_time               = "2020-01-01T00:00:00Z"
-      }
-      storage_account_url = "https://example.blob.core.windows.net/example"
-      enabled             = true
-    }
-  }
-  ```
-  DESCRIPTION
+- `enabled` - (Optional) Is backup enabled? Defaults to `true`.
+- `name` - (Optional) The name of the backup.
+- `storage_account_url` - (Optional) The SAS URL to the Storage Account container for backup.
+- `schedule` - (Optional) A map of backup schedule settings.
+  - `frequency_interval` - (Optional) How often the backup should be executed.
+  - `frequency_unit` - (Optional) The unit of time for the backup frequency. Possible values are `Day` and `Hour`.
+  - `keep_at_least_one_backup` - (Optional) Should at least one backup always be kept?
+  - `retention_period_days` - (Optional) The number of days to retain backups.
+  - `start_time` - (Optional) The start time for the backup schedule.
+DESCRIPTION
 }
 
 variable "builtin_logging_enabled" {
   type        = bool
   default     = true
-  description = "Should builtin logging be enabled for the Function App?"
+  description = "Should builtin logging be enabled for the Function App? Defaults to `true`."
 }
 
 variable "bundle_version" {
@@ -678,25 +419,37 @@ variable "bundle_version" {
 variable "client_affinity_enabled" {
   type        = bool
   default     = false
-  description = "Should client affinity be enabled for the Function App?"
+  description = "Should client affinity be enabled for the App Service? Defaults to `false`."
+}
+
+variable "client_affinity_partitioning_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should client affinity partitioning (CHIPS cookie partitioning) be enabled? When enabled, the affinity cookie uses the CHIPS partitioned attribute."
+}
+
+variable "client_affinity_proxy_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should client affinity proxy be enabled? When enabled, the `X-Forwarded-Host` header overrides the host value used for affinity cookie routing."
 }
 
 variable "client_certificate_enabled" {
   type        = bool
   default     = false
-  description = "Should client certificate be enabled for the Function App?"
+  description = "Should client certificate be enabled for the App Service? Defaults to `false`."
 }
 
 variable "client_certificate_exclusion_paths" {
   type        = string
   default     = null
-  description = "The client certificate exclusion paths for the Function App."
+  description = "The client certificate exclusion paths for the App Service."
 }
 
 variable "client_certificate_mode" {
   type        = string
   default     = "Required"
-  description = "The client certificate mode for the Function App."
+  description = "The client certificate mode for the App Service. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. Defaults to `Required`."
 }
 
 variable "connection_strings" {
@@ -705,30 +458,25 @@ variable "connection_strings" {
     type  = optional(string)
     value = optional(string)
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of connection strings to assign to the Function App.
-  - `name` - (Optional) The name of the connection string.
-  - `type` - (Optional) The type of the connection string.
-  - `value` - (Optional) The value of the connection string.
-  ```terraform
-  connection_strings = {
-    example = {
-      name  = "example"
-      type  = "example"
-      value = "example"
-    }
-  }
-  ```
-  DESCRIPTION
+A map of connection strings to assign to the App Service.
+- `name` - (Optional) The name of the connection string.
+- `type` - (Optional) The type of the connection string.
+- `value` - (Optional) The value of the connection string.
+DESCRIPTION
+}
+
+variable "container_size" {
+  type        = number
+  default     = null
+  description = "(Optional) The size of the function container in MB. Only applicable to Function Apps under a Consumption plan."
 }
 
 variable "content_share_force_disabled" {
   type        = bool
   default     = false
-  description = "Should content share be force disabled for the Function App?"
+  description = "Should content share be force disabled for the Function App? Defaults to `false`."
 }
 
 variable "custom_domains" {
@@ -750,8 +498,8 @@ variable "custom_domains" {
     ssl_state                    = optional(string)
     inherit_tags                 = optional(bool, true)
     tags                         = optional(map(any), {})
+    thumbprint                   = optional(string)
     thumbprint_key               = optional(string)
-    thumbprint_value             = optional(string)
     ttl                          = optional(number, 300)
     validation_type              = optional(string, "cname-delegation")
     create_cname_records         = optional(bool, false)
@@ -764,57 +512,41 @@ variable "custom_domains" {
     txt_zone_name                = optional(string)
     txt_records                  = optional(map(object({ value = string })))
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of custom domains to assign to the Function App.
-  - `slot_as_target` - (optional) Will this custom domain configuration be used for a App Service slot? Defaults to `false`.
-  - `app_service_slot_key` - (Optional) The key of the App Service Slot to use as the target for the custom domain.
-  - `app_service_plan_resource_id` - (Optional) The resource ID of the App Service Plan to use for the custom domain.
-  - `key_vault_secret_id` - (Optional) The ID of the Key Vault Secret to use for the custom domain.
-  - `create_certificate` - (Optional) Should a certificate be created for the custom domain? Defaults to `false`.
-  - `create_txt_records` - (Optional) Should TXT records be created for the custom domain? Defaults to `false`.
-  - `create_cname_records` - (Optional) Should CNAME records be created for the custom domain? Defaults to `false`.
+A map of custom domains to assign to the App Service.
 
-  ```terraform
-  custom_domains = {
-    # Allows for the configuration of custom domains for the Function App
-    # If not already set, the module allows for the creation of TXT and CNAME records
-
-    custom_domain_1 = {
-
-      zone_resource_group_name = "<zone_resource_group_name>"
-
-      create_txt_records = true
-      txt_name           = "asuid.<module.naming.function_app.name_unique>"
-      txt_zone_name      = "<zone_name>"
-      txt_records = {
-        record = {
-          value = "" # Leave empty as module will reference Function App ID after Function App creation
-        }
-      }
-
-      create_cname_records = true
-      cname_name           = "<module.naming.function_app.name_unique>"
-      cname_zone_name      = "<zone_name>"
-      cname_record         = "<module.naming.function_app.name_unique>-custom-domain.azurewebsites.net"
-
-      create_certificate   = true
-      certificate_name     = "<module.naming.function_app.name_unique>-<data.azurerm_key_vault_secret.stored_certificate.name>"
-      certificate_location = azurerm_resource_group.example.location
-      pfx_blob             = data.azurerm_key_vault_secret.stored_certificate.value
-
-      app_service_name    = "<module.naming.function_app.name_unique>-custom-domain"
-      hostname            = "<module.naming.function_app.name_unique>.<root_domain>"
-      resource_group_name = azurerm_resource_group.example.name
-      ssl_state           = "SniEnabled"
-      thumbprint_key      = "custom_domain_1" # Currently the key of the custom domain
-    }
-
-  }
-  ```
-  DESCRIPTION
+- `slot_as_target` - (Optional) Should the slot be used as the target? Defaults to `false`.
+- `app_service_slot_key` - (Optional) The key of the deployment slot to target.
+- `create_certificate` - (Optional) Should a managed certificate be created? Defaults to `false`.
+- `certificate_name` - (Optional) The name of the certificate.
+- `certificate_location` - (Optional) The location of the certificate.
+- `pfx_blob` - (Optional) The PFX blob for the certificate.
+- `pfx_password` - (Optional) The password for the PFX certificate.
+- `hostname` - (Optional) The custom domain hostname.
+- `app_service_name` - (Optional) The App Service name.
+- `app_service_plan_resource_id` - (Optional) The resource ID of the App Service Plan.
+- `key_vault_secret_id` - (Optional) The Key Vault secret ID for the certificate.
+- `key_vault_id` - (Optional) The Key Vault ID for the certificate.
+- `zone_resource_group_name` - (Optional) The resource group of the DNS zone.
+- `resource_group_name` - (Optional) The resource group name.
+- `ssl_state` - (Optional) The SSL state. Possible values are `IpBasedEnabled` and `SniEnabled`.
+- `inherit_tags` - (Optional) Should tags be inherited from the parent? Defaults to `true`.
+- `tags` - (Optional) Tags to apply to the custom domain resources.
+- `thumbprint` - (Optional) The certificate thumbprint value.
+- `thumbprint_key` - (Optional) The key to look up the certificate thumbprint.
+- `ttl` - (Optional) The TTL for DNS records. Defaults to `300`.
+- `validation_type` - (Optional) The domain validation type. Defaults to `cname-delegation`.
+- `create_cname_records` - (Optional) Should CNAME records be created? Defaults to `false`.
+- `cname_name` - (Optional) The CNAME record name.
+- `cname_zone_name` - (Optional) The DNS zone name for the CNAME record.
+- `cname_record` - (Optional) The CNAME record value.
+- `cname_target_resource_id` - (Optional) The target resource ID for the CNAME record.
+- `create_txt_records` - (Optional) Should TXT records be created? Defaults to `false`.
+- `txt_name` - (Optional) The TXT record name.
+- `txt_zone_name` - (Optional) The DNS zone name for the TXT record.
+- `txt_records` - (Optional) A map of TXT records with `value` attribute.
+DESCRIPTION
 }
 
 variable "daily_memory_time_quota" {
@@ -823,12 +555,521 @@ variable "daily_memory_time_quota" {
   description = "(Optional) The amount of memory in gigabyte-seconds that your application is allowed to consume per day. Setting this value only affects Function Apps under the consumption plan. Defaults to `0`."
 }
 
+variable "dapr_config" {
+  type = object({
+    app_id                = optional(string)
+    app_port              = optional(number)
+    enable_api_logging    = optional(bool)
+    enabled               = optional(bool)
+    http_max_request_size = optional(number)
+    http_read_buffer_size = optional(number)
+    log_level             = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+(Optional) Dapr configuration for the App Service. Only applicable to apps hosted in Azure Container Apps environments.
+
+- `app_id` - (Optional) The Dapr app identifier.
+- `app_port` - (Optional) The port the application is listening on.
+- `enable_api_logging` - (Optional) Should API logging be enabled for Dapr?
+- `enabled` - (Optional) Is Dapr enabled?
+- `http_max_request_size` - (Optional) The maximum size of HTTP request body in MB.
+- `http_read_buffer_size` - (Optional) The maximum size of HTTP header read buffer in KB.
+- `log_level` - (Optional) The Dapr log level. Possible values are `debug`, `error`, `info`, and `warn`.
+DESCRIPTION
+
+  validation {
+    error_message = "The log_level must be one of: `debug`, `error`, `info`, or `warn`."
+    condition     = var.dapr_config == null || var.dapr_config.log_level == null || can(index(["debug", "error", "info", "warn"], var.dapr_config.log_level))
+  }
+}
+
+variable "deployment_slots" {
+  type = map(object({
+    name                                   = optional(string)
+    auto_generated_domain_name_label_scope = optional(string)
+    client_affinity_enabled                = optional(bool, false)
+    client_affinity_partitioning_enabled   = optional(bool)
+    client_affinity_proxy_enabled          = optional(bool)
+    client_certificate_enabled             = optional(bool, false)
+    client_certificate_exclusion_paths     = optional(string, null)
+    client_certificate_mode                = optional(string, "Required")
+    container_size                         = optional(number)
+    dapr_config = optional(object({
+      app_id                = optional(string)
+      app_port              = optional(number)
+      enable_api_logging    = optional(bool)
+      enabled               = optional(bool)
+      http_max_request_size = optional(number)
+      http_read_buffer_size = optional(number)
+      log_level             = optional(string)
+    }))
+    dns_configuration = optional(object({
+      dns_alt_server            = optional(string)
+      dns_max_cache_timeout     = optional(number)
+      dns_retry_attempt_count   = optional(number)
+      dns_retry_attempt_timeout = optional(number)
+      dns_servers               = optional(list(string))
+    }))
+    enabled                                  = optional(bool, true)
+    end_to_end_encryption_enabled            = optional(bool)
+    ftp_publish_basic_authentication_enabled = optional(bool, false)
+    hosting_environment_id                   = optional(string)
+    host_names_disabled                      = optional(bool)
+    https_only                               = optional(bool, true)
+    hyper_v                                  = optional(bool)
+    ip_mode                                  = optional(string)
+    key_vault_reference_identity             = optional(string, null)
+    managed_environment_id                   = optional(string)
+    public_network_access_enabled            = optional(bool, false)
+    redundancy_mode                          = optional(string)
+    resource_config = optional(object({
+      cpu    = optional(number)
+      memory = optional(string)
+    }))
+    scm_site_also_stopped                          = optional(bool)
+    server_farm_id                                 = optional(string, null)
+    ssh_enabled                                    = optional(bool)
+    storage_account_required                       = optional(bool)
+    tags                                           = optional(map(string))
+    virtual_network_subnet_id                      = optional(string, null)
+    vnet_route_all_traffic                         = optional(bool, false)
+    vnet_application_traffic_enabled               = optional(bool, false)
+    vnet_backup_restore_enabled                    = optional(bool, false)
+    vnet_content_share_enabled                     = optional(bool, false)
+    vnet_image_pull_enabled                        = optional(bool, false)
+    webdeploy_publish_basic_authentication_enabled = optional(bool, false)
+    workload_profile_name                          = optional(string)
+    app_settings                                   = optional(map(string), {})
+    site_config = optional(object({
+      always_on             = optional(bool, true)
+      api_definition_url    = optional(string)
+      api_management_api_id = optional(string)
+      app_command_line      = optional(string)
+      app_scale_limit       = optional(number)
+      auto_heal_enabled     = optional(bool)
+      auto_heal_rules = optional(object({
+        actions = optional(object({
+          action_type = string
+          custom_action = optional(object({
+            exe        = string
+            parameters = optional(string)
+          }))
+          min_process_execution_time = optional(string, "00:00:00")
+        }))
+        triggers = optional(object({
+          private_bytes_in_kb = optional(number)
+          requests = optional(object({
+            count         = number
+            time_interval = string
+          }))
+          slow_requests = optional(object({
+            count         = number
+            time_interval = string
+            time_taken    = string
+            path          = optional(string)
+          }))
+          slow_requests_with_path = optional(list(object({
+            count         = number
+            time_interval = string
+            time_taken    = string
+            path          = optional(string)
+          })), [])
+          status_codes = optional(list(object({
+            count         = number
+            time_interval = string
+            status        = number
+            path          = optional(string)
+            sub_status    = optional(number)
+            win32_status  = optional(number)
+          })), [])
+          status_codes_range = optional(list(object({
+            count         = number
+            time_interval = string
+            status_codes  = string
+            path          = optional(string)
+          })), [])
+        }))
+      }))
+      auto_swap_slot_name                           = optional(string)
+      container_registry_managed_identity_client_id = optional(string)
+      container_registry_use_managed_identity       = optional(bool)
+      cors = optional(object({
+        allowed_origins     = optional(list(string))
+        support_credentials = optional(bool, false)
+      }))
+      default_documents              = optional(list(string))
+      detailed_error_logging_enabled = optional(bool)
+      document_root                  = optional(string)
+      dotnet_framework_version       = optional(string, "v4.0")
+      elastic_instance_minimum       = optional(number)
+      elastic_web_app_scale_limit    = optional(number)
+      experiments = optional(object({
+        ramp_up_rules = optional(list(object({
+          action_host_name             = optional(string)
+          change_decision_callback_url = optional(string)
+          change_interval_in_minutes   = optional(number)
+          change_step                  = optional(number)
+          max_reroute_percentage       = optional(number)
+          min_reroute_percentage       = optional(number)
+          name                         = optional(string)
+          reroute_percentage           = optional(number)
+        })), [])
+      }))
+      ftps_state = optional(string, "FtpsOnly")
+      handler_mappings = optional(list(object({
+        arguments        = optional(string)
+        extension        = optional(string)
+        script_processor = optional(string)
+      })))
+      health_check_path    = optional(string)
+      http2_enabled        = optional(bool, false)
+      http20_proxy_flag    = optional(number)
+      http_logging_enabled = optional(bool)
+      ip_restriction = optional(list(object({
+        action                    = optional(string, "Allow")
+        ip_address                = optional(string)
+        name                      = optional(string)
+        priority                  = optional(number, 65000)
+        service_tag               = optional(string)
+        virtual_network_subnet_id = optional(string)
+        headers = optional(object({
+          x_azure_fdid      = optional(list(string))
+          x_fd_health_probe = optional(list(string))
+          x_forwarded_for   = optional(list(string))
+          x_forwarded_host  = optional(list(string))
+        }))
+      })), [])
+      ip_restriction_default_action = optional(string, "Allow")
+      java_container                = optional(string)
+      java_container_version        = optional(string)
+      java_version                  = optional(string)
+      limits = optional(object({
+        max_disk_size_in_mb = optional(number)
+        max_memory_in_mb    = optional(number)
+        max_percentage_cpu  = optional(number)
+      }))
+      linux_fx_version                 = optional(string)
+      load_balancing_mode              = optional(string, "LeastRequests")
+      local_mysql_enabled              = optional(bool, false)
+      logs_directory_size_limit        = optional(number)
+      managed_pipeline_mode            = optional(string, "Integrated")
+      min_tls_cipher_suite             = optional(string)
+      minimum_tls_version              = optional(string, "1.3")
+      node_version                     = optional(string)
+      php_version                      = optional(string)
+      powershell_version               = optional(string)
+      pre_warmed_instance_count        = optional(number)
+      python_version                   = optional(string)
+      remote_debugging_enabled         = optional(bool, false)
+      remote_debugging_version         = optional(string)
+      request_tracing_enabled          = optional(bool)
+      request_tracing_expiration_time  = optional(string)
+      runtime_scale_monitoring_enabled = optional(bool)
+      scm_ip_restriction = optional(list(object({
+        action                    = optional(string, "Allow")
+        ip_address                = optional(string)
+        name                      = optional(string)
+        priority                  = optional(number, 65000)
+        service_tag               = optional(string)
+        virtual_network_subnet_id = optional(string)
+        headers = optional(object({
+          x_azure_fdid      = optional(list(string))
+          x_fd_health_probe = optional(list(string))
+          x_forwarded_for   = optional(list(string))
+          x_forwarded_host  = optional(list(string))
+        }))
+      })), [])
+      scm_ip_restriction_default_action      = optional(string, "Allow")
+      scm_minimum_tls_version                = optional(string, "1.2")
+      scm_type                               = optional(string, "None")
+      scm_use_main_ip_restriction            = optional(bool, false)
+      tracing_options                        = optional(string)
+      use_32_bit_worker                      = optional(bool, false)
+      vnet_private_ports_count               = optional(number)
+      vnet_route_all_enabled                 = optional(bool, false)
+      website_time_zone                      = optional(string)
+      websockets_enabled                     = optional(bool, false)
+      windows_fx_version                     = optional(string)
+      worker_count                           = optional(number)
+      application_insights_connection_string = optional(string)
+      application_insights_key               = optional(string)
+      application_stack = optional(object({
+        docker = optional(object({
+          docker_image_name   = optional(string)
+          docker_registry_url = optional(string)
+          docker_image_tag    = optional(string, "latest")
+        }))
+        dotnet = optional(object({
+          dotnet_version              = optional(string)
+          current_stack               = optional(string)
+          use_custom_runtime          = optional(bool, false)
+          use_dotnet_isolated_runtime = optional(bool, false)
+        }))
+        java = optional(object({
+          java_version           = optional(string)
+          java_container         = optional(string)
+          java_container_version = optional(string)
+        }))
+        node = optional(object({
+          node_version = optional(string)
+        }))
+        php = optional(object({
+          php_version = optional(string)
+        }))
+        python = optional(object({
+          python_version = optional(string)
+        }))
+        powershell = optional(object({
+          powershell_version = optional(string)
+        }))
+      }))
+      virtual_application = optional(list(object({
+        physical_path   = optional(string, "site\\wwwroot")
+        preload_enabled = optional(bool, false)
+        virtual_path    = optional(string, "/")
+        virtual_directory = optional(list(object({
+          physical_path = optional(string)
+          virtual_path  = optional(string)
+        })), [])
+      })), [])
+    }), {})
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }), null)
+    private_endpoints = optional(map(object({
+      name = optional(string, null)
+      role_assignments = optional(map(object({
+        role_definition_id_or_name             = string
+        principal_id                           = string
+        description                            = optional(string, null)
+        skip_service_principal_aad_check       = optional(bool, false)
+        condition                              = optional(string, null)
+        condition_version                      = optional(string, null)
+        delegated_managed_identity_resource_id = optional(string, null)
+        principal_type                         = optional(string, null)
+      })), {})
+      lock = optional(object({
+        kind = string
+        name = optional(string, null)
+      }), null)
+      tags                                    = optional(map(string), null)
+      subnet_resource_id                      = string
+      private_dns_zone_group_name             = optional(string, "default")
+      private_dns_zone_resource_ids           = optional(set(string), [])
+      application_security_group_associations = optional(map(string), {})
+      private_service_connection_name         = optional(string, null)
+      network_interface_name                  = optional(string, null)
+      location                                = optional(string, null)
+      resource_group_name                     = optional(string, null)
+      ip_configurations = optional(map(object({
+        name               = string
+        private_ip_address = string
+        member_name        = optional(string, null)
+      })), {})
+    })), {})
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })), {})
+    storage_shares_to_mount = optional(map(object({
+      account_name = string
+      mount_path   = string
+      name         = string
+      share_name   = string
+      type         = optional(string, "AzureFiles")
+    })), {})
+    connection_strings = optional(map(object({
+      name  = optional(string)
+      type  = optional(string)
+      value = optional(string)
+    })), {})
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+A map of deployment slots to create for the App Service.
+
+- `name` - (Optional) The name of the slot.
+- `auto_generated_domain_name_label_scope` - (Optional) The scope of the auto-generated domain name label.
+- `client_affinity_enabled` - (Optional) Should client affinity be enabled? Defaults to `false`.
+- `client_affinity_partitioning_enabled` - (Optional) Should client affinity partitioning (CHIPS) be enabled?
+- `client_affinity_proxy_enabled` - (Optional) Should client affinity proxy be enabled?
+- `client_certificate_enabled` - (Optional) Should client certificates be enabled? Defaults to `false`.
+- `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
+- `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
+- `container_size` - (Optional) The size of the function container in MB.
+- `dapr_config` - (Optional) Dapr configuration object.
+- `dns_configuration` - (Optional) DNS configuration object.
+- `enabled` - (Optional) Is the slot enabled? Defaults to `true`.
+- `end_to_end_encryption_enabled` - (Optional) Should end-to-end encryption be enabled?
+- `ftp_publish_basic_authentication_enabled` - (Optional) Should FTP basic authentication be enabled? Defaults to `false`.
+- `hosting_environment_id` - (Optional) The resource ID of the App Service Environment.
+- `host_names_disabled` - (Optional) Should public hostnames be disabled?
+- `https_only` - (Optional) Should the slot only be accessible over HTTPS? Defaults to `true`.
+- `hyper_v` - (Optional) Should the slot run in Hyper-V isolation?
+- `ip_mode` - (Optional) The IP mode. Possible values: `IPv4`, `IPv4AndIPv6`, `IPv6`.
+- `key_vault_reference_identity` - (Optional) The identity to use for Key Vault references.
+- `managed_environment_id` - (Optional) The Azure Container Apps managed environment ID.
+- `public_network_access_enabled` - (Optional) Should public network access be enabled? Defaults to `false`.
+- `redundancy_mode` - (Optional) The site redundancy mode.
+- `resource_config` - (Optional) Resource config for Container App environment hosted apps.
+- `scm_site_also_stopped` - (Optional) Should the SCM site also be stopped?
+- `server_farm_id` - (Optional) The server farm resource ID to use for the slot.
+- `ssh_enabled` - (Optional) Should SSH be enabled?
+- `storage_account_required` - (Optional) Should a storage account be required?
+- `tags` - (Optional) Tags to apply to the slot.
+- `virtual_network_subnet_id` - (Optional) The subnet ID for VNet integration.
+- `vnet_route_all_traffic` - (Optional) Should all outbound traffic use VNet routing? Defaults to `false`.
+- `vnet_application_traffic_enabled` - (Optional) Should application traffic use VNet routing? Defaults to `false`.
+- `vnet_backup_restore_enabled` - (Optional) Should backup/restore traffic use VNet routing? Defaults to `false`.
+- `vnet_content_share_enabled` - (Optional) Should content share traffic use VNet routing? Defaults to `false`.
+- `vnet_image_pull_enabled` - (Optional) Should image pull traffic use VNet routing? Defaults to `false`.
+- `webdeploy_publish_basic_authentication_enabled` - (Optional) Should WebDeploy basic authentication be enabled? Defaults to `false`.
+- `workload_profile_name` - (Optional) The workload profile name.
+- `app_settings` - (Optional) App settings for the slot.
+- `site_config` - (Optional) Site configuration for the slot.
+  - `always_on` - (Optional) Should the slot always be on? Defaults to `true`.
+  - `api_definition_url` - (Optional) The URL of the API definition.
+  - `api_management_api_id` - (Optional) The ID of the API Management API.
+  - `app_command_line` - (Optional) The App command line to launch.
+  - `app_scale_limit` - (Optional) The number of workers this function app can scale out to.
+  - `auto_swap_slot_name` - (Optional) The name of the slot to auto swap with.
+  - `container_registry_managed_identity_client_id` - (Optional) The Client ID of the MSI for Azure Container Registry.
+  - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use MSI.
+  - `default_documents` - (Optional) Specifies a list of Default Documents.
+  - `detailed_error_logging_enabled` - (Optional) Should detailed error logging be enabled?
+  - `document_root` - (Optional) The document root path.
+  - `elastic_instance_minimum` - (Optional) The number of minimum instances for Elastic Premium plans.
+  - `elastic_web_app_scale_limit` - (Optional) The maximum number of workers for Elastic scale.
+  - `ftps_state` - (Optional) State of FTP / FTPS service. Defaults to `FtpsOnly`.
+  - `handler_mappings` - (Optional) A list of handler mappings (Windows IIS).
+    - `arguments` - (Optional) The arguments to pass to the script processor.
+    - `extension` - (Optional) The file extension to handle.
+    - `script_processor` - (Optional) The path to the script processor executable.
+  - `health_check_path` - (Optional) The path to be checked for health.
+  - `http2_enabled` - (Optional) Enable HTTP2 protocol. Defaults to `false`.
+  - `http_logging_enabled` - (Optional) Should HTTP logging be enabled?
+  - `ip_restriction_default_action` - (Optional) Default action for IP restrictions. Defaults to `Allow`.
+  - `limits` - (Optional) Resource limits.
+    - `max_disk_size_in_mb` - (Optional) The maximum disk size in MB.
+    - `max_memory_in_mb` - (Optional) The maximum memory in MB.
+    - `max_percentage_cpu` - (Optional) The maximum CPU percentage.
+  - `load_balancing_mode` - (Optional) The Site load balancing mode. Defaults to `LeastRequests`.
+  - `logs_directory_size_limit` - (Optional) The HTTP log directory size limit in MB.
+  - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Defaults to `Integrated`.
+  - `min_tls_cipher_suite` - (Optional) The minimum TLS cipher suite.
+  - `minimum_tls_version` - (Optional) The minimum TLS version. Defaults to `1.3`.
+  - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances.
+  - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled? Defaults to `false`.
+  - `remote_debugging_version` - (Optional) The Remote Debugging Version.
+  - `request_tracing_enabled` - (Optional) Should request tracing be enabled?
+  - `request_tracing_expiration_time` - (Optional) The expiration time for request tracing.
+  - `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled?
+  - `scm_ip_restriction_default_action` - (Optional) Default action for SCM IP restrictions. Defaults to `Allow`.
+  - `scm_minimum_tls_version` - (Optional) SCM minimum TLS version. Defaults to `1.2`.
+  - `scm_use_main_ip_restriction` - (Optional) Should SCM use the main IP restriction? Defaults to `false`.
+  - `tracing_options` - (Optional) Azure tracing options.
+  - `use_32_bit_worker` - (Optional) Use a 32-bit worker process. Defaults to `false`.
+  - `vnet_private_ports_count` - (Optional) The number of private ports for VNet integration.
+  - `vnet_route_all_enabled` - (Optional) Route all outbound traffic through VNet. Defaults to `false`.
+  - `website_time_zone` - (Optional) The time zone for the website.
+  - `websockets_enabled` - (Optional) Enable Web Sockets. Defaults to `false`.
+  - `worker_count` - (Optional) The number of Workers.
+  - `application_insights_connection_string` - (Optional) The connection string for Application Insights.
+  - `application_insights_key` - (Optional) The instrumentation key for Application Insights.
+  - `application_stack` - (Optional) Application stack configuration.
+    - `docker` - (Optional) Docker configuration with `docker_image_name`, `docker_registry_url`, and `docker_image_tag`.
+    - `dotnet` - (Optional) .NET configuration with `dotnet_version`, `current_stack`, `use_custom_runtime`, and `use_dotnet_isolated_runtime`.
+    - `java` - (Optional) Java configuration with `java_version`, `java_container`, and `java_container_version`.
+    - `node` - (Optional) Node.js configuration with `node_version`.
+    - `php` - (Optional) PHP configuration with `php_version`.
+    - `python` - (Optional) Python configuration with `python_version`.
+    - `powershell` - (Optional) PowerShell configuration with `powershell_version`.
+- `lock` - (Optional) The lock to apply to the slot.
+  - `kind` - (Required) The type of lock. Possible values are `CanNotDelete` and `ReadOnly`.
+  - `name` - (Optional) The name of the lock.
+- `private_endpoints` - (Optional) Private endpoints for the slot.
+  - `name` - (Optional) The name of the private endpoint.
+  - `role_assignments` - (Optional) A map of role assignments for the private endpoint.
+    - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
+    - `principal_id` - (Required) The ID of the principal.
+    - `description` - (Optional) The description of the role assignment.
+    - `skip_service_principal_aad_check` - (Optional) Skip the AAD check. Defaults to `false`.
+    - `condition` - (Optional) The condition for the role assignment.
+    - `condition_version` - (Optional) The condition version.
+    - `delegated_managed_identity_resource_id` - (Optional) The delegated managed identity resource ID.
+    - `principal_type` - (Optional) The type of the principal.
+  - `lock` - (Optional) The lock for the private endpoint.
+    - `kind` - (Required) The type of lock.
+    - `name` - (Optional) The name of the lock.
+  - `tags` - (Optional) Tags for the private endpoint.
+  - `subnet_resource_id` - (Required) The resource ID of the subnet.
+  - `private_dns_zone_group_name` - (Optional) The private DNS zone group name. Defaults to `default`.
+  - `private_dns_zone_resource_ids` - (Optional) A set of private DNS zone resource IDs.
+  - `application_security_group_associations` - (Optional) A map of application security group associations.
+  - `private_service_connection_name` - (Optional) The private service connection name.
+  - `network_interface_name` - (Optional) The network interface name.
+  - `location` - (Optional) The Azure location.
+  - `resource_group_name` - (Optional) The resource group name.
+  - `ip_configurations` - (Optional) A map of IP configurations.
+    - `name` - (Required) The name of the IP configuration.
+    - `private_ip_address` - (Required) The private IP address.
+- `role_assignments` - (Optional) Role assignments for the slot.
+  - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
+  - `principal_id` - (Required) The ID of the principal.
+  - `description` - (Optional) The description of the role assignment.
+  - `skip_service_principal_aad_check` - (Optional) Skip the AAD check. Defaults to `false`.
+  - `condition` - (Optional) The condition for the role assignment.
+  - `condition_version` - (Optional) The condition version.
+  - `delegated_managed_identity_resource_id` - (Optional) The delegated managed identity resource ID.
+  - `principal_type` - (Optional) The type of the principal.
+- `storage_shares_to_mount` - (Optional) A map of storage shares to mount to the deployment slot.
+  - `account_name` - (Required) The name of the Storage Account.
+  - `mount_path` - (Required) The path to mount the share at.
+  - `name` - (Required) The name of the storage mount.
+  - `share_name` - (Required) The name of the file share.
+  - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
+- `connection_strings` - (Optional) A map of connection strings for the slot.
+  - `name` - (Optional) The name of the connection string.
+  - `type` - (Optional) The type of the connection string.
+  - `value` - (Optional) The value of the connection string.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "deployment_slots_inherit_lock" {
+  type        = bool
+  default     = true
+  description = "Whether to inherit the lock from the parent resource for the deployment slots. Defaults to `true`."
+}
+
 variable "diagnostic_settings" {
   type = map(object({
-    name                                     = optional(string, null)
-    log_categories                           = optional(set(string), [])
-    log_groups                               = optional(set(string), ["allLogs"])
-    metric_categories                        = optional(set(string), ["AllMetrics"])
+    name = optional(string, null)
+    logs = optional(set(object({
+      category       = optional(string, null)
+      category_group = optional(string, null)
+      enabled        = optional(bool, true)
+      retention_policy = optional(object({
+        days    = optional(number, 0)
+        enabled = optional(bool, false)
+      }), {})
+    })), [])
+    metrics = optional(set(object({
+      category = optional(string, null)
+      enabled  = optional(bool, true)
+      retention_policy = optional(object({
+        days    = optional(number, 0)
+        enabled = optional(bool, false)
+      }), {})
+    })), [])
     log_analytics_destination_type           = optional(string, "Dedicated")
     workspace_resource_id                    = optional(string, null)
     storage_account_resource_id              = optional(string, null)
@@ -838,18 +1079,28 @@ variable "diagnostic_settings" {
   }))
   default     = {}
   description = <<DESCRIPTION
-  A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  A map of diagnostic settings to create on the App Service Environment (ASE). The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
   - `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
-  - `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
-  - `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
-  - `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
-  - `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`. Will resolve to `null` as Function App / web App does not support Destination Table.
+  - `logs` - (Optional) A set of log configuration blocks.
+    - `category` - (Optional) The log category.
+    - `category_group` - (Optional) The log category group.
+    - `enabled` - (Optional) Is the log enabled? Defaults to `true`.
+    - `retention_policy` - (Optional) A retention policy block.
+      - `days` - (Optional) The number of days to retain. Defaults to `0`.
+      - `enabled` - (Optional) Is the retention policy enabled? Defaults to `false`.
+  - `metrics` - (Optional) A set of metric configuration blocks.
+    - `category` - (Optional) The metric category.
+    - `enabled` - (Optional) Is the metric enabled? Defaults to `true`.
+    - `retention_policy` - (Optional) A retention policy block.
+      - `days` - (Optional) The number of days to retain. Defaults to `0`.
+      - `enabled` - (Optional) Is the retention policy enabled? Defaults to `false`.
+  - `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
   - `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
-  - `storage_account_resource_id` - (Optional) The resource ID of the Storage Account to send logs and metrics to.
+  - `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
   - `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
   - `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
-  - `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
+  - `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic Logs.
   DESCRIPTION
   nullable    = false
 
@@ -868,10 +1119,24 @@ variable "diagnostic_settings" {
   }
 }
 
-variable "enable_application_insights" {
-  type        = bool
-  default     = true
-  description = "Should Application Insights be enabled for the Function App?"
+variable "dns_configuration" {
+  type = object({
+    dns_alt_server            = optional(string)
+    dns_max_cache_timeout     = optional(number)
+    dns_retry_attempt_count   = optional(number)
+    dns_retry_attempt_timeout = optional(number)
+    dns_servers               = optional(list(string))
+  })
+  default     = null
+  description = <<DESCRIPTION
+(Optional) DNS configuration for the App Service.
+
+- `dns_alt_server` - (Optional) Alternate DNS server to be used by the App Service.
+- `dns_max_cache_timeout` - (Optional) Custom time for DNS to be cached in seconds.
+- `dns_retry_attempt_count` - (Optional) Total number of retries for DNS lookup.
+- `dns_retry_attempt_timeout` - (Optional) Timeout for a single DNS lookup in seconds.
+- `dns_servers` - (Optional) List of custom DNS servers to be used by the App Service.
+DESCRIPTION
 }
 
 variable "enable_telemetry" {
@@ -888,38 +1153,37 @@ DESCRIPTION
 variable "enabled" {
   type        = bool
   default     = true
-  description = "Is the Function App enabled? Defaults to `true`."
+  description = "Is the App Service enabled? Defaults to `true`."
+}
+
+variable "end_to_end_encryption_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should end-to-end encryption be enabled between the App Service front ends and the workers?"
 }
 
 variable "fc1_runtime_name" {
   type        = string
   default     = null
-  description = "The Runtime of the Linux Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
+  description = "The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
 }
 
 variable "fc1_runtime_version" {
   type        = string
   default     = null
-  description = <<DESCRIPTION
-  The Runtime version of the Linux Function App. The supported values are different depending on the runtime chosen with `runtime_name`:
-  - `dotnet-isolated` supported values are: `8.0`, `9.0`
-  - `node` supported values are: `20`
-  - `python` supported values are: `3.10`, `3.11`
-  - `java` supported values are: `11`, `17`
-  - `powershell` supported values are: `7.4`
-  DESCRIPTION
+  description = "The Runtime version of the Flex Consumption Function App."
 }
 
 variable "ftp_publish_basic_authentication_enabled" {
   type        = bool
-  default     = true
-  description = "Should basic authentication be enabled for FTP publish?"
+  default     = false
+  description = "Should basic authentication be enabled for FTP publish? Defaults to `false`."
 }
 
 variable "function_app_uses_fc1" {
   type        = bool
   default     = false
-  description = "Should this Function App run on a Flex Consumption Plan?"
+  description = "Should this Function App run on a Flex Consumption Plan? Defaults to `false`."
 }
 
 variable "functions_extension_version" {
@@ -928,37 +1192,85 @@ variable "functions_extension_version" {
   description = "The version of the Azure Functions runtime to use. Defaults to `~4`."
 }
 
+variable "host_names_disabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should the public hostnames of the app be disabled? When `true`, the app is only accessible via the API management process."
+}
+
+variable "hosting_environment_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The resource ID of the App Service Environment to host this App Service in."
+}
+
 variable "https_only" {
   type        = bool
-  default     = false
-  description = "Should the Function App only be accessible over HTTPS?"
+  default     = true
+  description = "Should the App Service only be accessible over HTTPS? Defaults to `true`."
+}
+
+variable "hyper_v" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should the App Service run in Hyper-V isolation?"
 }
 
 variable "instance_memory_in_mb" {
   type        = number
   default     = 2048
-  description = "The amount of memory to allocate for the instance(s)."
+  description = "The amount of memory to allocate for Flex Consumption instances. Defaults to `2048`."
 
   validation {
-    error_message = "The value must be on of: `512`, `2048`, or `4096`"
+    error_message = "The value must be one of: `512`, `2048`, or `4096`"
     condition     = contains([512, 2048, 4096], var.instance_memory_in_mb)
   }
 }
 
-variable "key_vault_reference_identity_id" {
+variable "ip_mode" {
   type        = string
   default     = null
-  description = "The identity ID to use for Key Vault references."
+  description = "(Optional) Specifies the IP mode of the app. Possible values are `IPv4`, `IPv4AndIPv6`, and `IPv6`."
+
+  validation {
+    error_message = "The value must be one of: `IPv4`, `IPv4AndIPv6`, or `IPv6`."
+    condition     = var.ip_mode == null || can(index(["IPv4", "IPv4AndIPv6", "IPv6"], var.ip_mode))
+  }
+}
+
+variable "key_vault_reference_identity" {
+  type        = string
+  default     = null
+  description = "The identity to use for Key Vault references."
+}
+
+variable "kind" {
+  type        = string
+  default     = "webapp"
+  description = <<DESCRIPTION
+The type of App Service to deploy. This maps to the ARM API `kind` property.
+Possible values are `functionapp`, `webapp` and `logicapp`. Defaults to `webapp`.
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    error_message = "The value must be one of: `functionapp`, `webapp` or `logicapp`"
+    condition     = contains(["functionapp", "webapp", "logicapp"], var.kind)
+  }
 }
 
 variable "lock" {
   type = object({
     kind = string
     name = optional(string, null)
-
   })
   default     = null
-  description = "The lock level to apply. Possible values for `kind` are `None`, `CanNotDelete`, and `ReadOnly`."
+  description = <<DESCRIPTION
+The lock level to apply.
+
+- `kind` - (Required) The type of lock. Possible values are `CanNotDelete` and `ReadOnly`.
+- `name` - (Optional) The name of the lock.
+DESCRIPTION
 
   validation {
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
@@ -969,7 +1281,7 @@ variable "lock" {
 variable "logic_app_runtime_version" {
   type        = string
   default     = "~4"
-  description = " The runtime version associated with the Logic App. Defaults to ~4 (Logic App)"
+  description = "The runtime version for the Logic App. Defaults to `~4`."
 }
 
 variable "logs" {
@@ -980,12 +1292,14 @@ variable "logs" {
         retention_in_days = optional(number, 0)
         sas_url           = string
       }))
-      file_system_level = optional(string, "Off")
+      file_system = optional(object({
+        level = optional(string, "Off")
+      }), {})
     })), {})
     detailed_error_messages = optional(bool, false)
-    failed_request_tracing  = optional(bool, false)
+    failed_requests_tracing = optional(bool, false)
     http_logs = optional(map(object({
-      azure_blob_storage_http = optional(object({
+      azure_blob_storage = optional(object({
         retention_in_days = optional(number, 0)
         sas_url           = string
       }))
@@ -995,44 +1309,48 @@ variable "logs" {
       }))
     })), {})
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
+A map of logs configuration for the App Service.
 
-  A map of logs to create on the Function App.
-
-  DESCRIPTION
+- `application_logs` - (Optional) A map of application log settings.
+  - `azure_blob_storage` - (Optional) Azure Blob Storage configuration for application logs.
+    - `level` - (Optional) The log level. Defaults to `Off`.
+    - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
+    - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
+  - `file_system` - (Optional) File system configuration for application logs.
+    - `level` - (Optional) The file system log level. Defaults to `Off`.
+- `detailed_error_messages` - (Optional) Should detailed error messages be enabled? Defaults to `false`.
+- `failed_requests_tracing` - (Optional) Should failed request tracing be enabled? Defaults to `false`.
+- `http_logs` - (Optional) A map of HTTP log settings.
+  - `azure_blob_storage` - (Optional) Azure Blob Storage configuration for HTTP logs.
+    - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
+    - `sas_url` - (Required) The SAS URL to the Azure Blob Storage container.
+  - `file_system` - (Optional) File system configuration for HTTP logs.
+    - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
+    - `retention_in_mb` - (Required) The maximum size in MB before being rotated.
+DESCRIPTION
   nullable    = false
-
-  validation {
-    condition = alltrue(
-      [
-        for _, v in var.logs :
-        length(v.http_logs) == 1 ? length(v.application_logs) != 0 : true
-      ]
-    )
-    error_message = "If specifying `http_logs`, you must also specify `application_logs`."
-  }
-  validation {
-    condition = alltrue(
-      [
-        for _, v in var.logs :
-        length(v.application_logs) == 1 || length(v.http_logs) == 1
-      ]
-    )
-    error_message = "If specifying `http_logs`, you must also specify `application_logs`."
-  }
 }
 
-# tflint-ignore: terraform_unused_declarations
+variable "managed_environment_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The Azure Resource Manager ID of the Azure Container Apps managed environment to host this App Service in."
+}
+
 variable "managed_identities" {
   type = object({
     system_assigned            = optional(bool, false)
     user_assigned_resource_ids = optional(set(string), [])
   })
   default     = {}
-  description = "Managed identities to be created for the resource."
+  description = <<DESCRIPTION
+Managed identities to be created for the resource.
+
+- `system_assigned` - (Optional) Should a system-assigned managed identity be created? Defaults to `false`.
+- `user_assigned_resource_ids` - (Optional) A set of user-assigned managed identity resource IDs to assign. Defaults to `[]`.
+DESCRIPTION
   nullable    = false
 }
 
@@ -1040,6 +1358,18 @@ variable "maximum_instance_count" {
   type        = number
   default     = null
   description = "The number of workers this function app can scale out to."
+}
+
+variable "os_type" {
+  type        = string
+  default     = "Linux"
+  description = "The operating system type. `Linux` sets `reserved = true` on the ARM resource. Defaults to `Linux`."
+  nullable    = false
+
+  validation {
+    error_message = "The value must be one of: `Linux` or `Windows`"
+    condition     = contains(["Linux", "Windows"], var.os_type)
+  }
 }
 
 variable "private_endpoints" {
@@ -1071,6 +1401,7 @@ variable "private_endpoints" {
     ip_configurations = optional(map(object({
       name               = string
       private_ip_address = string
+      member_name        = optional(string, null)
     })), {})
   }))
   default     = {}
@@ -1078,21 +1409,30 @@ variable "private_endpoints" {
 A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
 - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-- `role_assignments` - (Optional) A map of role assignments to create on the private endpoint. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time. See `var.role_assignments` for more information.
-- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating private endpoints if the principal creating the assignment is constrained by RBAC rules that filters on the PrincipalType attribute.
-- `lock` - (Optional) The lock level to apply to the private endpoint. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`.
+- `role_assignments` - (Optional) A map of role assignments to create on the private endpoint.
+  - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
+  - `principal_id` - (Required) The ID of the principal.
+  - `description` - (Optional) The description of the role assignment.
+  - `skip_service_principal_aad_check` - (Optional) Skip the AAD check. Defaults to `false`.
+  - `condition` - (Optional) The condition for the role assignment.
+  - `condition_version` - (Optional) The condition version.
+  - `delegated_managed_identity_resource_id` - (Optional) The delegated managed identity resource ID.
+  - `principal_type` - (Optional) The type of the principal.
+- `lock` - (Optional) The lock level to apply to the private endpoint.
+  - `kind` - (Required) The type of lock. Possible values are `CanNotDelete` and `ReadOnly`.
+  - `name` - (Optional) The name of the lock.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-- `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group. One will be generated if not set.
-- `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-- `application_security_group_resource_ids` - (Optional) A map of resource IDs of application security groups to associate with the private endpoint. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-- `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-- `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-- `location` - (Optional) The Azure location where the resources will be deployed. Defaults to the location of the resource group.
-- `resource_group_name` - (Optional) The resource group where the resources will be deployed. Defaults to the resource group of this resource.
-- `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - The name of the IP configuration.
-  - `private_ip_address` - The private IP address of the IP configuration.
+- `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group.
+- `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate.
+- `application_security_group_associations` - (Optional) A map of resource IDs of application security groups.
+- `private_service_connection_name` - (Optional) The name of the private service connection.
+- `network_interface_name` - (Optional) The name of the network interface.
+- `location` - (Optional) The Azure location. Defaults to the resource group location.
+- `resource_group_name` - (Optional) The resource group. Defaults to the resource group of this resource.
+- `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
+  - `name` - (Required) The name of the IP configuration.
+  - `private_ip_address` - (Required) The private IP address.
 DESCRIPTION
   nullable    = false
 }
@@ -1106,14 +1446,39 @@ variable "private_endpoints_inherit_lock" {
 variable "private_endpoints_manage_dns_zone_group" {
   type        = bool
   default     = true
-  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
+  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally. Defaults to `true`."
   nullable    = false
 }
 
 variable "public_network_access_enabled" {
   type        = bool
-  default     = true
-  description = "Should the Function App be accessible from the public network? Defaults to `true`."
+  default     = false
+  description = "Should the App Service be accessible from the public network? Defaults to `false`."
+}
+
+variable "redundancy_mode" {
+  type        = string
+  default     = null
+  description = "(Optional) The site redundancy mode. Possible values are `ActiveActive`, `Failover`, `GeoRedundant`, `Manual`, and `None`."
+
+  validation {
+    error_message = "The value must be one of: `ActiveActive`, `Failover`, `GeoRedundant`, `Manual`, or `None`."
+    condition     = var.redundancy_mode == null || can(index(["ActiveActive", "Failover", "GeoRedundant", "Manual", "None"], var.redundancy_mode))
+  }
+}
+
+variable "resource_config" {
+  type = object({
+    cpu    = optional(number)
+    memory = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+(Optional) Function app resource requirements for Container App environment hosted apps.
+
+- `cpu` - (Optional) The required number of CPU cores.
+- `memory` - (Optional) The required memory size (e.g. `1.0Gi`).
+DESCRIPTION
 }
 
 variable "role_assignments" {
@@ -1134,13 +1499,11 @@ A map of role assignments to create on this resource. The map key is deliberatel
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
 - `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to `false`.
+- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant.
 - `condition` - The condition which will be used to scope the role assignment.
 - `condition_version` - The version of the condition syntax. Valid values are `2.0`.
-- `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
-- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
-
-> Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
+- `delegated_managed_identity_resource_id` - The delegated Azure Resource Id which contains a Managed Identity.
+- `principal_type` - The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`.
 DESCRIPTION
   nullable    = false
 }
@@ -1148,236 +1511,402 @@ DESCRIPTION
 variable "scm_publish_basic_authentication_enabled" {
   type        = bool
   default     = true
-  description = "Should basic authentication be enabled for SCM publish?"
+  description = "Should basic authentication be enabled for SCM publish? Defaults to `true`."
+}
+
+variable "scm_site_also_stopped" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should the SCM site also be stopped when the app is stopped? Defaults to `false`."
 }
 
 variable "site_config" {
   type = object({
     always_on             = optional(bool, true)
-    linux_fx_version      = optional(string)
     api_definition_url    = optional(string)
     api_management_api_id = optional(string)
     app_command_line      = optional(string)
-    # auto_heal_enabled                             = optional(bool)
-    dotnet_framework_version                      = optional(string, "v4.0")
+    app_scale_limit       = optional(number)
+    auto_heal_enabled     = optional(bool)
+    auto_heal_rules = optional(object({
+      actions = optional(object({
+        action_type = string
+        custom_action = optional(object({
+          exe        = string
+          parameters = optional(string)
+        }))
+        min_process_execution_time = optional(string, "00:00:00")
+      }))
+      triggers = optional(object({
+        private_bytes_in_kb = optional(number)
+        requests = optional(object({
+          count         = number
+          time_interval = string
+        }))
+        slow_requests = optional(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        }))
+        slow_requests_with_path = optional(list(object({
+          count         = number
+          time_interval = string
+          time_taken    = string
+          path          = optional(string)
+        })), [])
+        status_codes = optional(list(object({
+          count         = number
+          time_interval = string
+          status        = number
+          path          = optional(string)
+          sub_status    = optional(number)
+          win32_status  = optional(number)
+        })), [])
+        status_codes_range = optional(list(object({
+          count         = number
+          time_interval = string
+          status_codes  = string
+          path          = optional(string)
+        })), [])
+      }))
+    }))
     auto_swap_slot_name                           = optional(string)
-    app_scale_limit                               = optional(number)
-    application_insights_connection_string        = optional(string)
-    application_insights_key                      = optional(string)
     container_registry_managed_identity_client_id = optional(string)
     container_registry_use_managed_identity       = optional(bool)
     default_documents                             = optional(list(string))
+    detailed_error_logging_enabled                = optional(bool)
+    document_root                                 = optional(string)
+    dotnet_framework_version                      = optional(string, "v4.0")
     elastic_instance_minimum                      = optional(number)
-    ftps_state                                    = optional(string, "FtpsOnly")
-    health_check_eviction_time_in_min             = optional(number)
-    health_check_path                             = optional(string)
-    http2_enabled                                 = optional(bool, false)
-    ip_restriction_default_action                 = optional(string, "Allow")
-    load_balancing_mode                           = optional(string, "LeastRequests")
-    local_mysql_enabled                           = optional(bool, false)
-    managed_pipeline_mode                         = optional(string, "Integrated")
-    minimum_tls_version                           = optional(string, "1.3")
-    pre_warmed_instance_count                     = optional(number)
-    remote_debugging_enabled                      = optional(bool, false)
-    remote_debugging_version                      = optional(string)
-    runtime_scale_monitoring_enabled              = optional(bool)
-    scm_type                                      = optional(string, "None")
-    scm_ip_restriction_default_action             = optional(string, "Allow")
-    scm_minimum_tls_version                       = optional(string, "1.2")
-    scm_use_main_ip_restriction                   = optional(bool, false)
-    use_32_bit_worker                             = optional(bool, false)
-    vnet_route_all_enabled                        = optional(bool, false)
-    websockets_enabled                            = optional(bool, false)
-    worker_count                                  = optional(number)
-    app_service_logs = optional(map(object({
-      disk_quota_mb         = optional(number, 35)
-      retention_period_days = optional(number)
-    })), {})
-    application_stack = optional(map(object({
-      dotnet_core_version         = optional(string)
-      dotnet_version              = optional(string)
-      java_version                = optional(string)
-      node_version                = optional(string)
-      powershell_core_version     = optional(string)
-      python_version              = optional(string)
-      go_version                  = optional(string)
-      ruby_version                = optional(string)
-      java_server                 = optional(string)
-      java_server_version         = optional(string)
-      php_version                 = optional(string)
-      use_custom_runtime          = optional(bool)
-      use_dotnet_isolated_runtime = optional(bool)
-      docker = optional(list(object({
-        image_name        = string
-        image_tag         = string
-        registry_password = optional(string)
-        registry_url      = string
-        registry_username = optional(string)
-      })))
-      current_stack                = optional(string)
-      docker_image_name            = optional(string)
-      docker_registry_url          = optional(string)
-      docker_registry_username     = optional(string)
-      docker_registry_password     = optional(string)
-      docker_container_name        = optional(string)
-      docker_container_tag         = optional(string)
-      java_embedded_server_enabled = optional(bool)
-      tomcat_version               = optional(bool)
-    })), {})
-    cors = optional(map(object({
+    elastic_web_app_scale_limit                   = optional(number)
+    experiments = optional(object({
+      ramp_up_rules = optional(list(object({
+        action_host_name             = optional(string)
+        change_decision_callback_url = optional(string)
+        change_interval_in_minutes   = optional(number)
+        change_step                  = optional(number)
+        max_reroute_percentage       = optional(number)
+        min_reroute_percentage       = optional(number)
+        name                         = optional(string)
+        reroute_percentage           = optional(number)
+      })), [])
+    }))
+    ftps_state = optional(string, "FtpsOnly")
+    handler_mappings = optional(list(object({
+      arguments        = optional(string)
+      extension        = optional(string)
+      script_processor = optional(string)
+    })))
+    health_check_path             = optional(string)
+    http2_enabled                 = optional(bool, false)
+    http20_proxy_flag             = optional(number)
+    http_logging_enabled          = optional(bool)
+    ip_restriction_default_action = optional(string, "Allow")
+    java_container                = optional(string)
+    java_container_version        = optional(string)
+    java_version                  = optional(string)
+    limits = optional(object({
+      max_disk_size_in_mb = optional(number)
+      max_memory_in_mb    = optional(number)
+      max_percentage_cpu  = optional(number)
+    }))
+    linux_fx_version                       = optional(string)
+    load_balancing_mode                    = optional(string, "LeastRequests")
+    local_mysql_enabled                    = optional(bool, false)
+    logs_directory_size_limit              = optional(number)
+    managed_pipeline_mode                  = optional(string, "Integrated")
+    min_tls_cipher_suite                   = optional(string)
+    minimum_tls_version                    = optional(string, "1.3")
+    node_version                           = optional(string)
+    php_version                            = optional(string)
+    powershell_version                     = optional(string)
+    pre_warmed_instance_count              = optional(number)
+    python_version                         = optional(string)
+    remote_debugging_enabled               = optional(bool, false)
+    remote_debugging_version               = optional(string)
+    request_tracing_enabled                = optional(bool)
+    request_tracing_expiration_time        = optional(string)
+    runtime_scale_monitoring_enabled       = optional(bool)
+    scm_ip_restriction_default_action      = optional(string, "Allow")
+    scm_minimum_tls_version                = optional(string, "1.2")
+    scm_type                               = optional(string, "None")
+    scm_use_main_ip_restriction            = optional(bool, false)
+    tracing_options                        = optional(string)
+    use_32_bit_worker                      = optional(bool, false)
+    vnet_private_ports_count               = optional(number)
+    vnet_route_all_enabled                 = optional(bool, false)
+    website_time_zone                      = optional(string)
+    websockets_enabled                     = optional(bool, false)
+    windows_fx_version                     = optional(string)
+    worker_count                           = optional(number)
+    application_insights_connection_string = optional(string)
+    application_insights_key               = optional(string)
+    cors = optional(object({
       allowed_origins     = optional(list(string))
       support_credentials = optional(bool, false)
-    })), {})
-    ip_restriction = optional(map(object({
+    }))
+    ip_restriction = optional(list(object({
       action                    = optional(string, "Allow")
       ip_address                = optional(string)
       name                      = optional(string)
       priority                  = optional(number, 65000)
       service_tag               = optional(string)
       virtual_network_subnet_id = optional(string)
-      headers = optional(map(object({
+      headers = optional(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(list(string), ["1"])
+        x_fd_health_probe = optional(list(string))
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
-      })), {})
-    })), {})
-    scm_ip_restriction = optional(map(object({
+      }))
+    })), [])
+    scm_ip_restriction = optional(list(object({
       action                    = optional(string, "Allow")
       ip_address                = optional(string)
       name                      = optional(string)
       priority                  = optional(number, 65000)
       service_tag               = optional(string)
       virtual_network_subnet_id = optional(string)
-      headers = optional(map(object({
+      headers = optional(object({
         x_azure_fdid      = optional(list(string))
-        x_fd_health_probe = optional(list(string), ["1"])
+        x_fd_health_probe = optional(list(string))
         x_forwarded_for   = optional(list(string))
         x_forwarded_host  = optional(list(string))
-      })), {})
-    })), {})
-    virtual_application = optional(map(object({
+      }))
+    })), [])
+    application_stack = optional(object({
+      docker = optional(object({
+        docker_image_name   = optional(string)
+        docker_registry_url = optional(string)
+        docker_image_tag    = optional(string, "latest")
+      }))
+      dotnet = optional(object({
+        dotnet_version              = optional(string)
+        current_stack               = optional(string)
+        use_custom_runtime          = optional(bool, false)
+        use_dotnet_isolated_runtime = optional(bool, false)
+      }))
+      java = optional(object({
+        java_version           = optional(string)
+        java_container         = optional(string)
+        java_container_version = optional(string)
+      }))
+      node = optional(object({
+        node_version = optional(string)
+      }))
+      php = optional(object({
+        php_version = optional(string)
+      }))
+      python = optional(object({
+        python_version = optional(string)
+      }))
+      powershell = optional(object({
+        powershell_version = optional(string)
+      }))
+    }))
+    virtual_application = optional(list(object({
       physical_path   = optional(string, "site\\wwwroot")
       preload_enabled = optional(bool, false)
-      virtual_directory = optional(map(object({
+      virtual_path    = optional(string, "/")
+      virtual_directory = optional(list(object({
         physical_path = optional(string)
         virtual_path  = optional(string)
-      })), {})
-      virtual_path = optional(string, "/")
-      })),
-      {
-        # Removing default, as provider issue needing workaround has been resolved.
-        # https://github.com/hashicorp/terraform-provider-azurerm/issues/16326
-        # default = {
-        #   physical_path   = "site\\wwwroot"
-        #   preload_enabled = false
-        #   virtual_path    = "/"
-        # }
-    })
+      })), [])
+    })), [])
   })
   default     = {}
   description = <<DESCRIPTION
-  An object that configures the Function App's `site_config` block.
- - `always_on` - (Optional) If this Linux Web App is Always On enabled. Defaults to `true`.
- - `auto_swap_slot_name` - (Optional) The name of the slot to swap with. (Logic App)
- - `api_definition_url` - (Optional) The URL of the API definition that describes this Linux Function App.
- - `api_management_api_id` - (Optional) The ID of the API Management API for this Linux Function App.
- - `app_command_line` - (Optional) The App command line to launch.
- - `app_scale_limit` - (Optional) The number of workers this function app can scale out to. Only applicable to apps on the Consumption and Premium plan.
- - `application_insights_connection_string` - (Optional) The Connection String for linking the Linux Function App to Application Insights.
- - `application_insights_key` - (Optional) The Instrumentation Key for connecting the Linux Function App to Application Insights.
- - `container_registry_managed_identity_client_id` - (Optional) The Client ID of the Managed Service Identity to use for connections to the Azure Container Registry.
- - `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use Managed Identity.
- - `default_documents` - (Optional) Specifies a list of Default Documents for the Linux Web App.
- - `dotnet_framework_version` - (Optional) The version of the .NET Framework to use. Possible values are `v4.0` (including .NET Core 2.1 and 3.1), `v5.0`, `v6.0` and `v8.0`. Defaults to `v4.0`.
- - `elastic_instance_minimum` - (Optional) The number of minimum instances for this Linux Function App. Only affects apps on Elastic Premium plans.
- - `ftps_state` - (Optional) State of FTP / FTPS service for this function app. Possible values include: `AllAllowed`, `FtpsOnly` and `Disabled`. Defaults to `FtpsOnly`.
- - `health_check_eviction_time_in_min` - (Optional) The amount of time in minutes that a node can be unhealthy before being removed from the load balancer. Possible values are between `2` and `10`. Only valid in conjunction with `health_check_path`.
- - `health_check_path` - (Optional) The path to be checked for this function app health.
- - `http2_enabled` - (Optional) Specifies if the HTTP2 protocol should be enabled. Defaults to `false`.
- - `load_balancing_mode` - (Optional) The Site load balancing mode. Possible values include: `WeightedRoundRobin`, `LeastRequests`, `LeastResponseTime`, `WeightedTotalTraffic`, `RequestHash`, `PerSiteRoundRobin`. Defaults to `LeastRequests` if omitted.
- - `linux_fx_version` - (Optional) Linux App Framework and version for the App Service, e.g. `DOCKER|(golang:latest)`. Setting this value will also set the kind of application deployed to `functionapp,linux,container,workflowapp`. You must set `os_type` to `Linux` when this property is set.
- - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
- - `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2`, and `1.3`. Defaults to `1.3`.
- - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
- - `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
- - `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`.
- - `runtime_scale_monitoring_enabled` - (Optional) Should Scale Monitoring of the Functions Runtime be enabled?
- - `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
- - `scm_use_main_ip_restriction` - (Optional) Should the Linux Function App `ip_restriction` configuration be used for the SCM also.
- - `scm_type` - (Optional) The type of SCM to use. Possible values include: `None`, `LocalGit`, `GitHub`, `BitbucketGit`, `BitBucketHg`, `CodePlexHg`, `CodePlexGit`, `Dropbox`, `Tfs`, `VSO`, `VSTSRM`, `ExternalGit`, `ExternalHg` and `OneDrive`. Defaults to `None`.
- - `use_32_bit_worker` - (Optional) Should the Linux Web App use a 32-bit worker process. Defaults to `false`.
- - `vnet_route_all_enabled` - (Optional) Should all outbound traffic to have NAT Gateways, Network Security Groups and User Defined Routes applied? Defaults to `false`.
- - `websockets_enabled` - (Optional) Should Web Sockets be enabled. Defaults to `false`.
- - `worker_count` - (Optional) The number of Workers for this Linux Function App.
+An object that configures the App Service's site configuration. These map to the ARM API `siteConfig` properties.
 
- ---
- `app_service_logs` block supports the following:
- - `disk_quota_mb` - (Optional) The amount of disk space to use for logs. Valid values are between `25` and `100`. Defaults to `35`.
- - `retention_period_days` - (Optional) The retention period for logs in days. Valid values are between `0` and `99999`.(never delete).
+- `always_on` - (Optional) If this App is Always On enabled. Defaults to `true`.
+- `api_definition_url` - (Optional) The URL of the API definition.
+- `api_management_api_id` - (Optional) The ID of the API Management API.
+- `app_command_line` - (Optional) The App command line to launch.
+- `app_scale_limit` - (Optional) The number of workers this function app can scale out to.
+- `auto_heal_enabled` - (Optional) Should Auto Heal be enabled? Maps to `autoHealEnabled` in the API.
+- `auto_heal_rules` - (Optional) Configures the Auto Heal rules for the App Service. Maps to `autoHealRules` in the API.
+  - `actions` - (Optional) The action to take when the trigger is activated.
+    - `action_type` - (Required) The type of action. Possible values are `Recycle`, `LogEvent`, and `CustomAction`.
+    - `custom_action` - (Optional) A custom action block.
+      - `exe` - (Required) The executable to run.
+      - `parameters` - (Optional) The parameters to pass to the executable.
+    - `min_process_execution_time` - (Optional) The minimum process execution time. Defaults to `00:00:00`.
+  - `triggers` - (Optional) The trigger conditions for auto heal.
+    - `private_bytes_in_kb` - (Optional) The amount of private memory in KB that triggers the action.
+    - `requests` - (Optional) The request count trigger.
+      - `count` - (Required) The number of requests within the interval.
+      - `time_interval` - (Required) The time interval.
+    - `slow_requests` - (Optional) The slow request trigger.
+      - `count` - (Required) The number of slow requests within the interval.
+      - `time_interval` - (Required) The time interval.
+      - `time_taken` - (Required) The threshold for time taken.
+      - `path` - (Optional) The request path to match.
+    - `slow_requests_with_path` - (Optional) A list of slow request triggers with path matching.
+      - `count` - (Required) The number of slow requests within the interval.
+      - `time_interval` - (Required) The time interval.
+      - `time_taken` - (Required) The threshold for time taken.
+      - `path` - (Optional) The request path to match.
+    - `status_codes` - (Optional) A list of status code-based triggers.
+      - `count` - (Required) The number of occurrences within the interval.
+      - `time_interval` - (Required) The time interval.
+      - `status` - (Required) The status code.
+      - `path` - (Optional) The request path to match.
+      - `sub_status` - (Optional) The sub-status code.
+      - `win32_status` - (Optional) The Win32 status code.
+    - `status_codes_range` - (Optional) A list of status code range-based triggers.
+      - `count` - (Required) The number of occurrences within the interval.
+      - `time_interval` - (Required) The time interval.
+      - `status_codes` - (Required) The status code range (e.g. `500-599`).
+      - `path` - (Optional) The request path to match.
+- `auto_swap_slot_name` - (Optional) The name of the slot to auto swap with.
+- `container_registry_managed_identity_client_id` - (Optional) The Client ID of the MSI for Azure Container Registry.
+- `container_registry_use_managed_identity` - (Optional) Should connections for Azure Container Registry use MSI.
+- `default_documents` - (Optional) Specifies a list of Default Documents.
+- `detailed_error_logging_enabled` - (Optional) Should detailed error logging be enabled?
+- `document_root` - (Optional) The document root path.
+- `dotnet_framework_version` - (Optional) The .NET Framework version. Defaults to `v4.0`.
+- `elastic_instance_minimum` - (Optional) The number of minimum instances for Elastic Premium plans.
+- `elastic_web_app_scale_limit` - (Optional) The maximum number of workers for Elastic scale.
+- `experiments` - (Optional) Traffic routing experiments configuration.
+  - `ramp_up_rules` - (Optional) A list of ramp-up rules for traffic routing.
+    - `action_host_name` - (Optional) The hostname of the slot to route traffic to.
+    - `change_decision_callback_url` - (Optional) URL to a custom decision algorithm.
+    - `change_interval_in_minutes` - (Optional) Interval in minutes at which to re-evaluate routing percentage.
+    - `change_step` - (Optional) The percentage to change the routing by at each interval.
+    - `max_reroute_percentage` - (Optional) The maximum percentage of traffic to reroute.
+    - `min_reroute_percentage` - (Optional) The minimum percentage of traffic to reroute.
+    - `name` - (Optional) The name of the ramp-up rule (typically the slot name).
+    - `reroute_percentage` - (Optional) The current percentage of traffic to reroute.
+- `ftps_state` - (Optional) State of FTP / FTPS service. Possible values: `AllAllowed`, `FtpsOnly`, `Disabled`. Defaults to `FtpsOnly`.
+- `handler_mappings` - (Optional) A list of handler mappings (Windows IIS).
+  - `arguments` - (Optional) The arguments to pass to the script processor.
+  - `extension` - (Optional) The file extension to handle.
+  - `script_processor` - (Optional) The path to the script processor executable.
+- `health_check_path` - (Optional) The path to be checked for health.
+- `http2_enabled` - (Optional) Enable HTTP2 protocol. Defaults to `false`.
+- `http20_proxy_flag` - (Optional) HTTP/2 proxy flag. `0` = disabled, `1` = pass through HTTP/2, `2` = gRPC only.
+- `http_logging_enabled` - (Optional) Should HTTP logging be enabled?
+- `ip_restriction_default_action` - (Optional) Default action for IP restrictions. Defaults to `Allow`.
+- `limits` - (Optional) Resource limits for the App Service.
+  - `max_disk_size_in_mb` - (Optional) The maximum disk size in MB.
+  - `max_memory_in_mb` - (Optional) The maximum memory in MB.
+  - `max_percentage_cpu` - (Optional) The maximum CPU percentage.
+- `java_container` - (Optional) The Java container type (e.g. `TOMCAT`, `JETTY`). Direct alternative to `application_stack.java.java_container`.
+- `java_container_version` - (Optional) The Java container version. Direct alternative to `application_stack.java.java_container_version`.
+- `java_version` - (Optional) The Java version. Direct alternative to `application_stack.java.java_version`.
+- `linux_fx_version` - (Optional) The Linux App Framework and version for the App Service. Direct value takes precedence over `application_stack` derived value.
+- `load_balancing_mode` - (Optional) The Site load balancing mode. Defaults to `LeastRequests`.
+- `local_mysql_enabled` - (Optional) Should Local MySQL be enabled? Defaults to `false`.
+- `logs_directory_size_limit` - (Optional) The HTTP log directory size limit in MB.
+- `managed_pipeline_mode` - (Optional) Managed pipeline mode. Defaults to `Integrated`.
+- `min_tls_cipher_suite` - (Optional) The minimum TLS cipher suite. E.g. `TLS_AES_256_GCM_SHA384`.
+- `minimum_tls_version` - (Optional) The minimum TLS version. Defaults to `1.3`.
+- `node_version` - (Optional) The Node.js version. Direct alternative to `application_stack.node.node_version`.
+- `php_version` - (Optional) The PHP version. Direct alternative to `application_stack.php.php_version`.
+- `powershell_version` - (Optional) The PowerShell version. Direct alternative to `application_stack.powershell.powershell_version`.
+- `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances.
+- `python_version` - (Optional) The Python version. Direct alternative to `application_stack.python.python_version`.
+- `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
+- `remote_debugging_version` - (Optional) The Remote Debugging Version.
+- `request_tracing_enabled` - (Optional) Should request tracing be enabled?
+- `request_tracing_expiration_time` - (Optional) The expiration time for request tracing.
+- `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled?
+- `scm_ip_restriction_default_action` - (Optional) Default action for SCM IP restrictions. Defaults to `Allow`.
+- `scm_minimum_tls_version` - (Optional) SCM minimum TLS version. Defaults to `1.2`.
+- `scm_type` - (Optional) The SCM type. Defaults to `None`.
+- `scm_use_main_ip_restriction` - (Optional) Should SCM use the main IP restriction.
+- `tracing_options` - (Optional) Azure tracing options.
+- `use_32_bit_worker` - (Optional) Use a 32-bit worker process. Defaults to `false`.
+- `vnet_private_ports_count` - (Optional) The number of private ports assigned to the app for VNet integration.
+- `vnet_route_all_enabled` - (Optional) Route all outbound traffic through VNet. Defaults to `false`.
+- `website_time_zone` - (Optional) The time zone for the website (e.g. `Eastern Standard Time`).
+- `websockets_enabled` - (Optional) Enable Web Sockets. Defaults to `false`.
+- `windows_fx_version` - (Optional) The Windows App Framework and version for the App Service. Direct value takes precedence over `application_stack` derived value.
+- `worker_count` - (Optional) The number of Workers.
+- `application_insights_connection_string` - (Optional) The connection string for Application Insights.
+- `application_insights_key` - (Optional) The instrumentation key for Application Insights.
+- `cors` - (Optional) CORS configuration.
+  - `allowed_origins` - (Optional) A list of allowed origins.
+  - `support_credentials` - (Optional) Should credentials be supported? Defaults to `false`.
+- `ip_restriction` - (Optional) A list of IP restriction rules.
+  - `action` - (Optional) The action. Defaults to `Allow`.
+  - `ip_address` - (Optional) The CIDR notation IP address.
+  - `name` - (Optional) The name of the rule.
+  - `priority` - (Optional) The priority. Defaults to `65000`.
+  - `service_tag` - (Optional) The service tag.
+  - `virtual_network_subnet_id` - (Optional) The subnet resource ID.
+  - `headers` - (Optional) Header-based restrictions.
+    - `x_azure_fdid` - (Optional) A list of Azure Front Door IDs.
+    - `x_fd_health_probe` - (Optional) A list of health probe values.
+    - `x_forwarded_for` - (Optional) A list of forwarded-for addresses.
+    - `x_forwarded_host` - (Optional) A list of forwarded hosts.
+- `scm_ip_restriction` - (Optional) A list of SCM IP restriction rules.
+  - `action` - (Optional) The action. Defaults to `Allow`.
+  - `ip_address` - (Optional) The CIDR notation IP address.
+  - `name` - (Optional) The name of the rule.
+  - `priority` - (Optional) The priority. Defaults to `65000`.
+  - `service_tag` - (Optional) The service tag.
+  - `virtual_network_subnet_id` - (Optional) The subnet resource ID.
+  - `headers` - (Optional) Header-based restrictions.
+    - `x_azure_fdid` - (Optional) A list of Azure Front Door IDs.
+    - `x_fd_health_probe` - (Optional) A list of health probe values.
+    - `x_forwarded_for` - (Optional) A list of forwarded-for addresses.
+    - `x_forwarded_host` - (Optional) A list of forwarded hosts.
+- `application_stack` - (Optional) Application stack configuration.
+  - `docker` - (Optional) Docker configuration.
+    - `docker_image_name` - (Optional) The Docker image name.
+    - `docker_registry_url` - (Optional) The Docker registry URL.
+    - `docker_image_tag` - (Optional) The Docker image tag. Defaults to `latest`.
+  - `dotnet` - (Optional) .NET configuration.
+    - `dotnet_version` - (Optional) The .NET version.
+    - `current_stack` - (Optional) The current stack.
+    - `use_custom_runtime` - (Optional) Use a custom runtime? Defaults to `false`.
+    - `use_dotnet_isolated_runtime` - (Optional) Use the isolated runtime? Defaults to `false`.
+  - `java` - (Optional) Java configuration.
+    - `java_version` - (Optional) The Java version.
+    - `java_container` - (Optional) The Java container.
+    - `java_container_version` - (Optional) The Java container version.
+  - `node` - (Optional) Node.js configuration.
+    - `node_version` - (Optional) The Node.js version.
+  - `php` - (Optional) PHP configuration.
+    - `php_version` - (Optional) The PHP version.
+  - `python` - (Optional) Python configuration.
+    - `python_version` - (Optional) The Python version.
+  - `powershell` - (Optional) PowerShell configuration.
+    - `powershell_version` - (Optional) The PowerShell version.
+- `virtual_application` - (Optional) A list of virtual application configurations.
+  - `physical_path` - (Optional) The physical path. Defaults to `site\\wwwroot`.
+  - `preload_enabled` - (Optional) Should preloading be enabled? Defaults to `false`.
+  - `virtual_path` - (Optional) The virtual path. Defaults to `/`.
+  - `virtual_directory` - (Optional) A list of virtual directories.
+    - `physical_path` - (Optional) The physical path.
+    - `virtual_path` - (Optional) The virtual path.
+DESCRIPTION
+}
 
- ---
- `application_stack` block supports the following:
- - `dotnet_core_version` - (Optional) The version of .NET Core to use. Possible values include `v4.0`.
- - `dotnet_version` - (Optional) The version of .NET to use. Possible values include `3.1`, `6.0`, `7.0` and `8.0`.
- - `java_version` - (Optional) The Version of Java to use. Supported versions include `8`, `11` & `17`.
- - `node_version` - (Optional) The version of Node to run. Possible values include `12`, `14`, `16` and `18`.
- - `powershell_core_version` - (Optional) The version of PowerShell Core to run. Possible values are `7`, and `7.2`.
- - `python_version` - (Optional) The version of Python to run. Possible values are `3.13`, `3.12`, `3.11`, `3.10`, `3.9`, `3.8` and `3.7`.
- - `go_version` - (Optional) The version of Go to use. Possible values are `1.18`, and `1.19`.
- - `ruby_version` - (Optional) The version of Ruby to use. Possible values are `2.6`, and `2.7`.
- - `java_server` - (Optional) The Java server type. Possible values are `JAVA`, `TOMCAT`, and `JBOSSEAP`.
- - `java_server_version` - (Optional) The version of the Java server to use.
- - `php_version` - (Optional) The version of PHP to use. Possible values are `7.4`, `8.0`, `8.1`, and `8.2`.
- - `use_custom_runtime` - (Optional) Should the Linux Function App use a custom runtime?
- - `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
+variable "slot_sensitive_app_settings" {
+  type        = map(map(string))
+  default     = {}
+  description = "A map of sensitive app settings to apply to the deployment slot(s). The key MUST be the same key as the slot key."
+  nullable    = false
+  sensitive   = true
+}
 
- ---
- `docker` block supports the following:
- - `image_name` - (Required) The name of the Docker image to use.
- - `image_tag` - (Required) The image tag of the image to use.
- - `registry_password` - (Optional) The password for the account to use to connect to the registry.
- - `registry_url` - (Required) The URL of the docker registry.
- - `registry_username` - (Optional) The username to use for connections to the registry.
+variable "slots_storage_shares_to_mount_sensitive_values" {
+  type        = map(string)
+  default     = {}
+  description = <<DESCRIPTION
+A map of sensitive values (Storage Access Key) for the Storage Account SMB file shares to mount to the deployment slots.
+The key is the supplied input to `var.deployment_slots.<slot_key>.storage_shares_to_mount`.
+The value is the secret value (storage access key).
+DESCRIPTION
+  sensitive   = true
+}
 
- ---
- `cors` block supports the following:
- - `allowed_origins` - (Optional) Specifies a list of origins that should be allowed to make cross-origin calls.
- - `support_credentials` - (Optional) Are credentials allowed in CORS requests? Defaults to `false`.
-
- ---
- `ip_restriction` block supports the following:
- - `action` - (Optional) The action to take. Possible values are `Allow` or `Deny`. Defaults to `Allow`.
- - `ip_address` - (Optional) The CIDR notation of the IP or IP Range to match. For example: `10.0.0.0/24` or `192.168.10.1/32`
- - `name` - (Optional) The name which should be used for this `ip_restriction`.
- - `priority` - (Optional) The priority value of this `ip_restriction`. Defaults to `65000`.
- - `service_tag` - (Optional) The Service Tag used for this IP Restriction.
- - `virtual_network_subnet_id` - (Optional) The Virtual Network Subnet ID used for this IP Restriction.
-
- ---
- `headers` block supports the following:
- - `x_azure_fdid` - (Optional) Specifies a list of Azure Front Door IDs.
- - `x_fd_health_probe` - (Optional) Specifies if a Front Door Health Probe should be expected. The only possible value is `1`.
- - `x_forwarded_for` - (Optional) Specifies a list of addresses for which matching should be applied. Omitting this value means allow any.
- - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
-
- ---
- `scm_ip_restriction` block supports the following:
- - `action` - (Optional) The action to take. Possible values are `Allow` or `Deny`. Defaults to `Allow`.
- - `ip_address` - (Optional) The CIDR notation of the IP or IP Range to match. For example: `10.0.0.0/24` or `192.168.10.1/32`
- - `name` - (Optional) The name which should be used for this `ip_restriction`.
- - `priority` - (Optional) The priority value of this `ip_restriction`. Defaults to `65000`.
- - `service_tag` - (Optional) The Service Tag used for this IP Restriction.
- - `virtual_network_subnet_id` - (Optional) The Virtual Network Subnet ID used for this IP Restriction.
-
- ---
- `headers` block supports the following:
- - `x_azure_fdid` - (Optional) Specifies a list of Azure Front Door IDs.
- - `x_fd_health_probe` - (Optional) Specifies if a Front Door Health Probe should be expected. The only possible value is `1`.
- - `x_forwarded_for` - (Optional) Specifies a list of addresses for which matching should be applied. Omitting this value means allow any.
- - `x_forwarded_host` - (Optional) Specifies a list of Hosts for which matching should be applied.
-
-  DESCRIPTION
+variable "ssh_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should SSH be enabled for the App Service?"
 }
 
 variable "sticky_settings" {
@@ -1385,71 +1914,56 @@ variable "sticky_settings" {
     app_setting_names       = optional(list(string))
     connection_string_names = optional(list(string))
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of sticky settings to assign to the Function App.
-  - `app_setting_names` - (Optional) A list of app setting names to make sticky.
-  - `connection_string_names` - (Optional) A list of connection string names to make sticky.
+A map of sticky settings to assign to the App Service.
 
-  ```terraform
-  sticky_settings = {
-    sticky1 = {
-      app_setting_names       = ["example1", "example2"]
-      connection_string_names = ["example1", "example2"]
-    }
-  }
-  DESCRIPTION
+- `app_setting_names` - (Optional) A list of app setting names that should be sticky to the slot.
+- `connection_string_names` - (Optional) A list of connection string names that should be sticky to the slot.
+DESCRIPTION
 }
 
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = <<DESCRIPTION
-  The access key of the Storage Account to deploy the Function App in. Conflicts with `storage_uses_managed_identity` (non-flex consumption function app configurations).
-  This will resolve to `storage_acccess_key` for flex consumption function apps. Must be specified if `storage_authentication_type` is set to `storageaccountconnecionstring` Conflicts with `storage_user_assigned_identity_id`.
-  DESCRIPTION
+  description = "The access key of the Storage Account for the Function App."
   sensitive   = true
 }
 
 variable "storage_account_name" {
   type        = string
   default     = null
-  description = "The name of the Storage Account to deploy the Function App in."
+  description = "The name of the Storage Account for the Function App."
+}
+
+variable "storage_account_required" {
+  type        = bool
+  default     = null
+  description = "(Optional) Should a storage account be required for the Function App? When set, the storage account must be specified in the app settings."
 }
 
 variable "storage_account_share_name" {
   type        = string
   default     = null
-  description = "(Logic App)"
+  description = "The name of the storage account file share (Logic App)."
 }
 
 variable "storage_authentication_type" {
   type        = string
   default     = null
-  description = <<DESCRIPTION
-  The authentication type which will be used to access the backend storage account for the Function App.
-  Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
-  DESCRIPTION
+  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
 }
 
 variable "storage_container_endpoint" {
   type        = string
   default     = null
-  description = "The backend storage container endpoint which will be used by this Function App."
+  description = "The backend storage container endpoint for Flex Consumption Function Apps."
 }
 
 variable "storage_container_type" {
   type        = string
   default     = null
-  description = "The storage container type used for the Function App. The current supported type is `blobContainer`."
-}
-
-variable "storage_key_vault_secret_id" {
-  type        = string
-  default     = null
-  description = "The ID of the secret in the key vault to use for the Storage Account access key."
+  description = "The storage container type. The current supported type is `blobContainer`."
 }
 
 variable "storage_shares_to_mount" {
@@ -1461,52 +1975,35 @@ variable "storage_shares_to_mount" {
     share_name   = string
     type         = optional(string, "AzureFiles")
   }))
-  default = {
-
-  }
+  default     = {}
   description = <<DESCRIPTION
-  A map of objects that represent Storage Account FILE SHARES to mount to the Function App.
-  This functionality is only available for Linux Function Apps, via [documentation](https://learn.microsoft.com/en-us/azure/azure-functions/storage-considerations?tabs=azure-cli)
+A map of Storage Account file shares to mount to the App Service.
 
-  The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `access_key` - (Optional) The access key of the Storage Account.
-  - `account_name` - (Optional) The name of the Storage Account.
-  - `name` - (Optional) The name of the Storage Account to mount.
-  - `share_name` - (Optional) The name of the share to mount.
-  - `type` - (Optional) The type of Storage Account. Currently, only a `type` of `AzureFiles` is supported. Defaults to `AzureFiles`.
-  - `mount_path` - (Optional) The path to mount the Storage Account to.
-
-  ```terraform
-  storage_shares_to_mount = {
-    storacc1 = {
-      access_key   = "00000000-0000-0000-0000-000000000000"
-      account_name = "example"
-      name         = "example"
-      share_name   = "example"
-      type         = "AzureFiles"
-      mount_path   = "/mnt/example"
-    }
-  }
-  ```
-  DESCRIPTION
+- `access_key` - (Required) The access key for the Storage Account.
+- `account_name` - (Required) The name of the Storage Account.
+- `mount_path` - (Required) The path to mount the share at within the App Service.
+- `name` - (Required) The name of the storage mount.
+- `share_name` - (Required) The name of the file share.
+- `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
+DESCRIPTION
 }
 
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
-  description = "The ID of the User Assigned Managed Identity to use for the Storage Account. Conflicts with `storage_account_access_key`."
+  description = "The ID of the User Assigned Managed Identity for storage."
 }
 
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Storage Account use a Managed Identity? Conflicts with `storage_account_access_key`."
+  description = "Should the Storage Account use a Managed Identity? Defaults to `false`."
 }
 
 variable "tags" {
   type        = map(string)
   default     = null
-  description = "The map of tags to be applied to the resource"
+  description = "The map of tags to be applied to the resource."
 }
 
 variable "timeouts" {
@@ -1518,51 +2015,63 @@ variable "timeouts" {
   })
   default     = null
   description = <<-EOT
- - `create` - (Defaults to 30 minutes) Used when creating the Linux Function App.
- - `delete` - (Defaults to 30 minutes) Used when deleting the Linux Function App.
- - `read` - (Defaults to 5 minutes) Used when retrieving the Linux Function App.
- - `update` - (Defaults to 30 minutes) Used when updating the Linux Function App.
+ - `create` - (Defaults to 30 minutes) Used when creating the App Service.
+ - `delete` - (Defaults to 30 minutes) Used when deleting the App Service.
+ - `read` - (Defaults to 5 minutes) Used when retrieving the App Service.
+ - `update` - (Defaults to 30 minutes) Used when updating the App Service.
 EOT
 }
 
 variable "use_extension_bundle" {
   type        = bool
   default     = true
-  description = "Should the extension bundle be used? (Logic App)"
+  description = "Should the extension bundle be used? (Logic App) Defaults to `true`."
 }
 
 variable "virtual_network_backup_restore_enabled" {
   type        = bool
   default     = false
-  description = "Should backup and restore operations over the linked virtual network are enabled? Defaults to `false`."
+  description = "Should backup and restore operations over the linked virtual network be enabled? Defaults to `false`."
 }
 
 variable "virtual_network_subnet_id" {
   type        = string
   default     = null
-  description = "The ID of the subnet to deploy the Function App in."
+  description = "The ID of the subnet to deploy the App Service in for regional VNet integration."
+}
+
+variable "vnet_application_traffic_enabled" {
+  type        = bool
+  default     = false
+  description = "Should application traffic be routed over virtual network? Maps to `outboundVnetRouting.applicationTraffic`. Defaults to `false`."
 }
 
 variable "vnet_content_share_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for the content share be routed over virtual network enabled? Defaults to `false`."
+  description = "Should the traffic for the content share be routed over virtual network? Defaults to `false`."
 }
 
 variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for the image pull be routed over virtual network enabled? Defaults to `false`."
+  description = "Should the traffic for image pull be routed over virtual network? Defaults to `false`."
 }
 
-variable "webdeploy_publish_basic_authentication_enabled" {
+variable "vnet_route_all_traffic" {
   type        = bool
-  default     = true
-  description = "Should basic authentication be enabled for web deploy?"
+  default     = false
+  description = "Should all outbound traffic be routed over virtual network? Maps to `outboundVnetRouting.allTraffic`. Defaults to `false`."
+}
+
+variable "workload_profile_name" {
+  type        = string
+  default     = null
+  description = "(Optional) The workload profile name for apps hosted in a Container Apps environment."
 }
 
 variable "zip_deploy_file" {
   type        = string
   default     = null
-  description = "The path to the zip file to deploy to the Function App."
+  description = "The path to the zip file to deploy to the App Service."
 }

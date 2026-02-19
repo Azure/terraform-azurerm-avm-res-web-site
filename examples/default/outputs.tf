@@ -15,46 +15,11 @@ output "resource_id" {
 }
 
 output "service_plan_id" {
-  description = "The ID of the app service"
-  value       = azurerm_service_plan.example.id
+  description = "The ID of the app service plan"
+  value       = azapi_resource.service_plan.id
 }
 
 output "service_plan_name" {
   description = "Full output of service plan created"
-  value       = azurerm_service_plan.example.name
-}
-
-output "sku_name" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.sku_name
-}
-
-output "storage_account_id" {
-  description = "The ID of the storage account"
-  value       = azurerm_storage_account.example.id
-}
-
-output "storage_account_kind" {
-  description = "The kind of storage account"
-  value       = azurerm_storage_account.example.account_kind
-}
-
-output "storage_account_name" {
-  description = "Full output of storage account created"
-  value       = azurerm_storage_account.example.name
-}
-
-output "storage_account_replication_type" {
-  description = "The kind of storage account"
-  value       = azurerm_storage_account.example.account_replication_type
-}
-
-output "worker_count" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.worker_count
-}
-
-output "zone_redundant" {
-  description = "The number of workers"
-  value       = azurerm_service_plan.example.zone_balancing_enabled
+  value       = azapi_resource.service_plan.name
 }

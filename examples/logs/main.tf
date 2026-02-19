@@ -1,91 +1,150 @@
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "0.8.0"
-}
-
-# This allows us to randomize the region for the resource group.
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
   min = 0
 }
-## End of section to provide a random Azure region for the resource group
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "0.4.2"
 }
 
-resource "azurerm_resource_group" "example" {
+resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
+  body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
 }
 
-resource "azurerm_service_plan" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.app_service_plan.name_unique
-  os_type             = "Linux"
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "S1"
+resource "azapi_resource" "service_plan" {
+  location  = azapi_resource.resource_group.location
+  name      = module.naming.app_service_plan.name_unique
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Web/serverfarms@2025-03-01"
+  body = {
+    kind = "linux"
+    sku = {
+      name = "S1"
+    }
+    properties = {
+      reserved      = true
+      zoneRedundant = false
+    }
+  }
   tags = {
     app = "${module.naming.app_service.name_unique}-logs"
   }
 }
 
-resource "azurerm_application_insights" "example_staging" {
-  application_type    = "web"
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.application_insights.name_unique}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  workspace_id        = azurerm_log_analytics_workspace.example_staging.id
+resource "azapi_resource" "log_analytics_workspace_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_production" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-production"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "application_insights_staging" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-staging"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_staging.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
-resource "azurerm_log_analytics_workspace" "example_staging" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-staging"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "log_analytics_workspace_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
 }
 
-resource "azurerm_log_analytics_workspace" "example_development" {
-  location            = azurerm_resource_group.example.location
-  name                = "${module.naming.log_analytics_workspace.name}-development"
-  resource_group_name = azurerm_resource_group.example.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
+resource "azapi_resource" "application_insights_production" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-production"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_production.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
 }
 
-# This is the module call
+resource "azapi_resource" "log_analytics_workspace_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.log_analytics_workspace.name}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.OperationalInsights/workspaces@2025-02-01"
+  body = {
+    properties = {
+      retentionInDays = 30
+      sku = {
+        name = "PerGB2018"
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights_development" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.application_insights.name_unique}-development"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.Insights/components@2020-02-02"
+  body = {
+    kind = "web"
+    properties = {
+      Application_Type    = "web"
+      WorkspaceResourceId = azapi_resource.log_analytics_workspace_development.id
+    }
+  }
+  response_export_values = ["properties.ConnectionString", "properties.InstrumentationKey"]
+}
+
 module "avm_res_web_site" {
   source = "../.."
 
-  kind                     = "webapp"
-  location                 = azurerm_resource_group.example.location
-  name                     = "${module.naming.app_service.name_unique}-logs"
-  os_type                  = azurerm_service_plan.example.os_type
-  resource_group_name      = azurerm_resource_group.example.name
-  service_plan_resource_id = azurerm_service_plan.example.id
-  application_insights = {
-    workspace_resource_id = azurerm_log_analytics_workspace.example_production.id
-  }
+  location                               = azapi_resource.resource_group.location
+  name                                   = "${module.naming.app_service.name_unique}-logs"
+  parent_id                              = azapi_resource.resource_group.id
+  service_plan_resource_id               = azapi_resource.service_plan.id
+  application_insights_connection_string = azapi_resource.application_insights_production.output.properties.ConnectionString
+  application_insights_key               = azapi_resource.application_insights_production.output.properties.InstrumentationKey
   deployment_slots = {
     slot1 = {
       name                                           = "development-logs"
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        slot_application_insights_object_key = "development" # This is the key for the slot application insights mapping
+        application_insights_connection_string = azapi_resource.application_insights_development.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_development.output.properties.InstrumentationKey
         application_stack = {
           dotnet = {
             dotnet_version              = "8.0"
@@ -98,7 +157,9 @@ module "avm_res_web_site" {
         app_service_logs = {
           application_logs = {
             file_system_level = {
-              file_system_level = "Warning"
+              file_system = {
+                level = "Warning"
+              }
             }
           }
           http_logs = {
@@ -117,9 +178,8 @@ module "avm_res_web_site" {
       ftp_publish_basic_authentication_enabled       = false
       webdeploy_publish_basic_authentication_enabled = false
       site_config = {
-        # Uses existing application insights
-        application_insights_connection_string = nonsensitive(azurerm_application_insights.example_staging.connection_string)
-        application_insights_key               = nonsensitive(azurerm_application_insights.example_staging.instrumentation_key)
+        application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
+        application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
         application_stack = {
           dotnet = {
             dotnet_version              = "8.0"
@@ -133,7 +193,9 @@ module "avm_res_web_site" {
         app_service_logs = {
           application_logs = {
             file_system_level = {
-              file_system_level = "Off"
+              file_system = {
+                level = "Off"
+              }
             }
           }
           http_logs = {
@@ -149,14 +211,17 @@ module "avm_res_web_site" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  kind             = "webapp"
   logs = {
     app_service_logs = {
       # Added validation to ensure that logs object is configured.
-      # If file_system_level is set to "Off", then http_logs will have no effect
+      # If application_logs.file_system.level is set to "Off", then http_logs will have no effect
       # logs set in `logs`
       application_logs = {
         file_system_level = {
-          file_system_level = "Off"
+          file_system = {
+            level = "Off"
+          }
         }
       }
       # Added validation to ensure that is http_logs is configured, application_logs must also be configured.
@@ -170,6 +235,8 @@ module "avm_res_web_site" {
       }
     }
   }
+  os_type                       = "Linux"
+  public_network_access_enabled = true
   site_config = {
     application_stack = {
       dotnet = {
@@ -177,14 +244,6 @@ module "avm_res_web_site" {
         use_custom_runtime          = false
         use_dotnet_isolated_runtime = true
       }
-    }
-  }
-  # Creates application insights for slot
-  slot_application_insights = {
-    development = {
-      name                  = "${module.naming.application_insights.name_unique}-development"
-      workspace_resource_id = azurerm_log_analytics_workspace.example_development.id
-      inherit_tags          = true
     }
   }
   tags = {

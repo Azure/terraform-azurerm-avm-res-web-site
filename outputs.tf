@@ -1,27 +1,26 @@
-output "application_insights" {
-  description = "The application insights resource."
-  value       = var.enable_application_insights ? azurerm_application_insights.this[0] : null
+output "active_slot" {
+  description = "The active slot resource ID."
+  value       = var.app_service_active_slot != null ? azapi_resource_action.active_slot[0].id : azapi_resource.this.id
 }
 
 output "deployment_slot_locks" {
   description = "The locks of the deployment slots."
-  value       = azurerm_management_lock.slot != null ? azurerm_management_lock.slot : null
+  value = length(module.slot) > 0 ? {
+    for k, v in module.slot : k => v.lock if v.lock != null
+  } : null
 }
 
-output "function_app_active_slot" {
-  description = "The active slot."
-  value       = var.kind == "functionapp" && var.app_service_active_slot != null ? azurerm_function_app_active_slot.this[0].id : (var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_function_app.this[0].id : var.kind == "functionapp" && var.app_service_active_slot == null && var.os_type == "Linux" && var.function_app_uses_fc1 == false ? azurerm_linux_function_app.this[0].id : null
-}
-
-output "function_app_deployment_slots" {
+output "deployment_slots" {
   description = "The deployment slots."
-  value       = var.kind == "functionapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_function_app_slot.this : (var.function_app_uses_fc1 == true ? null : azurerm_linux_function_app_slot.this)
+  value = length(module.slot) > 0 ? {
+    for k, v in module.slot : k => v.resource
+  } : null
 }
 
 output "identity_principal_id" {
-  description = "The object principal id of the resource."
+  description = "The system-assigned managed identity principal ID of the resource."
   sensitive   = true
-  value       = var.kind == "functionapp" ? /* kind == functionapp */ (var.function_app_uses_fc1 == true ? /* FC1 */ (length(azurerm_function_app_flex_consumption.this[0].identity) > 0 ? /* contains identity*/ azurerm_function_app_flex_consumption.this[0].identity[0].principal_id : /* no identity*/ null) : /* no FC1*/ (var.os_type == "Windows" ? /* os == windows */ (length(azurerm_windows_function_app.this[0].identity) > 0 ? /* contains identity*/ azurerm_windows_function_app.this[0].identity[0].principal_id : /* no identity */ null) : /* os == Linux*/ length(azurerm_linux_function_app.this[0].identity) > 0 ? /* contains identity */ azurerm_linux_function_app.this[0].identity[0].principal_id : /* no identity */ null)) : /* kind == webapp*/ (var.kind == "webapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null) : /* kind == logicapp*/ length(azurerm_logic_app_standard.this[0].identity) > 0 ? azurerm_logic_app_standard.this[0].identity[0].principal_id : null)
+  value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "kind" {
@@ -36,7 +35,7 @@ output "location" {
 
 output "name" {
   description = "The name of the resource."
-  value       = (var.kind == "functionapp" || var.kind == "webapp" || var.kind == "logicapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].name : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].name : azurerm_linux_function_app.this[0].name)) : (var.kind == "webapp" ? (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].name : azurerm_linux_web_app.this[0].name) : azurerm_logic_app_standard.this[0].name)) : null
+  value       = azapi_resource.this.name
 }
 
 output "os_type" {
@@ -44,9 +43,9 @@ output "os_type" {
   value       = var.os_type
 }
 
-output "private_endpoint_locks" {
-  description = "The locks of the deployment slots."
-  value       = azurerm_management_lock.pe != null ? azurerm_management_lock.pe : null
+output "private_endpoints" {
+  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints."
+  value       = length(azapi_resource.private_endpoint) > 0 ? azapi_resource.private_endpoint : null
 }
 
 # Module owners should include the full resource via a 'resource' output
@@ -54,74 +53,42 @@ output "private_endpoint_locks" {
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = (var.kind == "functionapp" || var.kind == "webapp" || var.kind == "logicapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 ? /* FC1 */ azurerm_function_app_flex_consumption.this[0] : /* not FC1*/ (var.os_type == "Windows" ? azurerm_windows_function_app.this[0] : azurerm_linux_function_app.this[0])) : (var.kind == "webapp" ? (var.os_type == "Windows" ? azurerm_windows_web_app.this[0] : azurerm_linux_web_app.this[0]) : azurerm_logic_app_standard.this[0])) : null
+  value       = azapi_resource.this
 }
 
 output "resource_id" {
-  description = "This is the full output for the resource."
+  description = "The resource ID of the App Service."
   sensitive   = true
-  value       = (var.kind == "functionapp" || var.kind == "webapp" || var.kind == "logicapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 ? azurerm_function_app_flex_consumption.this[0].id : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].id : azurerm_linux_function_app.this[0].id)) : (var.kind == "webapp" ? (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].id : azurerm_linux_web_app.this[0].id) : azurerm_logic_app_standard.this[0].id)) : null
+  value       = azapi_resource.this.id
 }
 
 output "resource_lock" {
   description = "The locks of the resources."
-  value       = azurerm_management_lock.this != null ? azurerm_management_lock.this : null
+  value       = length(azapi_resource.lock) > 0 ? azapi_resource.lock : null
 }
 
 output "resource_private_endpoints" {
-  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azurerm_private_endpoint resource."
-  value       = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this : azurerm_private_endpoint.this_unmanaged_dns_zone_groups
+  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azapi_resource."
+  value       = length(azapi_resource.private_endpoint) > 0 ? azapi_resource.private_endpoint : null
 }
 
 output "resource_uri" {
   description = "The default hostname of the resource."
-  value       = (var.kind == "functionapp" || var.kind == "webapp" || var.kind == "logicapp") ? (var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? azurerm_function_app_flex_consumption.this[0].default_hostname : (var.os_type == "Windows" ? azurerm_windows_function_app.this[0].default_hostname : azurerm_linux_function_app.this[0].default_hostname)) : (var.kind == "webapp" ? (var.os_type == "Windows" ? azurerm_windows_web_app.this[0].default_hostname : azurerm_linux_web_app.this[0].default_hostname) : azurerm_logic_app_standard.this[0].default_hostname)) : null
+  value       = try(azapi_resource.this.output.properties.defaultHostName, null)
 }
 
 output "system_assigned_mi_principal_id" {
-  description = "value"
+  description = "The system-assigned managed identity principal ID."
   sensitive   = true
-  value       = var.kind == "functionapp" ? (var.function_app_uses_fc1 == true ? (length(azurerm_function_app_flex_consumption.this[0].identity) > 0 ? azurerm_function_app_flex_consumption.this[0].identity[0].principal_id : null) : (var.os_type == "Windows" ? (length(azurerm_windows_function_app.this[0].identity) > 0 ? azurerm_windows_function_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_function_app.this[0].identity) > 0 ? azurerm_linux_function_app.this[0].identity[0].principal_id : null)) : (var.kind == "webapp" ? (var.os_type == "Windows" ? (length(azurerm_windows_web_app.this[0].identity) > 0 ? azurerm_windows_web_app.this[0].identity[0].principal_id : null) : length(azurerm_linux_web_app.this[0].identity) > 0 ? azurerm_linux_web_app.this[0].identity[0].principal_id : null) : (length(azurerm_logic_app_standard.this[0].identity) > 0 ? azurerm_logic_app_standard.this[0].identity[0].principal_id : null))
+  value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
-  description = "Map or value of system-assigned managed identity principal IDs for resources slots (only for webapp & functionapp)"
+  description = "Map of system-assigned managed identity principal IDs for deployment slots."
   sensitive   = true
-  value = var.kind == "functionapp" ? ( # Exclude logic apps
-    var.os_type == "Windows"
-    ? { for slot_key, slot in azurerm_windows_function_app_slot.this :
-      slot_key => try(slot.identity[0].principal_id, null)
-      if try(slot.identity[0].principal_id, null) != null
-    }
-    : { for slot_key, slot in azurerm_linux_function_app_slot.this :
-      slot_key => try(slot.identity[0].principal_id, null)
-      if try(slot.identity[0].principal_id, null) != null
-    }
-    ) : var.kind == "webapp" ? (
-    var.os_type == "Windows"
-    ? { for slot_key, slot in azurerm_windows_web_app_slot.this :
-      slot_key => try(slot.identity[0].principal_id, null)
-      if try(slot.identity[0].principal_id, null) != null
-    }
-    : { for slot_key, slot in azurerm_linux_web_app_slot.this :
-      slot_key => try(slot.identity[0].principal_id, null)
-      if try(slot.identity[0].principal_id, null) != null
-    }
-  ) : {}
-}
-
-output "thumbprints" {
-  description = "The thumbprint of the certificate."
-  sensitive   = true
-  value       = azurerm_app_service_certificate.this != null ? azurerm_app_service_certificate.this : null
-}
-
-output "web_app_active_slot" {
-  description = "The active slot."
-  value       = var.kind == "webapp" && var.app_service_active_slot != null ? azurerm_web_app_active_slot.this[0].id : (var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Windows") ? azurerm_windows_web_app.this[0].id : var.kind == "webapp" && var.app_service_active_slot == null && var.os_type == "Linux" ? azurerm_linux_web_app.this[0].id : null
-}
-
-output "web_app_deployment_slots" {
-  description = "The deployment slots."
-  value       = var.kind == "webapp" && var.os_type == "Windows" && var.deployment_slots != null ? azurerm_windows_web_app_slot.this : azurerm_linux_web_app_slot.this
+  value = {
+    for slot_key, slot in module.slot :
+    slot_key => slot.identity_principal_id
+    if slot.identity_principal_id != null
+  }
 }
