@@ -40,7 +40,7 @@ module "slot" {
     var.deployment_slots_inherit_lock && var.lock != null ? var.lock : null
   )
   managed_environment_id                  = each.value.managed_environment_id
-  managed_identities                      = var.managed_identities
+  managed_identities                      = each.value.managed_identities
   private_endpoints                       = each.value.private_endpoints
   private_endpoints_inherit_lock          = var.private_endpoints_inherit_lock
   private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
