@@ -697,6 +697,9 @@ Description: A map of deployment slots to create for the App Service.
 - `ip_mode` - (Optional) The IP mode. Possible values: `IPv4`, `IPv4AndIPv6`, `IPv6`.
 - `key_vault_reference_identity` - (Optional) The identity to use for Key Vault references.
 - `managed_environment_id` - (Optional) The Azure Container Apps managed environment ID.
+- `managed_identities` - (Optional) Controls the Managed Identity configuration on the deployment slot. Each slot has its own independent identity configuration.
+  - `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled. Defaults to `false`.
+  - `user_assigned_resource_ids` - (Optional) Specifies a set of User Assigned Managed Identity resource IDs to be assigned. Defaults to `[]`.
 - `public_network_access_enabled` - (Optional) Should public network access be enabled? Defaults to `false`.
 - `redundancy_mode` - (Optional) The site redundancy mode.
 - `resource_config` - (Optional) Resource config for Container App environment hosted apps.
@@ -860,8 +863,12 @@ map(object({
     ip_mode                                  = optional(string)
     key_vault_reference_identity             = optional(string, null)
     managed_environment_id                   = optional(string)
-    public_network_access_enabled            = optional(bool, false)
-    redundancy_mode                          = optional(string)
+    managed_identities = optional(object({
+      system_assigned            = optional(bool, false)
+      user_assigned_resource_ids = optional(set(string), [])
+    }), {})
+    public_network_access_enabled = optional(bool, false)
+    redundancy_mode               = optional(string)
     resource_config = optional(object({
       cpu    = optional(number)
       memory = optional(string)
