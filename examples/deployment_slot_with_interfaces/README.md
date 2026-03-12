@@ -219,6 +219,14 @@ resource "azapi_resource" "user_assigned_identity" {
   body      = {}
 }
 
+resource "azapi_resource" "user_assigned_identity_slot" {
+  location  = azapi_resource.resource_group.location
+  name      = "${module.naming.user_assigned_identity.name_unique}-slot"
+  parent_id = azapi_resource.resource_group.id
+  type      = "Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30"
+  body      = {}
+}
+
 module "avm_res_web_site" {
   source = "../../"
 
@@ -231,6 +239,9 @@ module "avm_res_web_site" {
   deployment_slots = {
     slot1 = {
       name = "development-env"
+      managed_identities = {
+        system_assigned = true
+      }
       site_config = {
         application_insights_connection_string = azapi_resource.application_insights_development.output.properties.ConnectionString
         application_insights_key               = azapi_resource.application_insights_development.output.properties.InstrumentationKey
@@ -245,6 +256,10 @@ module "avm_res_web_site" {
     }
     slot2 = {
       name = "staging-env"
+      managed_identities = {
+        system_assigned            = true
+        user_assigned_resource_ids = [azapi_resource.user_assigned_identity_slot.id]
+      }
       site_config = {
         application_insights_connection_string = azapi_resource.application_insights_staging.output.properties.ConnectionString
         application_insights_key               = azapi_resource.application_insights_staging.output.properties.InstrumentationKey
@@ -333,6 +348,7 @@ The following resources are used by this module:
 - [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.subnet](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.user_assigned_identity](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.user_assigned_identity_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.virtual_network](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [azapi_resource_action.storage_keys](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
