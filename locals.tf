@@ -1,12 +1,12 @@
 locals {
   arm_kind = (
-    var.kind == "webapp" ? (var.os_type == "Linux" ? (local.is_container ? "app,linux,container" : "app,linux") : "app") :
+    var.kind == "webapp" ? (var.os_type == "Linux" ? (local.is_container ? "app,linux,container" : "app,linux") : (local.is_container ? "app,container,windows" : "app")) :
     var.kind == "functionapp" ? (var.os_type == "Linux" ? (local.is_container ? "functionapp,linux,container" : "functionapp,linux") : "functionapp") :
     var.kind == "logicapp" ? (var.os_type == "Linux" ? "functionapp,linux,container,workflowapp" : "functionapp,workflowapp") :
     "app"
   )
   # ARM API uses: "app" (Windows webapp), "app,linux" (Linux webapp),
-  # "app,linux,container" (Linux container webapp),
+  # "app,linux,container" (Linux container webapp), "app,container,windows" (Windows container webapp),
   # "functionapp" (Windows func), "functionapp,linux" (Linux func),
   # "functionapp,linux,container" (Linux container func),
   # "functionapp,linux,container,workflowapp" (Logic App on Linux)
