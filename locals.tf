@@ -1,15 +1,26 @@
 locals {
-  arm_kind = (
-    var.kind == "webapp" ? (var.os_type == "Linux" ? (local.is_container ? "app,linux,container" : "app,linux") : "app") :
-    var.kind == "functionapp" ? (var.os_type == "Linux" ? (local.is_container ? "functionapp,linux,container" : "functionapp,linux") : "functionapp") :
-    var.kind == "logicapp" ? (var.os_type == "Linux" ? "functionapp,linux,container,workflowapp" : "functionapp,workflowapp") :
-    "app"
-  )
-  # ARM API uses: "app" (Windows webapp), "app,linux" (Linux webapp),
-  # "app,linux,container" (Linux container webapp),
-  # "functionapp" (Windows func), "functionapp,linux" (Linux func),
-  # "functionapp,linux,container" (Linux container func),
-  # "functionapp,linux,container,workflowapp" (Logic App on Linux)
+  arm_kind_key = local.is_linux ? (local.is_container ? "linux_container" : "linux") : (local.is_container ? "windows_container" : "windows")
+  arm_kind_map = {
+    webapp = {
+      linux             = "app,linux"
+      linux_container   = "app,linux,container"
+      windows           = "app"
+      windows_container = "app,container,windows"
+    }
+    functionapp = {
+      linux             = "functionapp,linux"
+      linux_container   = "functionapp,linux,container"
+      windows           = "functionapp"
+      windows_container = "functionapp"
+    }
+    logicapp = {
+      linux             = "functionapp,linux,container,workflowapp"
+      linux_container   = "functionapp,linux,container,workflowapp"
+      windows           = "functionapp,workflowapp"
+      windows_container = "functionapp,workflowapp"
+    }
+  }
+  arm_kind        = try(local.arm_kind_map[var.kind][local.arm_kind_key], "app")
   is_container    = try(var.site_config.application_stack.docker, null) != null
   is_function_app = var.kind == "functionapp"
   is_linux        = var.os_type == "Linux"
