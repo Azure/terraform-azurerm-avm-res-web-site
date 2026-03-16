@@ -19,6 +19,8 @@ The following requirements are needed by this module:
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
+- <a name="requirement_time"></a> [time](#requirement\_time) (>= 0.9.0, < 1.0.0)
+
 ## Resources
 
 The following resources are used by this module:
@@ -34,6 +36,7 @@ The following resources are used by this module:
 - [azapi_resource_action.active_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
+- [time_sleep.wait_for_app_settings](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/data-sources/module_source) (data source)
 
@@ -2256,6 +2259,14 @@ Description: The path to the zip file to deploy to the App Service.
 Type: `string`
 
 Default: `null`
+
+### <a name="input_zip_deploy_wait_duration"></a> [zip\_deploy\_wait\_duration](#input\_zip\_deploy\_wait\_duration)
+
+Description: The duration to wait after applying app settings and connection strings before triggering zip deploy. This allows the SCM site to pick up settings like `SCM_DO_BUILD_DURING_DEPLOYMENT` before the deploy starts.
+
+Type: `string`
+
+Default: `"60s"`
 
 ## Outputs
 
