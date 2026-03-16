@@ -2082,3 +2082,9 @@ variable "zip_deploy_file" {
   default     = null
   description = "The path to the zip file to deploy to the App Service."
 }
+
+variable "zip_deploy_wait_duration" {
+  type        = string
+  default     = "60s"
+  description = "The duration to wait after applying app settings and connection strings before triggering zip deploy. This allows the SCM site to pick up settings like `SCM_DO_BUILD_DURING_DEPLOYMENT` before the deploy starts."
+}
