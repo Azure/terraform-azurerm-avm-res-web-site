@@ -2,7 +2,6 @@ module "site_config_helpers" {
   source = "./modules/site_config_helpers"
 
   os_type            = var.os_type
-  is_logic_app       = local.is_logic_app
   managed_identities = var.managed_identities
   site_config        = var.site_config
 }
@@ -115,5 +114,6 @@ locals {
     functionAppScaleLimit                  = local.is_function_app ? var.site_config.app_scale_limit : null
     localMySqlEnabled                      = local.is_web_app ? var.site_config.local_mysql_enabled : null
     autoSwapSlotName                       = var.site_config.auto_swap_slot_name
+    metadata                               = module.site_config_helpers.site_config_metadata
   }
 }

@@ -68,6 +68,11 @@ output "scm_ip_security_restrictions" {
   value       = local.scm_ip_security_restrictions
 }
 
+output "site_config_metadata" {
+  description = "ARM-format siteConfig metadata (e.g. CURRENT_STACK)."
+  value       = local.site_config_metadata
+}
+
 output "windows_fx_version" {
   description = "Computed windowsFxVersion string."
   value       = local.windows_fx_version

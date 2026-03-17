@@ -548,7 +548,7 @@ object({
     default_documents              = optional(list(string))
     detailed_error_logging_enabled = optional(bool)
     document_root                  = optional(string)
-    dotnet_framework_version       = optional(string, "v4.0")
+    dotnet_framework_version       = optional(string)
     elastic_instance_minimum       = optional(number)
     elastic_web_app_scale_limit    = optional(number)
     experiments = optional(object({
@@ -596,11 +596,15 @@ object({
       max_memory_in_mb    = optional(number)
       max_percentage_cpu  = optional(number)
     }))
-    linux_fx_version                 = optional(string)
-    load_balancing_mode              = optional(string, "LeastRequests")
-    local_mysql_enabled              = optional(bool, false)
-    logs_directory_size_limit        = optional(number)
-    managed_pipeline_mode            = optional(string, "Integrated")
+    linux_fx_version          = optional(string)
+    load_balancing_mode       = optional(string, "LeastRequests")
+    local_mysql_enabled       = optional(bool, false)
+    logs_directory_size_limit = optional(number)
+    managed_pipeline_mode     = optional(string, "Integrated")
+    metadata = optional(list(object({
+      name  = string
+      value = string
+    })))
     min_tls_cipher_suite             = optional(string)
     minimum_tls_version              = optional(string, "1.3")
     node_version                     = optional(string)

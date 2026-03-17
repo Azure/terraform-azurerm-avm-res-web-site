@@ -105,6 +105,7 @@ resource "azapi_resource" "this" {
         minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
         functionsRuntimeScaleMonitoringEnabled = var.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
         autoSwapSlotName                       = var.site_config.auto_swap_slot_name
+        metadata                               = module.site_config_helpers.site_config_metadata
         acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity
         functionAppScaleLimit                  = var.is_function_app ? var.site_config.app_scale_limit : null

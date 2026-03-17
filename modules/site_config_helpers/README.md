@@ -32,14 +32,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_is_logic_app"></a> [is\_logic\_app](#input\_is\_logic\_app)
-
-Description: Whether the parent app is a Logic App.
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
 Description: Managed identity configuration.
@@ -122,6 +114,10 @@ Description: Python version.
 ### <a name="output_scm_ip_security_restrictions"></a> [scm\_ip\_security\_restrictions](#output\_scm\_ip\_security\_restrictions)
 
 Description: ARM-format SCM IP security restrictions.
+
+### <a name="output_site_config_metadata"></a> [site\_config\_metadata](#output\_site\_config\_metadata)
+
+Description: ARM-format siteConfig metadata (e.g. CURRENT\_STACK).
 
 ### <a name="output_windows_fx_version"></a> [windows\_fx\_version](#output\_windows\_fx\_version)
 
