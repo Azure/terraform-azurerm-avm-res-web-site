@@ -859,6 +859,12 @@ Source: ../config_connectionstrings
 
 Version:
 
+### <a name="module_config_metadata"></a> [config\_metadata](#module\_config\_metadata)
+
+Source: ../config_metadata
+
+Version:
+
 ### <a name="module_ftp_publishing_credential_policy"></a> [ftp\_publishing\_credential\_policy](#module\_ftp\_publishing\_credential\_policy)
 
 Source: ../publishing_credential_policy

@@ -19,6 +19,13 @@ module "config_azurestorageaccounts" {
   storage_shares_to_mount = var.storage_shares_to_mount
 }
 
+module "config_metadata" {
+  source = "./modules/config_metadata"
+
+  metadata  = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
+  parent_id = azapi_resource.this.id
+}
+
 module "config_slotconfignames" {
   source   = "./modules/config_slotconfignames"
   for_each = length(var.sticky_settings) > 0 ? { "default" = {} } : {}

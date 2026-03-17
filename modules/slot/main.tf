@@ -105,7 +105,6 @@ resource "azapi_resource" "this" {
         minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
         functionsRuntimeScaleMonitoringEnabled = var.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
         autoSwapSlotName                       = var.site_config.auto_swap_slot_name
-        metadata                               = module.site_config_helpers.site_config_metadata
         acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity
         functionAppScaleLimit                  = var.is_function_app ? var.site_config.app_scale_limit : null
@@ -196,6 +195,15 @@ module "ftp_publishing_credential_policy" {
   name      = "ftp"
   parent_id = azapi_resource.this.id
   allow     = false
+  is_slot   = true
+}
+
+# Slot metadata
+module "config_metadata" {
+  source = "../config_metadata"
+
+  metadata  = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
+  parent_id = azapi_resource.this.id
   is_slot   = true
 }
 
