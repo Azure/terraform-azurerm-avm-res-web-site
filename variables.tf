@@ -705,7 +705,7 @@ variable "deployment_slots" {
       default_documents              = optional(list(string))
       detailed_error_logging_enabled = optional(bool)
       document_root                  = optional(string)
-      dotnet_framework_version       = optional(string, "v4.0")
+      dotnet_framework_version       = optional(string)
       elastic_instance_minimum       = optional(number)
       elastic_web_app_scale_limit    = optional(number)
       experiments = optional(object({
@@ -753,11 +753,15 @@ variable "deployment_slots" {
         max_memory_in_mb    = optional(number)
         max_percentage_cpu  = optional(number)
       }))
-      linux_fx_version                 = optional(string)
-      load_balancing_mode              = optional(string, "LeastRequests")
-      local_mysql_enabled              = optional(bool, false)
-      logs_directory_size_limit        = optional(number)
-      managed_pipeline_mode            = optional(string, "Integrated")
+      linux_fx_version          = optional(string)
+      load_balancing_mode       = optional(string, "LeastRequests")
+      local_mysql_enabled       = optional(bool, false)
+      logs_directory_size_limit = optional(number)
+      managed_pipeline_mode     = optional(string, "Integrated")
+      metadata = optional(list(object({
+        name  = string
+        value = string
+      })))
       min_tls_cipher_suite             = optional(string)
       minimum_tls_version              = optional(string, "1.3")
       node_version                     = optional(string)
@@ -971,6 +975,9 @@ A map of deployment slots to create for the App Service.
   - `load_balancing_mode` - (Optional) The Site load balancing mode. Defaults to `LeastRequests`.
   - `logs_directory_size_limit` - (Optional) The HTTP log directory size limit in MB.
   - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Defaults to `Integrated`.
+  - `metadata` - (Optional) A list of name-value pairs for siteConfig metadata (e.g. `CURRENT_STACK`). Auto-computed from `application_stack` if not specified. User-supplied entries take precedence.
+    - `name` - (Required) The metadata key.
+    - `value` - (Required) The metadata value.
   - `min_tls_cipher_suite` - (Optional) The minimum TLS cipher suite.
   - `minimum_tls_version` - (Optional) The minimum TLS version. Defaults to `1.3`.
   - `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances.
@@ -1584,7 +1591,7 @@ variable "site_config" {
     default_documents                             = optional(list(string))
     detailed_error_logging_enabled                = optional(bool)
     document_root                                 = optional(string)
-    dotnet_framework_version                      = optional(string, "v4.0")
+    dotnet_framework_version                      = optional(string)
     elastic_instance_minimum                      = optional(number)
     elastic_web_app_scale_limit                   = optional(number)
     experiments = optional(object({
@@ -1618,11 +1625,15 @@ variable "site_config" {
       max_memory_in_mb    = optional(number)
       max_percentage_cpu  = optional(number)
     }))
-    linux_fx_version                       = optional(string)
-    load_balancing_mode                    = optional(string, "LeastRequests")
-    local_mysql_enabled                    = optional(bool, false)
-    logs_directory_size_limit              = optional(number)
-    managed_pipeline_mode                  = optional(string, "Integrated")
+    linux_fx_version          = optional(string)
+    load_balancing_mode       = optional(string, "LeastRequests")
+    local_mysql_enabled       = optional(bool, false)
+    logs_directory_size_limit = optional(number)
+    managed_pipeline_mode     = optional(string, "Integrated")
+    metadata = optional(list(object({
+      name  = string
+      value = string
+    })))
     min_tls_cipher_suite                   = optional(string)
     minimum_tls_version                    = optional(string, "1.3")
     node_version                           = optional(string)
@@ -1771,7 +1782,7 @@ An object that configures the App Service's site configuration. These map to the
 - `default_documents` - (Optional) Specifies a list of Default Documents.
 - `detailed_error_logging_enabled` - (Optional) Should detailed error logging be enabled?
 - `document_root` - (Optional) The document root path.
-- `dotnet_framework_version` - (Optional) The .NET Framework version. Defaults to `v4.0`.
+- `dotnet_framework_version` - (Optional) The .NET Framework version. Takes precedence over `application_stack.dotnet.dotnet_version`.
 - `elastic_instance_minimum` - (Optional) The number of minimum instances for Elastic Premium plans.
 - `elastic_web_app_scale_limit` - (Optional) The maximum number of workers for Elastic scale.
 - `experiments` - (Optional) Traffic routing experiments configuration.
@@ -1806,6 +1817,9 @@ An object that configures the App Service's site configuration. These map to the
 - `local_mysql_enabled` - (Optional) Should Local MySQL be enabled? Defaults to `false`.
 - `logs_directory_size_limit` - (Optional) The HTTP log directory size limit in MB.
 - `managed_pipeline_mode` - (Optional) Managed pipeline mode. Defaults to `Integrated`.
+- `metadata` - (Optional) A list of name-value pairs for siteConfig metadata (e.g. `CURRENT_STACK`). Auto-computed from `application_stack` if not specified. User-supplied entries take precedence.
+  - `name` - (Required) The metadata key.
+  - `value` - (Required) The metadata value.
 - `min_tls_cipher_suite` - (Optional) The minimum TLS cipher suite. E.g. `TLS_AES_256_GCM_SHA384`.
 - `minimum_tls_version` - (Optional) The minimum TLS version. Defaults to `1.3`.
 - `node_version` - (Optional) The Node.js version. Direct alternative to `application_stack.node.node_version`.

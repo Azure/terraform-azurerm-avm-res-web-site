@@ -131,8 +131,8 @@ locals {
     ), null) : null,
   ), null) : null
   net_framework_version = try(coalesce(
+    try(var.site_config.dotnet_framework_version, null),
     !local.is_linux && local.app_stack != null ? try(local.app_stack.dotnet.dotnet_version, null) : null,
-    var.is_logic_app ? try(var.site_config.dotnet_framework_version, null) : null,
   ), null)
   node_version = try(coalesce(
     try(var.site_config.node_version, null),
@@ -157,6 +157,29 @@ locals {
       null,
     ) : null,
   ), null) : null
+}
+
+# Current Stack Metadata (Windows only)
+locals {
+  auto_metadata = local.current_stack != null && !contains(local.user_metadata_keys, "CURRENT_STACK") ? [
+    {
+      name  = "CURRENT_STACK"
+      value = local.current_stack
+    }
+  ] : []
+  current_stack = !local.is_linux && local.app_stack != null ? try(coalesce(
+    try(local.app_stack.dotnet.use_custom_runtime, false) ? "custom" : null,
+    try(local.app_stack.dotnet.current_stack, null),
+    local.app_stack.dotnet != null ? "dotnet" : null,
+    local.app_stack.node != null ? "node" : null,
+    local.app_stack.php != null ? "php" : null,
+    local.app_stack.python != null ? "python" : null,
+    local.app_stack.java != null ? "java" : null,
+    local.app_stack.powershell != null ? "powershell" : null,
+  ), null) : null
+  site_config_metadata = length(concat(coalesce(local.user_metadata, []), local.auto_metadata)) > 0 ? concat(coalesce(local.user_metadata, []), local.auto_metadata) : null
+  user_metadata        = try(var.site_config.metadata, null)
+  user_metadata_keys   = local.user_metadata != null ? [for m in local.user_metadata : m.name] : []
 }
 
 # Identity

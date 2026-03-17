@@ -123,6 +123,10 @@ Description: Python version.
 
 Description: ARM-format SCM IP security restrictions.
 
+### <a name="output_site_config_metadata"></a> [site\_config\_metadata](#output\_site\_config\_metadata)
+
+Description: ARM-format siteConfig metadata (e.g. CURRENT\_STACK).
+
 ### <a name="output_windows_fx_version"></a> [windows\_fx\_version](#output\_windows\_fx\_version)
 
 Description: Computed windowsFxVersion string.
