@@ -68,6 +68,8 @@ module "slot" {
   vnet_route_all_traffic                         = each.value.vnet_route_all_traffic
   webdeploy_publish_basic_authentication_enabled = each.value.webdeploy_publish_basic_authentication_enabled
   workload_profile_name                          = each.value.workload_profile_name
+  zip_deploy_file                                = each.value.zip_deploy_file
+  zip_deploy_wait_duration                       = each.value.zip_deploy_wait_duration
 }
 
 resource "azapi_resource_action" "active_slot" {

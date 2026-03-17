@@ -217,3 +217,32 @@ module "scm_publishing_credential_policy" {
   allow     = false
   is_slot   = true
 }
+
+# Slot zip deploy
+resource "time_sleep" "wait_before_zip_deploy" {
+  for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
+
+  create_duration = var.zip_deploy_wait_duration
+
+  depends_on = [
+    module.config_appsettings,
+    module.config_connectionstrings,
+    module.config_azurestorageaccounts,
+    module.config_metadata,
+    module.ftp_publishing_credential_policy,
+    module.scm_publishing_credential_policy,
+  ]
+}
+
+module "extensions_zipdeploy" {
+  source   = "../extensions_zipdeploy"
+  for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
+
+  parent_id       = azapi_resource.this.id
+  zip_deploy_file = var.zip_deploy_file
+  is_slot         = true
+
+  depends_on = [
+    time_sleep.wait_before_zip_deploy,
+  ]
+}

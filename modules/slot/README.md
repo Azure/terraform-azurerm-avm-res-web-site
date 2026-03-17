@@ -21,6 +21,8 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
+- <a name="requirement_time"></a> [time](#requirement\_time) (>= 0.9.0, < 1.0.0)
+
 ## Resources
 
 The following resources are used by this module:
@@ -32,6 +34,7 @@ The following resources are used by this module:
 - [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment_private_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [time_sleep.wait_before_zip_deploy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -803,6 +806,22 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_zip_deploy_file"></a> [zip\_deploy\_file](#input\_zip\_deploy\_file)
+
+Description: The path to the zip file to deploy to the slot.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_zip_deploy_wait_duration"></a> [zip\_deploy\_wait\_duration](#input\_zip\_deploy\_wait\_duration)
+
+Description: The duration to wait after applying app settings and connection strings before triggering zip deploy.
+
+Type: `string`
+
+Default: `"60s"`
+
 ## Outputs
 
 The following outputs are exported:
@@ -862,6 +881,12 @@ Version:
 ### <a name="module_config_metadata"></a> [config\_metadata](#module\_config\_metadata)
 
 Source: ../config_metadata
+
+Version:
+
+### <a name="module_extensions_zipdeploy"></a> [extensions\_zipdeploy](#module\_extensions\_zipdeploy)
+
+Source: ../extensions_zipdeploy
 
 Version:
 
