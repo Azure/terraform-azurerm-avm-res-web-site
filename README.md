@@ -36,7 +36,7 @@ The following resources are used by this module:
 - [azapi_resource_action.active_slot](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
-- [time_sleep.wait_for_app_settings](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
+- [time_sleep.wait_before_zip_deploy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/data-sources/module_source) (data source)
 
@@ -829,6 +829,8 @@ Description: A map of deployment slots to create for the App Service.
   - `name` - (Optional) The name of the connection string.
   - `type` - (Optional) The type of the connection string.
   - `value` - (Optional) The value of the connection string.
+- `zip_deploy_file` - (Optional) The path to the zip file to deploy to the slot.
+- `zip_deploy_wait_duration` - (Optional) The duration to wait after the slot is configured before triggering zip deploy. Defaults to `60s`.
 
 Type:
 
@@ -1147,6 +1149,8 @@ map(object({
       type  = optional(string)
       value = optional(string)
     })), {})
+    zip_deploy_file          = optional(string)
+    zip_deploy_wait_duration = optional(string, "60s")
   }))
 ```
 

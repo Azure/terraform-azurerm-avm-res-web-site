@@ -635,3 +635,15 @@ variable "workload_profile_name" {
   default     = null
   description = "The workload profile name."
 }
+
+variable "zip_deploy_file" {
+  type        = string
+  default     = null
+  description = "The path to the zip file to deploy to the slot."
+}
+
+variable "zip_deploy_wait_duration" {
+  type        = string
+  default     = "60s"
+  description = "The duration to wait after applying app settings and connection strings before triggering zip deploy."
+}

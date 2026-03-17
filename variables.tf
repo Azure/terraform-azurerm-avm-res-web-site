@@ -899,6 +899,8 @@ variable "deployment_slots" {
       type  = optional(string)
       value = optional(string)
     })), {})
+    zip_deploy_file          = optional(string)
+    zip_deploy_wait_duration = optional(string, "60s")
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -1054,6 +1056,8 @@ A map of deployment slots to create for the App Service.
   - `name` - (Optional) The name of the connection string.
   - `type` - (Optional) The type of the connection string.
   - `value` - (Optional) The value of the connection string.
+- `zip_deploy_file` - (Optional) The path to the zip file to deploy to the slot.
+- `zip_deploy_wait_duration` - (Optional) The duration to wait after the slot is configured before triggering zip deploy. Defaults to `60s`.
 DESCRIPTION
   nullable    = false
 }
