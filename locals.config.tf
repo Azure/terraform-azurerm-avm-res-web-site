@@ -2,7 +2,6 @@ module "site_config_helpers" {
   source = "./modules/site_config_helpers"
 
   os_type            = var.os_type
-  is_logic_app       = local.is_logic_app
   managed_identities = var.managed_identities
   site_config        = var.site_config
 }

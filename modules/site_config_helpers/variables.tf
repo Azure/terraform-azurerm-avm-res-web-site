@@ -4,12 +4,6 @@ variable "os_type" {
   nullable    = false
 }
 
-variable "is_logic_app" {
-  type        = bool
-  default     = false
-  description = "Whether the parent app is a Logic App."
-}
-
 variable "managed_identities" {
   type = object({
     system_assigned            = optional(bool, false)

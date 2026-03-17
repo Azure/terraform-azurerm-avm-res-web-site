@@ -32,14 +32,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_is_logic_app"></a> [is\_logic\_app](#input\_is\_logic\_app)
-
-Description: Whether the parent app is a Logic App.
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
 Description: Managed identity configuration.
