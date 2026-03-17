@@ -2402,6 +2402,12 @@ Source: ./modules/config_logs
 
 Version:
 
+### <a name="module_config_metadata"></a> [config\_metadata](#module\_config\_metadata)
+
+Source: ./modules/config_metadata
+
+Version:
+
 ### <a name="module_config_slotconfignames"></a> [config\_slotconfignames](#module\_config\_slotconfignames)
 
 Source: ./modules/config_slotconfignames
