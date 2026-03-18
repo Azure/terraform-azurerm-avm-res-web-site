@@ -1,6 +1,6 @@
 output "name" {
   description = "The name of the deploy action."
-  value       = "zipdeploy"
+  value       = "onedeploy"
 }
 
 output "resource" {
