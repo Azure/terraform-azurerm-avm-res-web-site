@@ -6,4 +6,5 @@ resource "azapi_update_resource" "this" {
     properties = var.app_settings
   }
   response_export_values = []
+  retry                  = var.retry
 }

@@ -18,6 +18,18 @@ variable "parent_id" {
   }
 }
 
+variable "retry" {
+  type = object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+  default = {
+    error_message_regex = ["Cannot modify this site because another operation is in progress"]
+  }
+  description = "Retry configuration for azapi resources."
+}
+
 variable "ssl_state" {
   type        = string
   default     = null

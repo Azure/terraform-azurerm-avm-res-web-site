@@ -188,6 +188,30 @@ object({
 
 Default: `null`
 
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: Retry configuration for azapi resources.
+
+Type:
+
+```hcl
+object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+```
+
+Default:
+
+```json
+{
+  "error_message_regex": [
+    "Cannot modify this site because another operation is in progress"
+  ]
+}
+```
+
 ### <a name="input_runtime_version"></a> [runtime\_version](#input\_runtime\_version)
 
 Description: The runtime version of the authentication module.

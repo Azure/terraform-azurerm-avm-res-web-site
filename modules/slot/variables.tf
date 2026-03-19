@@ -315,6 +315,18 @@ variable "resource_config" {
   description = "Resource config for Container App environment hosted apps."
 }
 
+variable "retry" {
+  type = object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+  default = {
+    error_message_regex = ["Cannot modify this site because another operation is in progress"]
+  }
+  description = "Retry configuration for azapi resources."
+}
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string

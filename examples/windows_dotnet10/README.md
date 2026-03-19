@@ -37,7 +37,7 @@ resource "azapi_resource" "service_plan" {
   body = {
     kind = "app"
     sku = {
-      name = "P1v2"
+      name = "P1v3"
     }
     properties = {
       reserved      = false

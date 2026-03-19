@@ -9,6 +9,7 @@ resource "azapi_resource_action" "this" {
       type       = "zip"
     }
   }
+  retry = var.retry
 
   lifecycle {
     ignore_changes = [body]

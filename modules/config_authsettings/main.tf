@@ -49,4 +49,5 @@ resource "azapi_update_resource" "this" {
     }
   }
   response_export_values = []
+  retry                  = var.retry
 }

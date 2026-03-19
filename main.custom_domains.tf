@@ -4,6 +4,7 @@ module "hostname_binding" {
 
   hostname   = each.value.hostname
   parent_id  = azapi_resource.this.id
+  retry      = var.retry
   ssl_state  = each.value.ssl_state
   thumbprint = each.value.thumbprint
 }
@@ -14,6 +15,7 @@ module "slot_hostname_binding" {
 
   hostname   = each.value.hostname
   parent_id  = module.slot[each.value.app_service_slot_key].resource_id
+  retry      = var.retry
   ssl_state  = each.value.ssl_state
   thumbprint = each.value.thumbprint
 }

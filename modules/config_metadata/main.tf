@@ -5,4 +5,5 @@ resource "azapi_resource_action" "this" {
   body = {
     properties = var.metadata
   }
+  retry = var.retry
 }
