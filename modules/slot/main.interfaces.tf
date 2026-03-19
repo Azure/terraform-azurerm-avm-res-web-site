@@ -29,6 +29,7 @@ resource "azapi_resource" "lock" {
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []
+  retry                  = var.retry
 }
 
 resource "azapi_resource" "role_assignment" {
@@ -40,6 +41,7 @@ resource "azapi_resource" "role_assignment" {
   body                   = each.value.body
   ignore_null_property   = true
   response_export_values = []
+  retry                  = var.retry
 }
 
 resource "azapi_resource" "private_endpoint" {
@@ -51,6 +53,7 @@ resource "azapi_resource" "private_endpoint" {
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []
+  retry                  = var.retry
   tags                   = each.value.tags
 }
 
@@ -62,6 +65,7 @@ resource "azapi_resource" "private_dns_zone_group" {
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []
+  retry                  = var.retry
 }
 
 resource "azapi_resource" "lock_private_endpoint" {
@@ -72,6 +76,7 @@ resource "azapi_resource" "lock_private_endpoint" {
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []
+  retry                  = var.retry
 }
 
 resource "azapi_resource" "role_assignment_private_endpoint" {

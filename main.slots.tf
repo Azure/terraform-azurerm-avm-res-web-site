@@ -47,6 +47,7 @@ module "slot" {
   public_network_access_enabled           = each.value.public_network_access_enabled
   redundancy_mode                         = each.value.redundancy_mode
   resource_config                         = each.value.resource_config
+  retry                                   = var.retry
   role_assignments                        = each.value.role_assignments
   scm_site_also_stopped                   = each.value.scm_site_also_stopped
   sensitive_app_settings                  = lookup(var.slot_sensitive_app_settings, each.key, {})
@@ -83,6 +84,7 @@ resource "azapi_resource_action" "active_slot" {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
+  retry = var.retry
 
   depends_on = [module.slot]
 }

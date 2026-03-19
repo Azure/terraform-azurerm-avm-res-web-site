@@ -15,6 +15,7 @@ module "config_authsettings" {
   google                         = each.value.google
   issuer                         = each.value.issuer
   microsoft                      = each.value.microsoft
+  retry                          = var.retry
   runtime_version                = each.value.runtime_version
   token_refresh_extension_hours  = each.value.token_refresh_extension_hours
   token_store_enabled            = each.value.token_store_enabled
@@ -39,6 +40,7 @@ module "config_authsettingsv2" {
   redirect_to_provider                   = each.value.redirect_to_provider
   require_authentication                 = each.value.require_authentication
   require_https                          = each.value.require_https
+  retry                                  = var.retry
   runtime_version                        = each.value.runtime_version
   unauthenticated_client_action          = each.value.unauthenticated_client_action
 }

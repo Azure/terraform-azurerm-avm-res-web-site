@@ -1499,6 +1499,24 @@ variable "resource_config" {
 DESCRIPTION
 }
 
+variable "retry" {
+  type = object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+  default = {
+    error_message_regex = ["Cannot modify this site because another operation is in progress"]
+  }
+  description = <<-EOT
+Retry configuration for all azapi resources. Defaults to retrying on 409 Conflict errors caused by concurrent operations.
+
+- `error_message_regex` - (Required) A list of regular expressions to match against error messages. If any match, the operation will be retried.
+- `interval_seconds` - (Optional) The initial interval in seconds between retries. Defaults to `10`.
+- `max_retries` - (Optional) The maximum number of retries. Defaults to `3`.
+EOT
+}
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string

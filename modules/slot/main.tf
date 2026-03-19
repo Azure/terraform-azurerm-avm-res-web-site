@@ -146,7 +146,8 @@ resource "azapi_resource" "this" {
   response_export_values = [
     "identity.principalId",
   ]
-  tags = var.tags
+  retry = var.retry
+  tags  = var.tags
 
   dynamic "identity" {
     for_each = module.site_config_helpers.has_identity ? [module.site_config_helpers.identity_block] : []
@@ -165,6 +166,7 @@ module "config_appsettings" {
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id
   is_slot      = true
+  retry        = var.retry
 }
 
 # Slot connection strings
@@ -174,6 +176,7 @@ module "config_connectionstrings" {
   connection_strings = var.connection_strings
   parent_id          = azapi_resource.this.id
   is_slot            = true
+  retry              = var.retry
 }
 
 # Slot storage account mounts
@@ -185,6 +188,7 @@ module "config_azurestorageaccounts" {
     access_key = var.storage_shares_access_keys[k]
   }) }
   is_slot = true
+  retry   = var.retry
 }
 
 # Slot FTP publishing credential policy
@@ -196,6 +200,7 @@ module "ftp_publishing_credential_policy" {
   parent_id = azapi_resource.this.id
   allow     = false
   is_slot   = true
+  retry     = var.retry
 }
 
 # Slot metadata
@@ -205,6 +210,7 @@ module "config_metadata" {
   metadata  = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
   parent_id = azapi_resource.this.id
   is_slot   = true
+  retry     = var.retry
 }
 
 # Slot SCM publishing credential policy
@@ -216,6 +222,7 @@ module "scm_publishing_credential_policy" {
   parent_id = azapi_resource.this.id
   allow     = false
   is_slot   = true
+  retry     = var.retry
 }
 
 # Slot zip deploy
@@ -241,6 +248,7 @@ module "extensions_zipdeploy" {
   parent_id       = azapi_resource.this.id
   zip_deploy_file = var.zip_deploy_file
   is_slot         = true
+  retry           = var.retry
 
   depends_on = [
     time_sleep.wait_before_zip_deploy,

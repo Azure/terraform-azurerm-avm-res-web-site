@@ -62,6 +62,30 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: Retry configuration for azapi resources.
+
+Type:
+
+```hcl
+object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+```
+
+Default:
+
+```json
+{
+  "error_message_regex": [
+    "Cannot modify this site because another operation is in progress"
+  ]
+}
+```
+
 ## Outputs
 
 The following outputs are exported:

@@ -3,6 +3,7 @@ module "config_appsettings" {
 
   app_settings = local.merged_app_settings
   parent_id    = azapi_resource.this.id
+  retry        = var.retry
 }
 
 module "config_connectionstrings" {
@@ -10,6 +11,7 @@ module "config_connectionstrings" {
 
   connection_strings = var.connection_strings
   parent_id          = azapi_resource.this.id
+  retry              = var.retry
 }
 
 module "config_azurestorageaccounts" {
@@ -17,6 +19,7 @@ module "config_azurestorageaccounts" {
 
   parent_id               = azapi_resource.this.id
   storage_shares_to_mount = var.storage_shares_to_mount
+  retry                   = var.retry
 }
 
 module "config_metadata" {
@@ -24,6 +27,7 @@ module "config_metadata" {
 
   metadata  = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
   parent_id = azapi_resource.this.id
+  retry     = var.retry
 }
 
 module "config_slotconfignames" {
@@ -33,6 +37,7 @@ module "config_slotconfignames" {
   parent_id               = azapi_resource.this.id
   app_setting_names       = flatten([for k, v in var.sticky_settings : coalesce(v.app_setting_names, [])])
   connection_string_names = flatten([for k, v in var.sticky_settings : coalesce(v.connection_string_names, [])])
+  retry                   = var.retry
 }
 
 module "ftp_publishing_credential_policy" {
@@ -42,6 +47,7 @@ module "ftp_publishing_credential_policy" {
   name      = "ftp"
   parent_id = azapi_resource.this.id
   allow     = false
+  retry     = var.retry
 }
 
 module "scm_publishing_credential_policy" {
@@ -51,4 +57,5 @@ module "scm_publishing_credential_policy" {
   name      = "scm"
   parent_id = azapi_resource.this.id
   allow     = false
+  retry     = var.retry
 }

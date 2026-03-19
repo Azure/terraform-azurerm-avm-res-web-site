@@ -20,6 +20,7 @@ module "extensions_zipdeploy" {
 
   parent_id       = azapi_resource.this.id
   zip_deploy_file = var.zip_deploy_file
+  retry           = var.retry
 
   depends_on = [
     time_sleep.wait_before_zip_deploy,

@@ -12,6 +12,7 @@ resource "azapi_resource" "this" {
     "properties.defaultHostName",
     "identity.principalId",
   ]
+  retry          = var.retry
   tags           = var.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 

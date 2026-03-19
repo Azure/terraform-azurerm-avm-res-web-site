@@ -338,6 +338,18 @@ variable "require_https" {
   description = "Should HTTPS be required? Defaults to `true`."
 }
 
+variable "retry" {
+  type = object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+  default = {
+    error_message_regex = ["Cannot modify this site because another operation is in progress"]
+  }
+  description = "Retry configuration for azapi resources."
+}
+
 variable "runtime_version" {
   type        = string
   default     = "~1"

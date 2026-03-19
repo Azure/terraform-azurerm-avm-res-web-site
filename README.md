@@ -1615,6 +1615,34 @@ object({
 
 Default: `null`
 
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: Retry configuration for all azapi resources. Defaults to retrying on 409 Conflict errors caused by concurrent operations.
+
+- `error_message_regex` - (Required) A list of regular expressions to match against error messages. If any match, the operation will be retried.
+- `interval_seconds` - (Optional) The initial interval in seconds between retries. Defaults to `10`.
+- `max_retries` - (Optional) The maximum number of retries. Defaults to `3`.
+
+Type:
+
+```hcl
+object({
+    error_message_regex = list(string)
+    interval_seconds    = optional(number, 10)
+    max_retries         = optional(number, 3)
+  })
+```
+
+Default:
+
+```json
+{
+  "error_message_regex": [
+    "Cannot modify this site because another operation is in progress"
+  ]
+}
+```
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
