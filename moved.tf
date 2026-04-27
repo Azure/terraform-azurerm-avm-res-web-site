@@ -5,11 +5,23 @@
 # ===========================
 # Main App Resource
 # ===========================
-
-moved {
-  from = azurerm_linux_web_app.this[0]
-  to   = azapi_resource.this
-}
+#
+# NOTE: A `moved` block for the main site resource is intentionally NOT provided
+# here. Earlier versions of this module used different `azurerm_*` resource types
+# depending on the configured app kind (for example
+# `azurerm_linux_web_app`, `azurerm_windows_web_app`, `azurerm_linux_function_app`,
+# `azurerm_windows_function_app`, `azurerm_function_app_flex_consumption`,
+# `azurerm_logic_app_standard`). Shipping a single `moved` block in this module
+# would either silently change the app's `kind` (for example forcing a Function
+# App or Logic App to be treated as a Web App) or produce an "Ambiguous move
+# statements" error when combined with a user-supplied `moved` block.
+#
+# Consumers upgrading from an earlier release of this module should add a
+# `moved` block in their own root configuration that matches the resource type
+# they previously had in state. See the "Migration from earlier module
+# versions" section of the module README for ready-to-copy examples for each
+# app flavour (Linux/Windows Web App, Linux/Windows Function App, Flex
+# Consumption Function App, and Logic App Standard).
 
 # ===========================
 # Custom Hostname Bindings
