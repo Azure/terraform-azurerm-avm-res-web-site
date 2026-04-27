@@ -3,6 +3,16 @@ output "active_slot" {
   value       = var.app_service_active_slot != null ? azapi_resource_action.active_slot[0].id : azapi_resource.this.id
 }
 
+output "custom_domain_verification_id" {
+  description = <<DESCRIPTION
+The custom domain verification ID for the App Service. Use this value to create
+an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
+domain via `var.custom_domains`. See the `custom_domains` variable documentation
+for details on the DNS prerequisites that Azure enforces.
+DESCRIPTION
+  value       = try(azapi_resource.this.output.properties.customDomainVerificationId, null)
+}
+
 output "deployment_slot_locks" {
   description = "The locks of the deployment slots."
   value = length(module.slot) > 0 ? {
