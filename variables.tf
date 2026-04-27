@@ -516,36 +516,44 @@ variable "custom_domains" {
   description = <<DESCRIPTION
 A map of custom domains to assign to the App Service.
 
+Only `slot_as_target`, `app_service_slot_key`, `hostname`, `ssl_state`, and
+`thumbprint` are consumed by this module. The remaining fields are retained for
+backwards compatibility but are **no-ops** in the current AzAPI-based
+implementation – DNS records and managed certificates are no longer created by
+this module. Manage those resources externally (for example with
+`Azure/avm-res-network-dnszone/azurerm`) before binding the hostname.
+
+### DNS prerequisites
+
+Azure validates ownership of the custom hostname when the binding is created.
+At least one of the following DNS records must already exist and be
+resolvable, otherwise the binding will fail with errors such as
+`A TXT record pointing from asuid.{0} to {1} was not found.`:
+
+- A `CNAME` record for the custom hostname pointing to
+  `<site-name>.azurewebsites.net`, **or**
+- A `TXT` record at `asuid.<custom-hostname>` whose value is the App Service's
+  custom domain verification ID. This module exposes that value via the
+  `custom_domain_verification_id` output.
+
+### Field reference
+
 - `slot_as_target` - (Optional) Should the slot be used as the target? Defaults to `false`.
 - `app_service_slot_key` - (Optional) The key of the deployment slot to target.
-- `create_certificate` - (Optional) Should a managed certificate be created? Defaults to `false`.
-- `certificate_name` - (Optional) The name of the certificate.
-- `certificate_location` - (Optional) The location of the certificate.
-- `pfx_blob` - (Optional) The PFX blob for the certificate.
-- `pfx_password` - (Optional) The password for the PFX certificate.
 - `hostname` - (Optional) The custom domain hostname.
-- `app_service_name` - (Optional) The App Service name.
-- `app_service_plan_resource_id` - (Optional) The resource ID of the App Service Plan.
-- `key_vault_secret_id` - (Optional) The Key Vault secret ID for the certificate.
-- `key_vault_id` - (Optional) The Key Vault ID for the certificate.
-- `zone_resource_group_name` - (Optional) The resource group of the DNS zone.
-- `resource_group_name` - (Optional) The resource group name.
 - `ssl_state` - (Optional) The SSL state. Possible values are `IpBasedEnabled` and `SniEnabled`.
-- `inherit_tags` - (Optional) Should tags be inherited from the parent? Defaults to `true`.
-- `tags` - (Optional) Tags to apply to the custom domain resources.
 - `thumbprint` - (Optional) The certificate thumbprint value.
-- `thumbprint_key` - (Optional) The key to look up the certificate thumbprint.
-- `ttl` - (Optional) The TTL for DNS records. Defaults to `300`.
-- `validation_type` - (Optional) The domain validation type. Defaults to `cname-delegation`.
-- `create_cname_records` - (Optional) Should CNAME records be created? Defaults to `false`.
-- `cname_name` - (Optional) The CNAME record name.
-- `cname_zone_name` - (Optional) The DNS zone name for the CNAME record.
-- `cname_record` - (Optional) The CNAME record value.
-- `cname_target_resource_id` - (Optional) The target resource ID for the CNAME record.
-- `create_txt_records` - (Optional) Should TXT records be created? Defaults to `false`.
-- `txt_name` - (Optional) The TXT record name.
-- `txt_zone_name` - (Optional) The DNS zone name for the TXT record.
-- `txt_records` - (Optional) A map of TXT records with `value` attribute.
+
+The following fields are accepted for backwards compatibility but are **not
+used** by the module today; manage the corresponding resources externally:
+
+- `create_certificate`, `certificate_name`, `certificate_location`, `pfx_blob`,
+  `pfx_password`, `key_vault_secret_id`, `key_vault_id`, `thumbprint_key`
+- `create_cname_records`, `cname_name`, `cname_zone_name`, `cname_record`,
+  `cname_target_resource_id`
+- `create_txt_records`, `txt_name`, `txt_zone_name`, `txt_records`
+- `app_service_name`, `app_service_plan_resource_id`, `zone_resource_group_name`,
+  `resource_group_name`, `inherit_tags`, `tags`, `ttl`, `validation_type`
 DESCRIPTION
 }
 
