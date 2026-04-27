@@ -580,7 +580,7 @@ DESCRIPTION
 
   validation {
     error_message = "The log_level must be one of: `debug`, `error`, `info`, or `warn`."
-    condition     = var.dapr_config == null || var.dapr_config.log_level == null || can(index(["debug", "error", "info", "warn"], var.dapr_config.log_level))
+    condition     = var.dapr_config == null || try(var.dapr_config.log_level, null) == null || can(index(["debug", "error", "info", "warn"], var.dapr_config.log_level))
   }
 }
 
