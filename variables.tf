@@ -531,7 +531,8 @@ resolvable, otherwise the binding will fail with errors such as
 `A TXT record pointing from asuid.{0} to {1} was not found.`:
 
 - A `CNAME` record for the custom hostname pointing to
-  `<site-name>.azurewebsites.net`, **or**
+  `<site-name>.azurewebsites.net` (the module exposes this value via the
+  `resource_uri` output), **or**
 - A `TXT` record at `asuid.<custom-hostname>` whose value is the App Service's
   custom domain verification ID. This module exposes that value via the
   `custom_domain_verification_id` output.
