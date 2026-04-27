@@ -3,6 +3,7 @@ module "avm_interfaces" {
   version = "0.5.1"
 
   diagnostic_settings_v2 = var.diagnostic_settings
+  enable_telemetry       = var.enable_telemetry
   lock                   = var.lock
   managed_identities     = var.managed_identities
   private_endpoints = {
