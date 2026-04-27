@@ -1,3 +1,5 @@
+data "azapi_client_config" "current" {}
+
 data "azapi_resource_action" "storage_keys" {
   action                 = "listKeys"
   method                 = "POST"

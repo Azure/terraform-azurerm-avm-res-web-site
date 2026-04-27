@@ -25,9 +25,18 @@ variable "retry" {
     max_retries         = optional(number, 3)
   })
   default = {
-    error_message_regex = ["Cannot modify this site because another operation is in progress"]
+    error_message_regex = [
+      "Cannot modify this site because another operation is in progress",
+      # Domain ownership validation is asynchronous on Azure's side; the binding
+      # call can race ahead of DNS / verification record propagation. Retry
+      # while validation is still in flight.
+      "A CNAME record pointing from .* was not found",
+      "A TXT record pointing from asuid\\..* was not found",
+      "Hostname .* does not resolve to the controller IP address",
+      "Validation failed for a hostname",
+    ]
   }
-  description = "Retry configuration for azapi resources."
+  description = "Retry configuration for azapi resources. By default, retries on transient site lock errors and on the DNS / hostname validation errors that surface while custom domain ownership records are still propagating."
 }
 
 variable "ssl_state" {

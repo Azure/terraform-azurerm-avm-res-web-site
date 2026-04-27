@@ -44,7 +44,7 @@ The following input variables are optional (have default values):
 
 ### <a name="input_retry"></a> [retry](#input\_retry)
 
-Description: Retry configuration for azapi resources.
+Description: Retry configuration for azapi resources. By default, retries on transient site lock errors and on the DNS / hostname validation errors that surface while custom domain ownership records are still propagating.
 
 Type:
 
@@ -61,7 +61,11 @@ Default:
 ```json
 {
   "error_message_regex": [
-    "Cannot modify this site because another operation is in progress"
+    "Cannot modify this site because another operation is in progress",
+    "A CNAME record pointing from .* was not found",
+    "A TXT record pointing from asuid\\..* was not found",
+    "Hostname .* does not resolve to the controller IP address",
+    "Validation failed for a hostname"
   ]
 }
 ```

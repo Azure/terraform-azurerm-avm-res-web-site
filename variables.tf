@@ -416,6 +416,40 @@ variable "bundle_version" {
   description = "The version of the extension bundle to use. Defaults to `[1.*, 2.0.0)`. (Logic App)"
 }
 
+variable "certificates" {
+  type = map(object({
+    name                  = optional(string)
+    key_vault_id          = optional(string)
+    key_vault_secret_name = optional(string)
+    pfx_blob              = optional(string)
+    password              = optional(string)
+    host_names            = optional(list(string))
+    tags                  = optional(map(string))
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+A map of `Microsoft.Web/certificates` resources to create on the App Service
+plan. Each entry materialises a certificate that can be referenced from a
+`custom_domains` entry (on the main site or any slot) via `certificate_key`,
+removing the need for callers to invoke the `certificate` submodule directly.
+
+Either `key_vault_id` + `key_vault_secret_name` (Key Vault sourced) or
+`pfx_blob` (+ optional `password`) (inline upload) must be supplied; the two
+modes are mutually exclusive. When sourcing from Key Vault the App Service
+first-party service principal (`abfa0a7c-a6b6-4736-8310-5855508787cd`) must
+have the `Key Vault Certificate User` role on the vault scope.
+
+- `name` - (Optional) The name of the certificate resource. Defaults to the map key.
+- `key_vault_id` - (Optional) The resource ID of the Key Vault holding the certificate.
+- `key_vault_secret_name` - (Optional) The Key Vault secret/certificate name.
+- `pfx_blob` - (Optional) Base64-encoded PFX contents.
+- `password` - (Optional) Password for the supplied PFX blob.
+- `host_names` - (Optional) Hostnames the certificate applies to.
+- `tags` - (Optional) Tags applied to the certificate resource.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "client_affinity_enabled" {
   type        = bool
   default     = false
@@ -481,47 +515,24 @@ variable "content_share_force_disabled" {
 
 variable "custom_domains" {
   type = map(object({
-    slot_as_target               = optional(bool, false)
-    app_service_slot_key         = optional(string)
-    create_certificate           = optional(bool, false)
-    certificate_name             = optional(string)
-    certificate_location         = optional(string)
-    pfx_blob                     = optional(string)
-    pfx_password                 = optional(string)
-    hostname                     = optional(string)
-    app_service_name             = optional(string)
-    app_service_plan_resource_id = optional(string)
-    key_vault_secret_id          = optional(string)
-    key_vault_id                 = optional(string)
-    zone_resource_group_name     = optional(string)
-    resource_group_name          = optional(string)
-    ssl_state                    = optional(string)
-    inherit_tags                 = optional(bool, true)
-    tags                         = optional(map(any), {})
-    thumbprint                   = optional(string)
-    thumbprint_key               = optional(string)
-    ttl                          = optional(number, 300)
-    validation_type              = optional(string, "cname-delegation")
-    create_cname_records         = optional(bool, false)
-    cname_name                   = optional(string)
-    cname_zone_name              = optional(string)
-    cname_record                 = optional(string)
-    cname_target_resource_id     = optional(string)
-    create_txt_records           = optional(bool, false)
-    txt_name                     = optional(string)
-    txt_zone_name                = optional(string)
-    txt_records                  = optional(map(object({ value = string })))
+    hostname        = string
+    ssl_state       = optional(string)
+    thumbprint      = optional(string)
+    certificate_key = optional(string)
   }))
   default     = {}
   description = <<DESCRIPTION
-A map of custom domains to assign to the App Service.
+A map of custom domains to bind to the main App Service site.
 
-Only `slot_as_target`, `app_service_slot_key`, `hostname`, `ssl_state`, and
-`thumbprint` are consumed by this module. The remaining fields are retained for
-backwards compatibility but are **no-ops** in the current AzAPI-based
-implementation – DNS records and managed certificates are no longer created by
-this module. Manage those resources externally (for example with
-`Azure/avm-res-network-dnszone/azurerm`) before binding the hostname.
+To bind a custom domain to a deployment slot instead, set
+`custom_domains` on the corresponding entry in `var.deployment_slots`.
+
+This module only creates the hostname binding. It does **not** create the
+underlying DNS records – those must be provisioned separately (for example
+with `Azure/avm-res-network-dnszone/azurerm`) before the binding is applied.
+Certificates may either be provisioned out of band and referenced by
+`thumbprint`, or declared inline via `var.certificates` and referenced by
+`certificate_key`.
 
 ### DNS prerequisites
 
@@ -539,23 +550,17 @@ resolvable, otherwise the binding will fail with errors such as
 
 ### Field reference
 
-- `slot_as_target` - (Optional) Should the slot be used as the target? Defaults to `false`.
-- `app_service_slot_key` - (Optional) The key of the deployment slot to target.
-- `hostname` - (Optional) The custom domain hostname.
+- `hostname` - (Required) The custom domain hostname to bind.
 - `ssl_state` - (Optional) The SSL state. Possible values are `IpBasedEnabled` and `SniEnabled`.
-- `thumbprint` - (Optional) The certificate thumbprint value.
-
-The following fields are accepted for backwards compatibility but are **not
-used** by the module today; manage the corresponding resources externally:
-
-- `create_certificate`, `certificate_name`, `certificate_location`, `pfx_blob`,
-  `pfx_password`, `key_vault_secret_id`, `key_vault_id`, `thumbprint_key`
-- `create_cname_records`, `cname_name`, `cname_zone_name`, `cname_record`,
-  `cname_target_resource_id`
-- `create_txt_records`, `txt_name`, `txt_zone_name`, `txt_records`
-- `app_service_name`, `app_service_plan_resource_id`, `zone_resource_group_name`,
-  `resource_group_name`, `inherit_tags`, `tags`, `ttl`, `validation_type`
+- `thumbprint` - (Optional) The thumbprint of a certificate already uploaded to the App Service. Mutually exclusive with `certificate_key`.
+- `certificate_key` - (Optional) The map key of an entry in `var.certificates` whose thumbprint should be used for this binding. Mutually exclusive with `thumbprint`.
 DESCRIPTION
+  nullable    = false
+
+  validation {
+    error_message = "Each `custom_domains` entry must set at most one of `thumbprint` or `certificate_key`."
+    condition     = alltrue([for d in var.custom_domains : !(d.thumbprint != null && d.certificate_key != null)])
+  }
 }
 
 variable "daily_memory_time_quota" {
@@ -910,6 +915,12 @@ variable "deployment_slots" {
     })), {})
     zip_deploy_file          = optional(string)
     zip_deploy_wait_duration = optional(string, "60s")
+    custom_domains = optional(map(object({
+      hostname        = string
+      ssl_state       = optional(string)
+      thumbprint      = optional(string)
+      certificate_key = optional(string)
+    })), {})
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -1067,6 +1078,10 @@ A map of deployment slots to create for the App Service.
   - `value` - (Optional) The value of the connection string.
 - `zip_deploy_file` - (Optional) The path to the zip file to deploy to the slot.
 - `zip_deploy_wait_duration` - (Optional) The duration to wait after the slot is configured before triggering zip deploy. Defaults to `60s`.
+- `custom_domains` - (Optional) A map of custom domains to bind to this deployment slot. The same DNS prerequisites described on the top-level `custom_domains` variable apply.
+  - `hostname` - (Required) The custom domain hostname to bind.
+  - `ssl_state` - (Optional) The SSL state. Possible values are `IpBasedEnabled` and `SniEnabled`.
+  - `thumbprint` - (Optional) The thumbprint of a certificate already uploaded to the App Service.
 DESCRIPTION
   nullable    = false
 }
