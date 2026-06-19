@@ -106,7 +106,8 @@ module "avm_res_web_site" {
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
-
+    ASPNETCORE_ENVIRONMENT = "Production"
+    CUSTOM_CONTAINER_TEST  = "true"
   }
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
