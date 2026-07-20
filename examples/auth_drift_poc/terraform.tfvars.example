@@ -1,0 +1,7 @@
+# Required variables for auth POC
+# Update these values with your Azure AD app registration details
+
+aad_client_id = "your-app-registration-client-id"
+aad_client_secret = "your-app-registration-client-secret"
+aad_tenant_id = "your-tenant-id"
+enable_telemetry = false

@@ -1,0 +1,24 @@
+# =============================================================================
+# terraform.tfvars.example
+#
+# Copy this file to terraform.tfvars and fill in real values.
+# NEVER commit terraform.tfvars with real secrets to source control.
+# In CI/CD pipelines, inject these via environment variables:
+#   TF_VAR_aad_client_id     = "..."
+#   TF_VAR_aad_client_secret = "..."  (mark as secret in pipeline)
+#   TF_VAR_aad_tenant_id     = "..."
+# =============================================================================
+
+enable_telemetry = false
+
+# Your Azure AD application (client) ID — not a secret, safe to store in state
+aad_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Your Azure AD tenant ID
+aad_tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Your Azure AD client secret VALUE — this is a secret.
+# Terraform stores it encrypted in state. At runtime, it is put into
+# Key Vault; the App Service references Key Vault, not the raw value.
+# For production: supply via CI/CD secret variable, never in a .tfvars file.
+aad_client_secret = "your-aad-client-secret-value-here"
