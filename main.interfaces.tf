@@ -125,4 +125,3 @@ resource "azapi_resource" "diagnostic_setting" {
   retry                  = var.retry
   update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
-
