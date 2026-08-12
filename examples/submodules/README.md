@@ -12,7 +12,7 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -305,7 +305,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 ### <a name="module_scm_publishing_credential_policy"></a> [scm\_publishing\_credential\_policy](#module\_scm\_publishing\_credential\_policy)
 
