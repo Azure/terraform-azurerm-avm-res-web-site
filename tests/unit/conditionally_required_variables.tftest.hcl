@@ -1,0 +1,172 @@
+mock_provider "azapi" {
+  mock_resource "azapi_resource" {
+    defaults = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.Web/sites/app-unit-test"
+    }
+  }
+}
+mock_provider "modtm" {}
+mock_provider "random" {}
+mock_provider "time" {}
+
+variables {
+  location                 = "eastus"
+  name                     = "app-unit-test"
+  parent_id                = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test"
+  service_plan_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.Web/serverfarms/asp-test"
+  enable_telemetry         = false
+}
+
+run "flex_consumption_requires_runtime_name" {
+  command = plan
+
+  variables {
+    kind                        = "functionapp"
+    os_type                     = "Linux"
+    function_app_uses_fc1       = true
+    fc1_runtime_version         = "20"
+    storage_authentication_type = "SystemAssignedIdentity"
+    storage_container_endpoint  = "https://sttest.blob.core.windows.net/deployments"
+  }
+
+  expect_failures = [var.fc1_runtime_name]
+}
+
+run "flex_consumption_requires_runtime_version" {
+  command = plan
+
+  variables {
+    kind                        = "functionapp"
+    os_type                     = "Linux"
+    function_app_uses_fc1       = true
+    fc1_runtime_name            = "node"
+    storage_authentication_type = "SystemAssignedIdentity"
+    storage_container_endpoint  = "https://sttest.blob.core.windows.net/deployments"
+  }
+
+  expect_failures = [var.fc1_runtime_version]
+}
+
+run "flex_consumption_requires_storage_authentication_type" {
+  command = plan
+
+  variables {
+    kind                       = "functionapp"
+    os_type                    = "Linux"
+    function_app_uses_fc1      = true
+    fc1_runtime_name           = "node"
+    fc1_runtime_version        = "20"
+    storage_container_endpoint = "https://sttest.blob.core.windows.net/deployments"
+  }
+
+  expect_failures = [var.storage_authentication_type]
+}
+
+run "flex_consumption_requires_storage_container_endpoint" {
+  command = plan
+
+  variables {
+    kind                        = "functionapp"
+    os_type                     = "Linux"
+    function_app_uses_fc1       = true
+    fc1_runtime_name            = "node"
+    fc1_runtime_version         = "20"
+    storage_authentication_type = "SystemAssignedIdentity"
+  }
+
+  expect_failures = [var.storage_container_endpoint]
+}
+
+run "user_assigned_identity_authentication_requires_identity_id" {
+  command = plan
+
+  variables {
+    kind                        = "functionapp"
+    os_type                     = "Linux"
+    function_app_uses_fc1       = true
+    fc1_runtime_name            = "node"
+    fc1_runtime_version         = "20"
+    storage_authentication_type = "UserAssignedIdentity"
+    storage_container_endpoint  = "https://sttest.blob.core.windows.net/deployments"
+  }
+
+  expect_failures = [var.storage_user_assigned_identity_id]
+}
+
+run "logic_app_requires_storage_account_name" {
+  command = plan
+
+  variables {
+    kind                       = "logicapp"
+    os_type                    = "Windows"
+    storage_account_access_key = "not-a-real-key"
+  }
+
+  expect_failures = [var.storage_account_name]
+}
+
+run "logic_app_requires_storage_account_access_key" {
+  command = plan
+
+  variables {
+    kind                 = "logicapp"
+    os_type              = "Windows"
+    storage_account_name = "sttest"
+  }
+
+  expect_failures = [var.storage_account_access_key]
+}
+
+run "managed_identity_storage_requires_storage_account_name" {
+  command = plan
+
+  variables {
+    kind                          = "functionapp"
+    os_type                       = "Linux"
+    storage_uses_managed_identity = true
+  }
+
+  expect_failures = [var.storage_account_name]
+}
+
+run "unsupported_storage_container_type_is_rejected" {
+  command = plan
+
+  variables {
+    kind                   = "functionapp"
+    os_type                = "Linux"
+    function_app_uses_fc1  = false
+    storage_container_type = "fileShare"
+  }
+
+  expect_failures = [var.storage_container_type]
+}
+
+run "flex_consumption_defaults_storage_container_type" {
+  command = apply
+
+  variables {
+    kind                              = "functionapp"
+    os_type                           = "Linux"
+    function_app_uses_fc1             = true
+    fc1_runtime_name                  = "node"
+    fc1_runtime_version               = "20"
+    storage_authentication_type       = "UserAssignedIdentity"
+    storage_container_endpoint        = "https://sttest.blob.core.windows.net/deployments"
+    storage_user_assigned_identity_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uai-test"
+  }
+
+  assert {
+    condition     = local.body.properties.functionAppConfig.deployment.storage.type == "blobcontainer"
+    error_message = "storage_container_type should default to blobContainer for Flex Consumption Function Apps."
+  }
+}
+
+run "web_app_ignores_flex_consumption_variables" {
+  command = apply
+
+  assert {
+    condition     = local.body.properties.functionAppConfig == null
+    error_message = "functionAppConfig should stay null when function_app_uses_fc1 is false."
+  }
+}

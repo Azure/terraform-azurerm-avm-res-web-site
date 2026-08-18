@@ -1392,7 +1392,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_name"></a> [fc1\_runtime\_name](#input\_fc1\_runtime\_name)
 
-Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1400,7 +1400,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
 
-Description: The Runtime version of the Flex Consumption Function App.
+Description: The Runtime version of the Flex Consumption Function App. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1417,6 +1417,8 @@ Default: `false`
 ### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
 
 Description: Should this Function App run on a Flex Consumption Plan? Defaults to `false`.
+
+When `true`, these variables become required: `fc1_runtime_name`, `fc1_runtime_version`, `storage_authentication_type` and `storage_container_endpoint`. `storage_user_assigned_identity_id` is also required when `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `bool`
 
@@ -2228,7 +2230,7 @@ Default: `{}`
 
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
-Description: The access key of the Storage Account for the Function App.
+Description: The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`.
 
 Type: `string`
 
@@ -2236,7 +2238,7 @@ Default: `null`
 
 ### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
 
-Description: The name of the Storage Account for the Function App.
+Description: The name of the Storage Account for the Function App. Required when `kind` is `logicapp`, and when `storage_uses_managed_identity` is `true`.
 
 Type: `string`
 
@@ -2260,7 +2262,7 @@ Default: `null`
 
 ### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
 
-Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`.
+Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2268,7 +2270,7 @@ Default: `null`
 
 ### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
 
-Description: The backend storage container endpoint for Flex Consumption Function Apps.
+Description: The backend storage container endpoint for Flex Consumption Function Apps. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2276,11 +2278,11 @@ Default: `null`
 
 ### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
 
-Description: The storage container type. The current supported type is `blobContainer`.
+Description: The storage container type used by Flex Consumption Function Apps. The only supported value today is `blobContainer`, which is the default. Ignored unless `function_app_uses_fc1` is `true`.
 
 Type: `string`
 
-Default: `null`
+Default: `"blobContainer"`
 
 ### <a name="input_storage_shares_to_mount"></a> [storage\_shares\_to\_mount](#input\_storage\_shares\_to\_mount)
 
@@ -2310,7 +2312,7 @@ Default: `{}`
 
 ### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
 
-Description: The ID of the User Assigned Managed Identity for storage.
+Description: The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `string`
 
@@ -2318,7 +2320,7 @@ Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 
-Description: Should the Storage Account use a Managed Identity? Defaults to `false`.
+Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
 
 Type: `bool`
 
