@@ -23,6 +23,7 @@ module "slot" {
   connection_strings                       = each.value.connection_strings
   container_size                           = each.value.container_size
   dapr_config                              = each.value.dapr_config
+  delete_empty_service_plan                = var.delete_empty_service_plan
   dns_configuration                        = each.value.dns_configuration
   enabled                                  = each.value.enabled
   end_to_end_encryption_enabled            = each.value.end_to_end_encryption_enabled

@@ -138,6 +138,17 @@ variable "dapr_config" {
   description = "Dapr configuration for the slot."
 }
 
+variable "delete_empty_service_plan" {
+  type        = bool
+  default     = true
+  description = <<DESCRIPTION
+Should the App Service Plan be deleted when this slot is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites/slots` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete-slot>.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "dns_configuration" {
   type = object({
     alternate_private_dns_zone_id = optional(string)

@@ -142,6 +142,9 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
+  delete_query_parameters = {
+    deleteEmptyServerFarm = [tostring(var.delete_empty_service_plan)]
+  }
   ignore_null_property = true
   response_export_values = [
     "identity.principalId",

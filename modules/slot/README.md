@@ -205,6 +205,16 @@ object({
 
 Default: `null`
 
+### <a name="input_delete_empty_service_plan"></a> [delete\_empty\_service\_plan](#input\_delete\_empty\_service\_plan)
+
+Description: Should the App Service Plan be deleted when this slot is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites/slots` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete-slot>.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_dns_configuration"></a> [dns\_configuration](#input\_dns\_configuration)
 
 Description: DNS configuration for the slot.
