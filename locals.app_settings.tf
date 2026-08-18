@@ -33,7 +33,7 @@ locals {
       FUNCTIONS_WORKER_RUNTIME    = "node"
       AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     },
-    var.logic_app_node_version != null ? {
+    var.logic_app_node_version != null && !contains(keys(var.app_settings), "WEBSITE_NODE_DEFAULT_VERSION") ? {
       WEBSITE_NODE_DEFAULT_VERSION = var.logic_app_node_version
     } : {},
     var.use_extension_bundle ? {
