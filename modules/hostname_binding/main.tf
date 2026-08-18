@@ -8,6 +8,7 @@ resource "azapi_resource" "this" {
       thumbprint = var.thumbprint
     }
   }
+  ignore_null_property   = true
   response_export_values = []
   retry                  = var.retry
 }

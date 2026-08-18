@@ -13,6 +13,7 @@ resource "azapi_resource" "this" {
       hostNames          = var.host_names
     }
   }
+  ignore_null_property = true
   response_export_values = [
     "properties.thumbprint",
     "properties.expirationDate",
