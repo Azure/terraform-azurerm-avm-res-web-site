@@ -71,6 +71,14 @@ run "private_endpoint_accepts_a_resource_group_id" {
     condition     = azapi_resource.private_endpoint["resource_id"].parent_id == "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
     error_message = "A `resource_group_name` given as a resource group ID should be used verbatim, including a different subscription. This is the shape the AVM private endpoints interface specifies."
   }
+
+  # Pinned separately from the equality above because this exact string is the
+  # regression: reconstructing from an already-qualified ID nests it inside the
+  # local subscription's scope.
+  assert {
+    condition     = azapi_resource.private_endpoint["resource_id"].parent_id != "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups//subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
+    error_message = "A `resource_group_name` given as a resource group ID must not be rebuilt as if it were a bare name, which would nest one scope inside another."
+  }
 }
 
 run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
@@ -150,5 +158,13 @@ run "slot_private_endpoint_accepts_a_resource_group_id" {
   assert {
     condition     = module.slot["staging"].private_endpoints["resource_id"].parent_id == "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
     error_message = "A slot private endpoint should use a `resource_group_name` given as a resource group ID verbatim."
+  }
+
+  # Pinned separately from the equality above because this exact string is the
+  # regression: reconstructing from an already-qualified ID nests it inside the
+  # local subscription's scope.
+  assert {
+    condition     = module.slot["staging"].private_endpoints["resource_id"].parent_id != "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups//subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
+    error_message = "A slot `resource_group_name` given as a resource group ID must not be rebuilt as if it were a bare name, which would nest one scope inside another."
   }
 }
