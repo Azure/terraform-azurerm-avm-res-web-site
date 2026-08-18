@@ -176,6 +176,32 @@ module "avm_res_web_site" {
         }
       }
     }
+    slot3 = {
+      name                                           = "java-app-stack"
+      ftp_publish_basic_authentication_enabled       = false
+      webdeploy_publish_basic_authentication_enabled = false
+      site_config = {
+        application_stack = {
+          java = {
+            java_version = "21"
+          }
+        }
+      }
+    }
+    slot4 = {
+      name                                           = "tomcat-app-stack"
+      ftp_publish_basic_authentication_enabled       = false
+      webdeploy_publish_basic_authentication_enabled = false
+      site_config = {
+        application_stack = {
+          java = {
+            java_version           = "17"
+            java_container         = "TOMCAT"
+            java_container_version = "10.1"
+          }
+        }
+      }
+    }
   }
   enable_telemetry              = var.enable_telemetry
   kind                          = "webapp"
