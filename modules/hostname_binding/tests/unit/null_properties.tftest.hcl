@@ -16,7 +16,7 @@ variables {
 }
 
 run "optional_properties_omitted" {
-  command = plan
+  command = apply
 
   assert {
     condition     = azapi_resource.this.ignore_null_property == true
@@ -35,7 +35,7 @@ run "optional_properties_omitted" {
 }
 
 run "optional_properties_explicit" {
-  command = plan
+  command = apply
 
   variables {
     ssl_state  = "SniEnabled"
