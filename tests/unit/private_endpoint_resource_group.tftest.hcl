@@ -1,16 +1,17 @@
-mock_provider "azapi" {}
-mock_provider "time" {}
-
-# The slot submodule receives the site ID as its `parent_id` and trims it back
-# to a resource group. Mocked computed attributes are unknown during plan, so
-# pin the site ID to keep that assertion deterministic.
-override_resource {
-  target          = azapi_resource.this
-  override_during = plan
-  values = {
-    id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
+mock_provider "azapi" {
+  mock_resource "azapi_resource" {
+    defaults = {
+      # Under `apply` the mocked provider would otherwise generate a random
+      # string here, which the config submodules reject when they validate
+      # their `parent_id`. This also gives the slot submodule a well-formed
+      # site ID as its `parent_id`, which is what it trims to a resource group.
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
+    }
   }
 }
+mock_provider "modtm" {}
+mock_provider "random" {}
+mock_provider "time" {}
 
 variables {
   enable_telemetry         = false
@@ -21,7 +22,7 @@ variables {
 }
 
 run "private_endpoint_defaults_to_the_app_resource_group" {
-  command = plan
+  command = apply
 
   variables {
     private_endpoints = {
@@ -38,7 +39,7 @@ run "private_endpoint_defaults_to_the_app_resource_group" {
 }
 
 run "private_endpoint_accepts_a_bare_resource_group_name" {
-  command = plan
+  command = apply
 
   variables {
     private_endpoints = {
@@ -56,7 +57,7 @@ run "private_endpoint_accepts_a_bare_resource_group_name" {
 }
 
 run "private_endpoint_accepts_a_resource_group_id" {
-  command = plan
+  command = apply
 
   variables {
     private_endpoints = {
@@ -82,6 +83,10 @@ run "private_endpoint_accepts_a_resource_group_id" {
 }
 
 run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
+  # Deliberately `plan`, not `apply`, unlike every other run in this file.
+  # A variable validation failure happens during planning, so the apply can
+  # never execute and Terraform marks the whole run failed even though the
+  # expected failure occurred. `expect_failures` on a variable requires `plan`.
   command = plan
 
   variables {
@@ -97,7 +102,16 @@ run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
 }
 
 run "slot_private_endpoint_defaults_to_the_app_resource_group" {
-  command = plan
+  command = apply
+
+  # The shared azapi mock gives every resource the site ID, but the slot's own
+  # config submodules validate that their `parent_id` is a `sites/slots` ID.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
@@ -118,7 +132,16 @@ run "slot_private_endpoint_defaults_to_the_app_resource_group" {
 }
 
 run "slot_private_endpoint_accepts_a_bare_resource_group_name" {
-  command = plan
+  command = apply
+
+  # The shared azapi mock gives every resource the site ID, but the slot's own
+  # config submodules validate that their `parent_id` is a `sites/slots` ID.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
@@ -140,7 +163,16 @@ run "slot_private_endpoint_accepts_a_bare_resource_group_name" {
 }
 
 run "slot_private_endpoint_accepts_a_resource_group_id" {
-  command = plan
+  command = apply
+
+  # The shared azapi mock gives every resource the site ID, but the slot's own
+  # config submodules validate that their `parent_id` is a `sites/slots` ID.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
