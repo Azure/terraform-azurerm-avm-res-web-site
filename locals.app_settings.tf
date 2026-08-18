@@ -29,11 +29,13 @@ locals {
   ) : {}
   logic_app_settings = local.is_logic_app ? merge(
     {
-      FUNCTIONS_EXTENSION_VERSION  = var.logic_app_runtime_version
-      FUNCTIONS_WORKER_RUNTIME     = "node"
-      WEBSITE_NODE_DEFAULT_VERSION = "~18"
-      AzureWebJobsStorage          = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
+      FUNCTIONS_EXTENSION_VERSION = var.logic_app_runtime_version
+      FUNCTIONS_WORKER_RUNTIME    = "node"
+      AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     },
+    var.logic_app_node_version != null ? {
+      WEBSITE_NODE_DEFAULT_VERSION = var.logic_app_node_version
+    } : {},
     var.use_extension_bundle ? {
       AzureFunctionsJobHost__extensionBundle__id      = "Microsoft.Azure.Functions.ExtensionBundle.Workflows"
       AzureFunctionsJobHost__extensionBundle__version = var.bundle_version
