@@ -51,6 +51,12 @@ run "null_logic_app_node_version_omits_the_setting" {
 # Regression guard for #282. The module merges its Logic App defaults after
 # `var.app_settings`, so without an explicit gate it silently overwrites
 # whatever the consumer set here.
+#
+# This run is the discriminating one: strip the
+# `!contains(keys(var.app_settings), ...)` clause from `local.logic_app_settings`
+# and this run alone fails, while the other four still pass. If you are here to
+# simplify that gate back to a plain null check, that is what you would be
+# breaking.
 run "explicit_app_settings_entry_beats_the_module_default" {
   command = plan
 
