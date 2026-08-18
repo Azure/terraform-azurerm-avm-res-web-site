@@ -9,7 +9,18 @@
 # unanchored replace also lowercases a resource group or plan named `serverFarms`, which a
 # normal ID never exercises.
 
-mock_provider "azapi" {}
+# Mock every provider in `terraform.tf`, and pin the mocked site ID: under `command =
+# apply` a bare mock generates a random string for `azapi_resource.this.id`, which the
+# config submodules reject because they validate `parent_id` as a real site resource ID.
+mock_provider "azapi" {
+  mock_resource "azapi_resource" {
+    defaults = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
+    }
+  }
+}
+mock_provider "modtm" {}
+mock_provider "random" {}
 mock_provider "time" {}
 
 variables {
@@ -21,7 +32,7 @@ variables {
 }
 
 run "site_normalizes_capital_f_server_farms" {
-  command = plan
+  command = apply
 
   assert {
     condition     = azapi_resource.this.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
@@ -30,7 +41,7 @@ run "site_normalizes_capital_f_server_farms" {
 }
 
 run "site_leaves_lowercase_server_farms_unchanged" {
-  command = plan
+  command = apply
 
   variables {
     service_plan_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
@@ -43,7 +54,7 @@ run "site_leaves_lowercase_server_farms_unchanged" {
 }
 
 run "site_preserves_a_resource_group_named_server_farms" {
-  command = plan
+  command = apply
 
   variables {
     service_plan_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/serverFarms/providers/Microsoft.Web/serverFarms/serverFarms"
@@ -56,7 +67,15 @@ run "site_preserves_a_resource_group_named_server_farms" {
 }
 
 run "slot_normalizes_the_inherited_service_plan_resource_id" {
-  command = plan
+  command = apply
+
+  # Give the slot a slot-shaped ID; see the note on `mock_provider` above.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
@@ -71,7 +90,15 @@ run "slot_normalizes_the_inherited_service_plan_resource_id" {
 }
 
 run "slot_normalizes_its_own_server_farm_id_override" {
-  command = plan
+  command = apply
+
+  # Give the slot a slot-shaped ID; see the note on `mock_provider` above.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
@@ -90,7 +117,15 @@ run "slot_normalizes_its_own_server_farm_id_override" {
 # The root `service_plan_resource_id` validation requires a literal `Microsoft.Web`, so a
 # hand-written lowercase namespace can only reach the normalization through a slot override.
 run "slot_normalizes_a_lowercase_provider_namespace" {
-  command = plan
+  command = apply
+
+  # Give the slot a slot-shaped ID; see the note on `mock_provider` above.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
@@ -107,7 +142,15 @@ run "slot_normalizes_a_lowercase_provider_namespace" {
 }
 
 run "slot_preserves_a_resource_group_named_server_farms" {
-  command = plan
+  command = apply
+
+  # Give the slot a slot-shaped ID; see the note on `mock_provider` above.
+  override_resource {
+    target = module.slot["staging"].azapi_resource.this
+    values = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
+    }
+  }
 
   variables {
     deployment_slots = {
