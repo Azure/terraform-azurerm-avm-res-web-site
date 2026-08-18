@@ -1,4 +1,12 @@
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_resource "azapi_resource" {
+    defaults = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/logic-avm-test"
+    }
+  }
+}
+mock_provider "modtm" {}
+mock_provider "random" {}
 mock_provider "time" {}
 
 variables {
@@ -14,7 +22,7 @@ variables {
 }
 
 run "logic_app_defaults_to_a_supported_node_lts" {
-  command = plan
+  command = apply
 
   assert {
     condition     = module.config_appsettings.resource.body.properties["WEBSITE_NODE_DEFAULT_VERSION"] == "~22"
@@ -23,7 +31,7 @@ run "logic_app_defaults_to_a_supported_node_lts" {
 }
 
 run "logic_app_node_version_is_configurable" {
-  command = plan
+  command = apply
 
   variables {
     logic_app_node_version = "~20"
@@ -36,7 +44,7 @@ run "logic_app_node_version_is_configurable" {
 }
 
 run "null_logic_app_node_version_omits_the_setting" {
-  command = plan
+  command = apply
 
   variables {
     logic_app_node_version = null
@@ -58,7 +66,7 @@ run "null_logic_app_node_version_omits_the_setting" {
 # simplify that gate back to a plain null check, that is what you would be
 # breaking.
 run "explicit_app_settings_entry_beats_the_module_default" {
-  command = plan
+  command = apply
 
   variables {
     app_settings = {
@@ -73,7 +81,7 @@ run "explicit_app_settings_entry_beats_the_module_default" {
 }
 
 run "non_logic_app_kinds_do_not_get_a_node_version" {
-  command = plan
+  command = apply
 
   variables {
     kind = "webapp"
