@@ -1,3 +1,16 @@
+# Unit tests for the conditionally required variables described in issue #236.
+#
+# AVM guidance says unit tests should use `command = apply`, since mocked providers
+# make apply safe. The two runs that assert on `local.body` do exactly that.
+#
+# The nine `expect_failures` runs must use `command = plan` instead, and this is not
+# an oversight. Variable validation is evaluated during the plan stage, so a failure
+# there aborts the apply before it starts. Terraform then reports "Expected failure
+# while planning ... the apply operation could not be executed and so the overall
+# test case will be marked as a failure" and fails the run despite the failure being
+# the point of the test. That applies to any `expect_failures` on a variable, so
+# `plan` is the only command these can use.
+
 mock_provider "azapi" {
   mock_resource "azapi_resource" {
     defaults = {
