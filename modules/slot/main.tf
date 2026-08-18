@@ -37,6 +37,11 @@ resource "azapi_resource" "this" {
         contentShareTraffic  = var.vnet_content_share_enabled
         imagePullTraffic     = var.vnet_image_pull_enabled
       }
+      # Flex Consumption (FC1) sites reject a subset of siteConfig properties
+      # with ARM error 51021. The runtime stack is expressed through
+      # properties.functionAppConfig.runtime and scaling through
+      # properties.functionAppConfig.scaleAndConcurrency instead, so every
+      # field guarded by var.function_app_uses_fc1 below is omitted for FC1.
       siteConfig = var.site_config != null ? {
         alwaysOn                    = var.function_app_uses_fc1 ? null : var.site_config.always_on
         apiDefinition               = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
@@ -61,7 +66,7 @@ resource "azapi_resource" "this" {
             reroutePercentage         = rule.reroute_percentage
           }]
         } : null
-        ftpsState = var.site_config.ftps_state
+        ftpsState = var.function_app_uses_fc1 ? null : var.site_config.ftps_state
         handlerMappings = var.site_config.handler_mappings != null ? [for hm in var.site_config.handler_mappings : {
           arguments       = hm.arguments
           extension       = hm.extension
@@ -85,7 +90,7 @@ resource "azapi_resource" "this" {
         minTlsCipherSuite                      = var.site_config.min_tls_cipher_suite
         minTlsVersion                          = var.site_config.minimum_tls_version
         numberOfWorkers                        = var.site_config.worker_count
-        preWarmedInstanceCount                 = var.site_config.pre_warmed_instance_count
+        preWarmedInstanceCount                 = var.function_app_uses_fc1 ? null : var.site_config.pre_warmed_instance_count
         remoteDebuggingEnabled                 = var.site_config.remote_debugging_enabled
         remoteDebuggingVersion                 = var.site_config.remote_debugging_version
         requestTracingEnabled                  = var.site_config.request_tracing_enabled
@@ -96,28 +101,28 @@ resource "azapi_resource" "this" {
         scmMinTlsVersion                       = var.site_config.scm_minimum_tls_version
         scmType                                = var.site_config.scm_type
         tracingOptions                         = var.site_config.tracing_options
-        use32BitWorkerProcess                  = var.site_config.use_32_bit_worker
+        use32BitWorkerProcess                  = var.function_app_uses_fc1 ? null : var.site_config.use_32_bit_worker
         virtualApplications                    = local.virtual_applications
         vnetPrivatePortsCount                  = var.site_config.vnet_private_ports_count
         vnetRouteAllEnabled                    = var.site_config.vnet_route_all_enabled
         webSocketsEnabled                      = var.site_config.websockets_enabled
         websiteTimeZone                        = var.site_config.website_time_zone
         minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
-        functionsRuntimeScaleMonitoringEnabled = var.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
+        functionsRuntimeScaleMonitoringEnabled = var.is_function_app && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
         autoSwapSlotName                       = var.site_config.auto_swap_slot_name
         acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity
-        functionAppScaleLimit                  = var.is_function_app ? var.site_config.app_scale_limit : null
-        linuxFxVersion                         = module.site_config_helpers.linux_fx_version
-        windowsFxVersion                       = module.site_config_helpers.windows_fx_version
-        netFrameworkVersion                    = module.site_config_helpers.net_framework_version
-        phpVersion                             = module.site_config_helpers.php_version
-        pythonVersion                          = module.site_config_helpers.python_version
-        nodeVersion                            = module.site_config_helpers.node_version
-        javaVersion                            = module.site_config_helpers.java_version
-        javaContainer                          = module.site_config_helpers.java_container
-        javaContainerVersion                   = module.site_config_helpers.java_container_version
-        powerShellVersion                      = module.site_config_helpers.powershell_version
+        functionAppScaleLimit                  = var.is_function_app && !var.function_app_uses_fc1 ? var.site_config.app_scale_limit : null
+        linuxFxVersion                         = var.function_app_uses_fc1 ? null : module.site_config_helpers.linux_fx_version
+        windowsFxVersion                       = var.function_app_uses_fc1 ? null : module.site_config_helpers.windows_fx_version
+        netFrameworkVersion                    = var.function_app_uses_fc1 ? null : module.site_config_helpers.net_framework_version
+        phpVersion                             = var.function_app_uses_fc1 ? null : module.site_config_helpers.php_version
+        pythonVersion                          = var.function_app_uses_fc1 ? null : module.site_config_helpers.python_version
+        nodeVersion                            = var.function_app_uses_fc1 ? null : module.site_config_helpers.node_version
+        javaVersion                            = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_version
+        javaContainer                          = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container
+        javaContainerVersion                   = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container_version
+        powerShellVersion                      = var.function_app_uses_fc1 ? null : module.site_config_helpers.powershell_version
       } : null
       daprConfig = var.dapr_config != null ? {
         appId              = var.dapr_config.app_id
