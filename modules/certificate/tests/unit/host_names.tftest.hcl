@@ -13,25 +13,7 @@
 // the attribute that opts us into that behaviour must stay set, and the
 // variable must reach the body unchanged whether or not the caller supplies it.
 
-// Under `command = apply` the module's outputs are evaluated, and
-// `output "thumbprint"` dereferences `azapi_resource.this.output` without a
-// `try()`. A bare mock returns null there, so the resource needs defaults that
-// stand in for what Azure echoes back on read.
-mock_provider "azapi" {
-  mock_resource "azapi_resource" {
-    defaults = {
-      output = {
-        properties = {
-          thumbprint           = "ABCDEF0123456789ABCDEF0123456789ABCDEF01"
-          expirationDate       = "2027-01-01T00:00:00Z"
-          subjectName          = "app.contoso.com"
-          issuer               = "Test CA"
-          keyVaultSecretStatus = "Succeeded"
-        }
-      }
-    }
-  }
-}
+mock_provider "azapi" {}
 
 variables {
   location       = "eastus"
