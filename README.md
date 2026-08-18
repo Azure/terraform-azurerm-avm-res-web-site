@@ -914,7 +914,7 @@ Description: A map of deployment slots to create for the App Service.
   - `private_service_connection_name` - (Optional) The private service connection name.
   - `network_interface_name` - (Optional) The network interface name.
   - `location` - (Optional) The Azure location.
-  - `resource_group_name` - (Optional) The resource group name.
+  - `resource_group_name` - (Optional) The name of the resource group to deploy the private endpoint into. Defaults to the resource group of the app.
   - `ip_configurations` - (Optional) A map of IP configurations.
     - `name` - (Required) The name of the IP configuration.
     - `private_ip_address` - (Required) The private IP address.
@@ -1640,7 +1640,7 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `private_service_connection_name` - (Optional) The name of the private service connection.
 - `network_interface_name` - (Optional) The name of the network interface.
 - `location` - (Optional) The Azure location. Defaults to the resource group location.
-- `resource_group_name` - (Optional) The resource group. Defaults to the resource group of this resource.
+- `resource_group_name` - (Optional) The name of the resource group to deploy the private endpoint into. Defaults to the resource group of this resource.
 - `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
   - `name` - (Required) The name of the IP configuration.
   - `private_ip_address` - (Required) The private IP address.

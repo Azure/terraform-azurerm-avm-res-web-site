@@ -49,7 +49,7 @@ resource "azapi_resource" "private_endpoint" {
 
   location               = coalesce(try(var.private_endpoints[each.key].location, null), var.location)
   name                   = each.value.name
-  parent_id              = regex("^(/subscriptions/[^/]+/resourceGroups/[^/]+)", var.parent_id)[0]
+  parent_id              = local.private_endpoint_parent_ids[each.key]
   type                   = each.value.type
   body                   = each.value.body
   response_export_values = []

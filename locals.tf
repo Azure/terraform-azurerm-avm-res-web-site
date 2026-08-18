@@ -26,4 +26,9 @@ locals {
   is_linux        = var.os_type == "Linux"
   is_logic_app    = var.kind == "logicapp"
   is_web_app      = var.kind == "webapp"
+  # A private endpoint may be placed in a resource group other than the app's,
+  # so rebuild the resource group ID from the subscription segment of parent_id.
+  private_endpoint_parent_ids = {
+    for pe_key, pe in var.private_endpoints : pe_key => pe.resource_group_name != null ? "${regex("^/subscriptions/[^/]+", var.parent_id)}/resourceGroups/${pe.resource_group_name}" : var.parent_id
+  }
 }

@@ -20,6 +20,11 @@ locals {
       virtualPath  = vd.virtual_path
     }]
   }] : null
+  # A private endpoint may be placed in a resource group other than the app's,
+  # so rebuild the resource group ID from the subscription segment of parent_id.
+  private_endpoint_parent_ids = {
+    for pe_key, pe in var.private_endpoints : pe_key => pe.resource_group_name != null ? "${regex("^/subscriptions/[^/]+", var.parent_id)}/resourceGroups/${pe.resource_group_name}" : regex("^/subscriptions/[^/]+/resourceGroups/[^/]+", var.parent_id)
+  }
   virtual_applications_input = length(var.site_config.virtual_application) > 0 ? var.site_config.virtual_application : [{
     physical_path     = "site\\wwwroot"
     preload_enabled   = false
