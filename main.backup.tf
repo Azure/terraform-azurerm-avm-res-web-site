@@ -8,9 +8,9 @@ module "config_backup" {
   ignore_body_changes = var.ignore_body_changes.config_backup
   resource_types      = var.resource_types.config_backup
   retry               = var.retry
-  timeouts            = var.timeouts
   schedule = each.value.schedule != null ? {
     for sk, sv in each.value.schedule : sk => sv
   }[keys(each.value.schedule)[0]] : null
   storage_account_url = each.value.storage_account_url
+  timeouts            = var.timeouts
 }

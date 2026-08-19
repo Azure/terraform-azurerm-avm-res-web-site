@@ -13,13 +13,13 @@ module "config_authsettings" {
   facebook                       = each.value.facebook
   github                         = each.value.github
   google                         = each.value.google
+  ignore_body_changes            = var.ignore_body_changes.config_authsettings
   issuer                         = each.value.issuer
   microsoft                      = each.value.microsoft
-  ignore_body_changes            = var.ignore_body_changes.config_authsettings
   resource_types                 = var.resource_types.config_authsettings
   retry                          = var.retry
-  timeouts                       = var.timeouts
   runtime_version                = each.value.runtime_version
+  timeouts                       = var.timeouts
   token_refresh_extension_hours  = each.value.token_refresh_extension_hours
   token_store_enabled            = each.value.token_store_enabled
   twitter                        = each.value.twitter
@@ -39,14 +39,14 @@ module "config_authsettingsv2" {
   forward_proxy_custom_proto_header_name = each.value.forward_proxy_custom_proto_header_name
   http_route_api_prefix                  = each.value.http_route_api_prefix
   identity_providers                     = each.value.identity_providers
+  ignore_body_changes                    = var.ignore_body_changes.config_authsettingsv2
   login                                  = each.value.login
   redirect_to_provider                   = each.value.redirect_to_provider
   require_authentication                 = each.value.require_authentication
   require_https                          = each.value.require_https
-  ignore_body_changes                    = var.ignore_body_changes.config_authsettingsv2
   resource_types                         = var.resource_types.config_authsettingsv2
   retry                                  = var.retry
-  timeouts                               = var.timeouts
   runtime_version                        = each.value.runtime_version
+  timeouts                               = var.timeouts
   unauthenticated_client_action          = each.value.unauthenticated_client_action
 }

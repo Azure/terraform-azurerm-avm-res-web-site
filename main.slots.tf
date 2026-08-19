@@ -32,6 +32,7 @@ module "slot" {
   hosting_environment_id                   = each.value.hosting_environment_id
   https_only                               = each.value.https_only
   hyper_v                                  = each.value.hyper_v
+  ignore_body_changes                      = var.ignore_body_changes.slot
   ip_mode                                  = each.value.ip_mode
   is_function_app                          = local.is_function_app
   key_vault_reference_identity             = each.value.key_vault_reference_identity
@@ -47,10 +48,8 @@ module "slot" {
   public_network_access_enabled           = each.value.public_network_access_enabled
   redundancy_mode                         = each.value.redundancy_mode
   resource_config                         = each.value.resource_config
-  ignore_body_changes                     = var.ignore_body_changes.slot
   resource_types                          = var.resource_types.slot
   retry                                   = var.retry
-  timeouts                                = var.timeouts
   role_assignments                        = each.value.role_assignments
   scm_site_also_stopped                   = each.value.scm_site_also_stopped
   sensitive_app_settings                  = lookup(var.slot_sensitive_app_settings, each.key, {})
@@ -64,6 +63,7 @@ module "slot" {
   }
   storage_shares_to_mount                        = each.value.storage_shares_to_mount
   tags                                           = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
+  timeouts                                       = var.timeouts
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   vnet_application_traffic_enabled               = each.value.vnet_application_traffic_enabled
   vnet_backup_restore_enabled                    = each.value.vnet_backup_restore_enabled

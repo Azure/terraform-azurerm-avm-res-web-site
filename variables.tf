@@ -1375,6 +1375,7 @@ The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, so th
 DESCRIPTION
   nullable    = false
 }
+
 variable "instance_memory_in_mb" {
   type        = number
   default     = 2048
@@ -1771,6 +1772,7 @@ Retry configuration for the AzAPI resources declared by this module and its subm
 - `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
 DESCRIPTION
 }
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
