@@ -2,7 +2,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = var.parent_id
-  type      = "Microsoft.Web/sites/slots@2025-03-01"
+  type      = var.resource_types.web_sites_slots
   body = {
     kind = var.kind
     properties = {
@@ -142,6 +142,7 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
+  ignore_body_changes  = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
   ignore_null_property = true
   response_export_values = [
     "identity.principalId",
@@ -157,26 +158,43 @@ resource "azapi_resource" "this" {
       identity_ids = identity.value.identity_ids
     }
   }
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 # Slot app settings
 module "config_appsettings" {
   source = "../config_appsettings"
 
-  app_settings = local.merged_app_settings
-  parent_id    = azapi_resource.this.id
-  is_slot      = true
-  retry        = var.retry
+  app_settings        = local.merged_app_settings
+  parent_id           = azapi_resource.this.id
+  ignore_body_changes = var.ignore_body_changes.config_appsettings
+  is_slot             = true
+  resource_types      = var.resource_types.config_appsettings
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot connection strings
 module "config_connectionstrings" {
   source = "../config_connectionstrings"
 
-  connection_strings = var.connection_strings
-  parent_id          = azapi_resource.this.id
-  is_slot            = true
-  retry              = var.retry
+  connection_strings  = var.connection_strings
+  parent_id           = azapi_resource.this.id
+  ignore_body_changes = var.ignore_body_changes.config_connectionstrings
+  is_slot             = true
+  resource_types      = var.resource_types.config_connectionstrings
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot storage account mounts
@@ -187,8 +205,11 @@ module "config_azurestorageaccounts" {
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
     access_key = var.storage_shares_access_keys[k]
   }) }
-  is_slot = true
-  retry   = var.retry
+  is_slot             = true
+  ignore_body_changes = var.ignore_body_changes.config_azurestorageaccounts
+  resource_types      = var.resource_types.config_azurestorageaccounts
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot FTP publishing credential policy
@@ -196,21 +217,27 @@ module "ftp_publishing_credential_policy" {
   source   = "../publishing_credential_policy"
   for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
-  name      = "ftp"
-  parent_id = azapi_resource.this.id
-  allow     = false
-  is_slot   = true
-  retry     = var.retry
+  name                = "ftp"
+  parent_id           = azapi_resource.this.id
+  allow               = false
+  ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
+  is_slot             = true
+  resource_types      = var.resource_types.publishing_credential_policy
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot metadata
 module "config_metadata" {
   source = "../config_metadata"
 
-  metadata  = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
-  parent_id = azapi_resource.this.id
-  is_slot   = true
-  retry     = var.retry
+  metadata            = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
+  parent_id           = azapi_resource.this.id
+  ignore_body_changes = var.ignore_body_changes.config_metadata
+  is_slot             = true
+  resource_types      = var.resource_types.config_metadata
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot SCM publishing credential policy
@@ -218,11 +245,14 @@ module "scm_publishing_credential_policy" {
   source   = "../publishing_credential_policy"
   for_each = !var.webdeploy_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
-  name      = "scm"
-  parent_id = azapi_resource.this.id
-  allow     = false
-  is_slot   = true
-  retry     = var.retry
+  name                = "scm"
+  parent_id           = azapi_resource.this.id
+  allow               = false
+  ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
+  is_slot             = true
+  resource_types      = var.resource_types.publishing_credential_policy
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
 
 # Slot zip deploy
@@ -245,10 +275,13 @@ module "extensions_zipdeploy" {
   source   = "../extensions_zipdeploy"
   for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
 
-  parent_id       = azapi_resource.this.id
-  zip_deploy_file = var.zip_deploy_file
-  is_slot         = true
-  retry           = var.retry
+  parent_id           = azapi_resource.this.id
+  zip_deploy_file     = var.zip_deploy_file
+  ignore_body_changes = var.ignore_body_changes.extensions_zipdeploy
+  is_slot             = true
+  resource_types      = var.resource_types.extensions_zipdeploy
+  retry               = var.retry
+  timeouts            = var.timeouts
 
   depends_on = [
     time_sleep.wait_before_zip_deploy,
