@@ -129,16 +129,47 @@ Microsoft authentication configuration.
 DESCRIPTION
 }
 
+variable "ignore_body_changes" {
+  type = object({
+    web_sites_config = optional(list(string), [])
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
+
+The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and this module manages its resource with a type that does not accept the argument. The variable exists for interface consistency; setting a non-empty value fails the plan with an explicit error rather than being silently ignored.
+- `web_sites_config` - Paths ignored on the v1 auth settings.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "resource_types" {
+  type = object({
+    web_sites_config = optional(string, "Microsoft.Web/sites/config@2025-03-01")
+  })
+  default     = {}
+  description = <<DESCRIPTION
+AzAPI resource types and API versions used by this module.
+
+- `web_sites_config` - Resource type and API version for the v1 auth settings.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "retry" {
   type = object({
-    error_message_regex = list(string)
-    interval_seconds    = optional(number, 10)
-    max_retries         = optional(number, 3)
+    error_message_regex  = optional(list(string), ["Cannot modify this site because another operation is in progress"])
+    interval_seconds     = optional(number, 10)
+    max_interval_seconds = optional(number)
   })
-  default = {
-    error_message_regex = ["Cannot modify this site because another operation is in progress"]
-  }
-  description = "Retry configuration for azapi resources."
+  default     = {}
+  description = <<DESCRIPTION
+Retry configuration for the AzAPI resources declared by this module. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
+
+- `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
+- `interval_seconds` - (Optional) The initial interval in seconds between retries.
+- `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
+DESCRIPTION
 }
 
 variable "runtime_version" {
@@ -147,6 +178,23 @@ variable "runtime_version" {
   description = "The runtime version of the authentication module."
 }
 
+variable "timeouts" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Per-operation timeouts applied to the AzAPI resources declared by this module. Defaults to `null`, which uses the provider defaults. Each value is a Go duration string such as `30m`.
+
+- `create` - (Optional) Timeout for create operations.
+- `delete` - (Optional) Timeout for delete operations.
+- `read` - (Optional) Timeout for read operations.
+- `update` - (Optional) Timeout for update operations.
+DESCRIPTION
+}
 variable "token_refresh_extension_hours" {
   type        = number
   default     = 72

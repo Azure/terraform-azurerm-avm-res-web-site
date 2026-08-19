@@ -7,23 +7,29 @@ module "certificate" {
   parent_id             = var.parent_id
   server_farm_id        = var.service_plan_resource_id
   host_names            = each.value.host_names
+  ignore_body_changes   = var.ignore_body_changes.certificate
   key_vault_id          = each.value.key_vault_id
   key_vault_secret_name = each.value.key_vault_secret_name
   password              = each.value.password
   pfx_blob              = each.value.pfx_blob
+  resource_types        = var.resource_types.certificate
   retry                 = var.retry
   tags                  = each.value.tags
+  timeouts              = var.timeouts
 }
 
 module "hostname_binding" {
   source   = "./modules/hostname_binding"
   for_each = var.custom_domains
 
-  hostname   = each.value.hostname
-  parent_id  = azapi_resource.this.id
-  retry      = var.retry
-  ssl_state  = each.value.ssl_state
-  thumbprint = each.value.certificate_key != null ? module.certificate[each.value.certificate_key].thumbprint : each.value.thumbprint
+  hostname            = each.value.hostname
+  parent_id           = azapi_resource.this.id
+  ignore_body_changes = var.ignore_body_changes.hostname_binding
+  resource_types      = var.resource_types.hostname_binding
+  retry               = var.retry
+  ssl_state           = each.value.ssl_state
+  thumbprint          = each.value.certificate_key != null ? module.certificate[each.value.certificate_key].thumbprint : each.value.thumbprint
+  timeouts            = var.timeouts
 }
 
 locals {
@@ -45,9 +51,12 @@ module "slot_hostname_binding" {
   source   = "./modules/hostname_binding"
   for_each = local.slot_custom_domains
 
-  hostname   = each.value.hostname
-  parent_id  = module.slot[each.value.slot_key].resource_id
-  retry      = var.retry
-  ssl_state  = each.value.ssl_state
-  thumbprint = each.value.certificate_key != null ? module.certificate[each.value.certificate_key].thumbprint : each.value.thumbprint
+  hostname            = each.value.hostname
+  parent_id           = module.slot[each.value.slot_key].resource_id
+  ignore_body_changes = var.ignore_body_changes.hostname_binding
+  resource_types      = var.resource_types.hostname_binding
+  retry               = var.retry
+  ssl_state           = each.value.ssl_state
+  thumbprint          = each.value.certificate_key != null ? module.certificate[each.value.certificate_key].thumbprint : each.value.thumbprint
+  timeouts            = var.timeouts
 }
