@@ -11,5 +11,8 @@ module "config_logs" {
   http_logs = length(each.value.http_logs) > 0 ? {
     for hlk, hlv in each.value.http_logs : hlk => hlv
   }[keys(each.value.http_logs)[0]] : null
-  retry = var.retry
+  ignore_body_changes = var.ignore_body_changes.config_logs
+  resource_types      = var.resource_types.config_logs
+  retry               = var.retry
+  timeouts            = var.timeouts
 }
