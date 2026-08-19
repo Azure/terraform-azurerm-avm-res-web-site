@@ -2,7 +2,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = var.parent_id
-  type      = "Microsoft.Web/certificates@2025-03-01"
+  type      = var.resource_types.web_certificates
   body = {
     properties = {
       serverFarmId       = var.server_farm_id
@@ -13,6 +13,7 @@ resource "azapi_resource" "this" {
       hostNames          = var.host_names
     }
   }
+  ignore_body_changes = length(var.ignore_body_changes.web_certificates) > 0 ? var.ignore_body_changes.web_certificates : null
   response_export_values = [
     "properties.thumbprint",
     "properties.expirationDate",
@@ -22,6 +23,17 @@ resource "azapi_resource" "this" {
   ]
   retry = var.retry
   tags  = var.tags
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 
   lifecycle {
     precondition {
