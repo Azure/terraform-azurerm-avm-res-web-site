@@ -26,10 +26,22 @@ resource "azapi_resource" "lock" {
 
   name                   = each.value.name
   parent_id              = azapi_resource.this.id
-  type                   = each.value.type
+  type                   = var.resource_types.authorization_locks
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.authorization_locks) > 0 ? var.ignore_body_changes.authorization_locks : null
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 resource "azapi_resource" "role_assignment" {
@@ -37,11 +49,23 @@ resource "azapi_resource" "role_assignment" {
 
   name                   = each.value.name
   parent_id              = azapi_resource.this.id
-  type                   = each.value.type
+  type                   = var.resource_types.authorization_role_assignments
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.authorization_role_assignments) > 0 ? var.ignore_body_changes.authorization_role_assignments : null
   ignore_null_property   = true
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 resource "azapi_resource" "private_endpoint" {
@@ -50,11 +74,23 @@ resource "azapi_resource" "private_endpoint" {
   location               = coalesce(try(var.private_endpoints[each.key].location, null), var.location)
   name                   = each.value.name
   parent_id              = local.private_endpoint_parent_ids[each.key]
-  type                   = each.value.type
+  type                   = var.resource_types.network_private_endpoints
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.network_private_endpoints) > 0 ? var.ignore_body_changes.network_private_endpoints : null
   response_export_values = []
   retry                  = var.retry
   tags                   = each.value.tags
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 resource "azapi_resource" "private_dns_zone_group" {
@@ -62,10 +98,22 @@ resource "azapi_resource" "private_dns_zone_group" {
 
   name                   = each.value.name
   parent_id              = azapi_resource.private_endpoint[each.key].id
-  type                   = each.value.type
+  type                   = var.resource_types.network_private_endpoints_private_dns_zone_groups
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.network_private_endpoints_private_dns_zone_groups) > 0 ? var.ignore_body_changes.network_private_endpoints_private_dns_zone_groups : null
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 resource "azapi_resource" "lock_private_endpoint" {
@@ -73,10 +121,22 @@ resource "azapi_resource" "lock_private_endpoint" {
 
   name                   = each.value.name
   parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
-  type                   = each.value.type
+  type                   = var.resource_types.authorization_locks
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.authorization_locks) > 0 ? var.ignore_body_changes.authorization_locks : null
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
 
 resource "azapi_resource" "role_assignment_private_endpoint" {
@@ -84,7 +144,20 @@ resource "azapi_resource" "role_assignment_private_endpoint" {
 
   name                   = each.value.name
   parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
-  type                   = each.value.type
+  type                   = var.resource_types.authorization_role_assignments
   body                   = each.value.body
+  ignore_body_changes    = length(var.ignore_body_changes.authorization_role_assignments) > 0 ? var.ignore_body_changes.authorization_role_assignments : null
   response_export_values = []
+  retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }

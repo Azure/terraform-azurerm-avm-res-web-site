@@ -32,6 +32,7 @@ module "slot" {
   hosting_environment_id                   = each.value.hosting_environment_id
   https_only                               = each.value.https_only
   hyper_v                                  = each.value.hyper_v
+  ignore_body_changes                      = var.ignore_body_changes.slot
   ip_mode                                  = each.value.ip_mode
   is_function_app                          = local.is_function_app
   key_vault_reference_identity             = each.value.key_vault_reference_identity
@@ -47,6 +48,7 @@ module "slot" {
   public_network_access_enabled           = each.value.public_network_access_enabled
   redundancy_mode                         = each.value.redundancy_mode
   resource_config                         = each.value.resource_config
+  resource_types                          = var.resource_types.slot
   retry                                   = var.retry
   role_assignments                        = each.value.role_assignments
   scm_site_also_stopped                   = each.value.scm_site_also_stopped
@@ -61,6 +63,7 @@ module "slot" {
   }
   storage_shares_to_mount                        = each.value.storage_shares_to_mount
   tags                                           = var.all_child_resources_inherit_tags ? merge(var.tags, each.value.tags) : each.value.tags
+  timeouts                                       = var.timeouts
   virtual_network_subnet_id                      = each.value.virtual_network_subnet_id
   vnet_application_traffic_enabled               = each.value.vnet_application_traffic_enabled
   vnet_backup_restore_enabled                    = each.value.vnet_backup_restore_enabled
@@ -79,12 +82,23 @@ resource "azapi_resource_action" "active_slot" {
   action      = "slotsswap"
   method      = "POST"
   resource_id = azapi_resource.this.id
-  type        = "Microsoft.Web/sites@2025-03-01"
+  type        = var.resource_types.web_sites
   body = {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
   retry = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 
   depends_on = [module.slot]
 }
