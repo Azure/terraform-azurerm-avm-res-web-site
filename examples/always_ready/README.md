@@ -156,9 +156,9 @@ module "avm_res_web_site" {
   os_type                           = "Linux"
   public_network_access_enabled     = true
   storage_account_access_key        = data.azapi_resource_action.storage_keys.output.keys[0].value
-  storage_authentication_type       = "userassignedidentity"
+  storage_authentication_type       = "UserAssignedIdentity"
   storage_container_endpoint        = azapi_resource.storage_container.id
-  storage_container_type            = "blobcontainer"
+  storage_container_type            = "blobContainer"
   storage_user_assigned_identity_id = azapi_resource.user_assigned_identity.id
   tags = {
     module          = "Azure/avm-res-web-site/azurerm"
