@@ -20,4 +20,11 @@ resource "azapi_update_resource" "this" {
       update = timeouts.value.update
     }
   }
+
+  lifecycle {
+    precondition {
+      condition     = length(var.ignore_body_changes.web_sites_basic_publishing_credentials_policies) == 0 && length(var.ignore_body_changes.web_sites_slots_basic_publishing_credentials_policies) == 0
+      error_message = "`ignore_body_changes` is not supported here. This module manages its resource with `azapi_update_resource`, which the AzAPI provider does not give an `ignore_body_changes` argument, so any value set would be silently ignored."
+    }
+  }
 }

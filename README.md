@@ -1466,7 +1466,7 @@ Default: `null`
 
 Description: Body-relative paths whose changes are ignored, keyed by AzAPI resource type for resources this module declares, and by submodule name for resources its submodules declare. Paths use dot notation, and a change takes effect only after an apply. Configuration at an ignored path is not sent to Azure until the path is removed.
 
-The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, so the fields belonging to submodules that manage their resource through `azapi_update_resource` or `azapi_resource_action` are declared for interface consistency and are not applied yet.
+The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, so the fields belonging to submodules that manage their resource through `azapi_update_resource` or `azapi_resource_action` exist for interface consistency. Setting a non-empty value on one of those fails the plan with an explicit error rather than being silently ignored.
 
 - `authorization_locks` - Paths ignored on the management locks.
 - `authorization_role_assignments` - Paths ignored on the role assignments.

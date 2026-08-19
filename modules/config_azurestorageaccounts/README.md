@@ -64,7 +64,7 @@ The following input variables are optional (have default values):
 
 Description: Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
 
-The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only. This module manages its resource with an AzAPI resource type that does not accept the argument, so the variable is declared for interface consistency and is not applied yet.
+The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and this module manages its resource with a type that does not accept the argument. The variable exists for interface consistency; setting a non-empty value fails the plan with an explicit error rather than being silently ignored.
 - `web_sites` - Paths ignored on the storage account mounts on a site.
 - `web_sites_slots` - Paths ignored on the storage account mounts on a slot.
 
