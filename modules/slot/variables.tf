@@ -334,6 +334,14 @@ variable "private_endpoints" {
   default     = {}
   description = "Private endpoints for the slot."
   nullable    = false
+
+  validation {
+    condition = alltrue([
+      for rg in [for _, pe in var.private_endpoints : pe.resource_group_name if pe.resource_group_name != null] :
+      !startswith(rg, "/") || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+$", rg))
+    ])
+    error_message = "Each `private_endpoints[*].resource_group_name` must be either a bare resource group name or a full resource group ID of the form `/subscriptions/{sub}/resourceGroups/{rg}`."
+  }
 }
 
 variable "private_endpoints_inherit_lock" {
