@@ -8,7 +8,19 @@ resource "azapi_resource" "this" {
       thumbprint = var.thumbprint
     }
   }
+  ignore_body_changes    = length(local.ignore_body_changes) > 0 ? local.ignore_body_changes : null
   ignore_null_property   = true
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
