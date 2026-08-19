@@ -196,6 +196,60 @@ variable "hyper_v" {
   description = "Should the slot run in Hyper-V isolation?"
 }
 
+variable "ignore_body_changes" {
+  type = object({
+    authorization_locks                               = optional(list(string), [])
+    authorization_role_assignments                    = optional(list(string), [])
+    network_private_endpoints                         = optional(list(string), [])
+    network_private_endpoints_private_dns_zone_groups = optional(list(string), [])
+    web_sites_slots                                   = optional(list(string), [])
+
+    config_appsettings = optional(object({
+      web_sites_config       = optional(list(string), [])
+      web_sites_slots_config = optional(list(string), [])
+    }), {})
+    config_azurestorageaccounts = optional(object({
+      web_sites       = optional(list(string), [])
+      web_sites_slots = optional(list(string), [])
+    }), {})
+    config_connectionstrings = optional(object({
+      web_sites_config       = optional(list(string), [])
+      web_sites_slots_config = optional(list(string), [])
+    }), {})
+    config_metadata = optional(object({
+      web_sites_config       = optional(list(string), [])
+      web_sites_slots_config = optional(list(string), [])
+    }), {})
+    extensions_zipdeploy = optional(object({
+      web_sites       = optional(list(string), [])
+      web_sites_slots = optional(list(string), [])
+    }), {})
+    publishing_credential_policy = optional(object({
+      web_sites_basic_publishing_credentials_policies       = optional(list(string), [])
+      web_sites_slots_basic_publishing_credentials_policies = optional(list(string), [])
+    }), {})
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Body-relative paths whose changes are ignored, keyed by AzAPI resource type for resources this module declares, and by submodule name for resources its submodules declare. Paths use dot notation, and a change takes effect only after an apply.
+
+The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, so the fields belonging to submodules that manage their resource through `azapi_update_resource` or `azapi_resource_action` are declared for interface consistency and are not applied yet.
+
+- `authorization_locks` - Paths ignored on the management locks.
+- `authorization_role_assignments` - Paths ignored on the role assignments.
+- `network_private_endpoints` - Paths ignored on the private endpoints.
+- `network_private_endpoints_private_dns_zone_groups` - Paths ignored on the private DNS zone groups.
+- `web_sites_slots` - Paths ignored on the slot.
+- `config_appsettings` - Paths passed to the app settings submodule.
+- `config_azurestorageaccounts` - Paths passed to the storage account mounts submodule.
+- `config_connectionstrings` - Paths passed to the connection strings submodule.
+- `config_metadata` - Paths passed to the site metadata submodule.
+- `extensions_zipdeploy` - Paths passed to the zip deployment submodule.
+- `publishing_credential_policy` - Paths passed to the publishing credential policy submodules.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "ip_mode" {
   type        = string
   default     = null
@@ -292,6 +346,7 @@ variable "private_endpoints_manage_dns_zone_group" {
   type        = bool
   default     = true
   description = "Whether to manage DNS zone groups for private endpoints."
+  nullable    = false
 }
 
 variable "public_network_access_enabled" {
@@ -315,16 +370,72 @@ variable "resource_config" {
   description = "Resource config for Container App environment hosted apps."
 }
 
+variable "resource_types" {
+  type = object({
+    authorization_locks                               = optional(string, "Microsoft.Authorization/locks@2020-05-01")
+    authorization_role_assignments                    = optional(string, "Microsoft.Authorization/roleAssignments@2022-04-01")
+    network_private_endpoints                         = optional(string, "Microsoft.Network/privateEndpoints@2024-05-01")
+    network_private_endpoints_private_dns_zone_groups = optional(string, "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01")
+    web_sites_slots                                   = optional(string, "Microsoft.Web/sites/slots@2025-03-01")
+
+    config_appsettings = optional(object({
+      web_sites_config       = optional(string)
+      web_sites_slots_config = optional(string)
+    }), {})
+    config_azurestorageaccounts = optional(object({
+      web_sites       = optional(string)
+      web_sites_slots = optional(string)
+    }), {})
+    config_connectionstrings = optional(object({
+      web_sites_config       = optional(string)
+      web_sites_slots_config = optional(string)
+    }), {})
+    config_metadata = optional(object({
+      web_sites_config       = optional(string)
+      web_sites_slots_config = optional(string)
+    }), {})
+    extensions_zipdeploy = optional(object({
+      web_sites       = optional(string)
+      web_sites_slots = optional(string)
+    }), {})
+    publishing_credential_policy = optional(object({
+      web_sites_basic_publishing_credentials_policies       = optional(string)
+      web_sites_slots_basic_publishing_credentials_policies = optional(string)
+    }), {})
+  })
+  default     = {}
+  description = <<DESCRIPTION
+AzAPI resource types and API versions, keyed by resource type for resources this module declares, and by submodule name for resources its submodules declare. Each submodule owns the defaults for its own resources.
+
+- `authorization_locks` - Resource type and API version for the management locks.
+- `authorization_role_assignments` - Resource type and API version for the role assignments.
+- `network_private_endpoints` - Resource type and API version for the private endpoints.
+- `network_private_endpoints_private_dns_zone_groups` - Resource type and API version for the private DNS zone groups.
+- `web_sites_slots` - Resource type and API version for the slot.
+- `config_appsettings` - Resource-type overrides passed to the app settings submodule.
+- `config_azurestorageaccounts` - Resource-type overrides passed to the storage account mounts submodule.
+- `config_connectionstrings` - Resource-type overrides passed to the connection strings submodule.
+- `config_metadata` - Resource-type overrides passed to the site metadata submodule.
+- `extensions_zipdeploy` - Resource-type overrides passed to the zip deployment submodule.
+- `publishing_credential_policy` - Resource-type overrides passed to the publishing credential policy submodules.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "retry" {
   type = object({
-    error_message_regex = list(string)
-    interval_seconds    = optional(number, 10)
-    max_retries         = optional(number, 3)
+    error_message_regex  = optional(list(string), ["Cannot modify this site because another operation is in progress"])
+    interval_seconds     = optional(number, 10)
+    max_interval_seconds = optional(number)
   })
-  default = {
-    error_message_regex = ["Cannot modify this site because another operation is in progress"]
-  }
-  description = "Retry configuration for azapi resources."
+  default     = {}
+  description = <<DESCRIPTION
+Retry configuration for the AzAPI resources declared by this module and its submodules. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
+
+- `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
+- `interval_seconds` - (Optional) The initial interval in seconds between retries.
+- `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
+DESCRIPTION
 }
 
 variable "role_assignments" {
@@ -598,6 +709,24 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "Tags to apply to the slot."
+}
+
+variable "timeouts" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Per-operation timeouts applied to the AzAPI resources declared by this module and its submodules. Defaults to `null`, which uses the provider defaults. Each value is a Go duration string such as `30m`.
+
+- `create` - (Optional) Timeout for create operations.
+- `delete` - (Optional) Timeout for delete operations.
+- `read` - (Optional) Timeout for read operations.
+- `update` - (Optional) Timeout for update operations.
+DESCRIPTION
 }
 
 variable "virtual_network_subnet_id" {

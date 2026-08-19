@@ -13,7 +13,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.9)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
 
 ## Resources
 
@@ -42,33 +42,61 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_retry"></a> [retry](#input\_retry)
+### <a name="input_ignore_body_changes"></a> [ignore\_body\_changes](#input\_ignore\_body\_changes)
 
-Description: Retry configuration for azapi resources. By default, retries on transient site lock errors and on the DNS / hostname validation errors that surface while custom domain ownership records are still propagating.
+Description: Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
+
+- `web_sites_host_name_bindings` - Paths ignored on the hostname binding on a site.
+- `web_sites_slots_host_name_bindings` - Paths ignored on the hostname binding on a slot.
 
 Type:
 
 ```hcl
 object({
-    error_message_regex = list(string)
-    interval_seconds    = optional(number, 10)
-    max_retries         = optional(number, 3)
+    web_sites_host_name_bindings       = optional(list(string), [])
+    web_sites_slots_host_name_bindings = optional(list(string), [])
   })
 ```
 
-Default:
+Default: `{}`
 
-```json
-{
-  "error_message_regex": [
-    "Cannot modify this site because another operation is in progress",
-    "A CNAME record pointing from .* was not found",
-    "A TXT record pointing from asuid\\..* was not found",
-    "Hostname .* does not resolve to the controller IP address",
-    "Validation failed for a hostname"
-  ]
-}
+### <a name="input_resource_types"></a> [resource\_types](#input\_resource\_types)
+
+Description: AzAPI resource types and API versions used by this module.
+
+- `web_sites_host_name_bindings` - Resource type and API version for the hostname binding on a site.
+- `web_sites_slots_host_name_bindings` - Resource type and API version for the hostname binding on a slot.
+
+Type:
+
+```hcl
+object({
+    web_sites_host_name_bindings       = optional(string, "Microsoft.Web/sites/hostNameBindings@2025-03-01")
+    web_sites_slots_host_name_bindings = optional(string, "Microsoft.Web/sites/slots/hostNameBindings@2025-03-01")
+  })
 ```
+
+Default: `{}`
+
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: Retry configuration for the AzAPI resources declared by this module. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
+
+- `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
+- `interval_seconds` - (Optional) The initial interval in seconds between retries.
+- `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
+
+Type:
+
+```hcl
+object({
+    error_message_regex  = optional(list(string), ["Cannot modify this site because another operation is in progress"])
+    interval_seconds     = optional(number, 10)
+    max_interval_seconds = optional(number)
+  })
+```
+
+Default: `{}`
 
 ### <a name="input_ssl_state"></a> [ssl\_state](#input\_ssl\_state)
 
@@ -83,6 +111,28 @@ Default: `null`
 Description: The certificate thumbprint associated with the hostname.
 
 Type: `string`
+
+Default: `null`
+
+### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
+
+Description: Per-operation timeouts applied to the AzAPI resources declared by this module. Defaults to `null`, which uses the provider defaults. Each value is a Go duration string such as `30m`.
+
+- `create` - (Optional) Timeout for create operations.
+- `delete` - (Optional) Timeout for delete operations.
+- `read` - (Optional) Timeout for read operations.
+- `update` - (Optional) Timeout for update operations.
+
+Type:
+
+```hcl
+object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+```
 
 Default: `null`
 

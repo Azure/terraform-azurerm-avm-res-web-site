@@ -47,7 +47,10 @@ module "slot" {
   public_network_access_enabled           = each.value.public_network_access_enabled
   redundancy_mode                         = each.value.redundancy_mode
   resource_config                         = each.value.resource_config
+  ignore_body_changes                     = var.ignore_body_changes.slot
+  resource_types                          = var.resource_types.slot
   retry                                   = var.retry
+  timeouts                                = var.timeouts
   role_assignments                        = each.value.role_assignments
   scm_site_also_stopped                   = each.value.scm_site_also_stopped
   sensitive_app_settings                  = lookup(var.slot_sensitive_app_settings, each.key, {})
@@ -79,12 +82,23 @@ resource "azapi_resource_action" "active_slot" {
   action      = "slotsswap"
   method      = "POST"
   resource_id = azapi_resource.this.id
-  type        = "Microsoft.Web/sites@2025-03-01"
+  type        = var.resource_types.web_sites
   body = {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
   retry = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 
   depends_on = [module.slot]
 }

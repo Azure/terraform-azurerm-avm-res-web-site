@@ -5,7 +5,7 @@
 resource "azapi_update_resource" "this" {
   name      = "authsettings"
   parent_id = var.parent_id
-  type      = "Microsoft.Web/sites/config@2025-03-01"
+  type      = var.resource_types.web_sites_config
   body = {
     properties = {
       enabled                     = var.enabled
@@ -50,4 +50,15 @@ resource "azapi_update_resource" "this" {
   }
   response_export_values = []
   retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
+
+    content {
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
+      update = timeouts.value.update
+    }
+  }
 }
