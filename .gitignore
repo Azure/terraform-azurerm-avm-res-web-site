@@ -51,7 +51,7 @@ examples/*/policy
 # Files for local e2e tests
 sensitive.variables.tf
 *.mptfbackup
-.avm
 
 # Generated zip files
 examples/zip_deploy_file/resources_for_zip_deploy.zip
+.avm/managed-files.json
