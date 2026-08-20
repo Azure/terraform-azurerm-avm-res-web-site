@@ -126,7 +126,6 @@ resource "azapi_resource" "private_dns_zone" {
   retry = {
     error_message_regex = ["CannotDeleteResource"]
     interval_seconds    = 10
-    max_retries         = 3
   }
 }
 
