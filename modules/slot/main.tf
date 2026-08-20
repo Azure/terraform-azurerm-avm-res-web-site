@@ -25,7 +25,7 @@ resource "azapi_resource" "this" {
       publicNetworkAccess               = var.public_network_access_enabled ? "Enabled" : "Disabled"
       redundancyMode                    = var.redundancy_mode
       scmSiteAlsoStopped                = var.scm_site_also_stopped
-      serverFarmId                      = coalesce(var.server_farm_id, var.service_plan_resource_id)
+      serverFarmId                      = local.server_farm_id
       sshEnabled                        = var.ssh_enabled
       storageAccountRequired            = var.storage_account_required
       virtualNetworkSubnetId            = var.virtual_network_subnet_id
