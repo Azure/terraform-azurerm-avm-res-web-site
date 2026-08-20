@@ -36,5 +36,5 @@ output "subject_name" {
 
 output "thumbprint" {
   description = "The thumbprint of the certificate. Pass this value into `custom_domains[*].thumbprint` to bind the certificate to a hostname."
-  value       = azapi_resource.this.output.properties.thumbprint
+  value       = try(azapi_resource.this.output.properties.thumbprint, null)
 }

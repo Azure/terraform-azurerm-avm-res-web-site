@@ -13,7 +13,8 @@ resource "azapi_resource" "this" {
       hostNames          = var.host_names
     }
   }
-  ignore_body_changes = length(var.ignore_body_changes.web_certificates) > 0 ? var.ignore_body_changes.web_certificates : null
+  ignore_body_changes  = length(var.ignore_body_changes.web_certificates) > 0 ? var.ignore_body_changes.web_certificates : null
+  ignore_null_property = true
   response_export_values = [
     "properties.thumbprint",
     "properties.expirationDate",
