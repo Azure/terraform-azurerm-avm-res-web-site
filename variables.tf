@@ -2014,6 +2014,9 @@ variable "site_config" {
   description = <<DESCRIPTION
 An object that configures the App Service's site configuration. These map to the ARM API `siteConfig` properties.
 
+> [!NOTE]
+> When `function_app_uses_fc1` is `true`, Flex Consumption (FC1) sites reject several `siteConfig` properties with ARM error `51021`, so the module omits them: `always_on`, `application_stack` (and the `linux_fx_version`, `windows_fx_version`, `dotnet_framework_version`, `php_version`, `python_version`, `node_version`, `java_version`, `java_container`, `java_container_version`, and `powershell_version` values it derives), `app_scale_limit`, `ftps_state`, `pre_warmed_instance_count`, `runtime_scale_monitoring_enabled`, and `use_32_bit_worker`. Set the runtime with `fc1_runtime_name` and `fc1_runtime_version`, and the scaling limits with `maximum_instance_count`, `instance_memory_in_mb`, and `always_ready` instead.
+
 - `always_on` - (Optional) If this App is Always On enabled. Defaults to `true`.
 - `api_definition_url` - (Optional) The URL of the API definition.
 - `api_management_api_id` - (Optional) The ID of the API Management API.
