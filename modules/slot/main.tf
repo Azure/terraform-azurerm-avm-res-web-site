@@ -142,7 +142,10 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
-  ignore_body_changes  = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
+  ignore_body_changes = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
+  delete_query_parameters = {
+    deleteEmptyServerFarm = [tostring(var.delete_empty_service_plan)]
+  }
   ignore_null_property = true
   response_export_values = [
     "identity.principalId",
