@@ -18,10 +18,12 @@ output "name" {
   value       = azapi_resource.this.name
 }
 
+# This output shipped in v0.22.0, so keep it until a breaking release can remove it.
 output "resource" {
   description = "The full resource object."
   sensitive   = true
-  value       = azapi_resource.this
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource.this
 }
 
 output "resource_id" {
