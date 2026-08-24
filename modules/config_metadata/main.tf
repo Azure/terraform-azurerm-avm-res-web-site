@@ -5,7 +5,8 @@ resource "azapi_resource_action" "this" {
   body = {
     properties = var.metadata
   }
-  retry = var.retry
+  response_export_values = []
+  retry                  = var.retry
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []

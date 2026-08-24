@@ -5,5 +5,6 @@ output "name" {
 
 output "resource" {
   description = "The full resource object."
-  value       = azapi_resource_action.this
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource_action.this
 }
