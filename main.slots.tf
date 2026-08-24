@@ -101,5 +101,8 @@ resource "azapi_resource_action" "active_slot" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [response_export_values]
+  }
   depends_on = [module.slot]
 }
