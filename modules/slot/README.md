@@ -984,25 +984,17 @@ The following outputs are exported:
 
 Description: The principal ID of the system-assigned managed identity (if enabled).
 
-### <a name="output_lock"></a> [lock](#output\_lock)
-
-Description: The lock resource for this slot.
-
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the deployment slot.
 
-### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
-
-Description: The private endpoints created for this slot.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The full slot resource object.
-
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the deployment slot.
+
+### <a name="output_server_farm_resource_id"></a> [server\_farm\_resource\_id](#output\_server\_farm\_resource\_id)
+
+Description: The normalized service plan resource ID configured on the deployment slot.
 
 ## Modules
 

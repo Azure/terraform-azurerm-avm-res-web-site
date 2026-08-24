@@ -2679,13 +2679,9 @@ an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation  
 for details on the DNS prerequisites that Azure enforces.
 
-### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
-
-Description: The locks of the deployment slots.
-
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
-Description: The deployment slots.
+Description: A map of deployment slots with their names and resource IDs. The map key is the supplied input to var.deployment\_slots.
 
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
@@ -2707,10 +2703,6 @@ Description: The name of the resource.
 
 Description: The operating system type of the resource.
 
-### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
-
-Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints.
-
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
@@ -2718,14 +2710,6 @@ Description: This is the full output for the resource.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the App Service.
-
-### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
-
-Description: The locks of the resources.
-
-### <a name="output_resource_private_endpoints"></a> [resource\_private\_endpoints](#output\_resource\_private\_endpoints)
-
-Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azapi\_resource.
 
 ### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
