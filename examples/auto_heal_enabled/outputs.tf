@@ -4,7 +4,8 @@ output "active_slot" {
 }
 
 output "deployment_slots" {
-  description = "Names and resource IDs of the deployment slots."
+  description = "Full output of deployment slots created"
+  sensitive   = true
   value       = module.avm_res_web_site.deployment_slots
 }
 

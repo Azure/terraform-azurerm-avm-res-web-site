@@ -137,6 +137,10 @@ The following outputs are exported:
 
 Description: The name of the deploy action.
 
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: The full resource object.
+
 ## Modules
 
 No modules.
