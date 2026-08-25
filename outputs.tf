@@ -49,8 +49,13 @@ output "os_type" {
   value       = var.os_type
 }
 
-# Compatibility exception: polymind-inc/terraform-azurerm-acmebot pins ~> 0.22.0
-# and re-exports this value.
+# Compatibility exceptions: polymind-inc/terraform-azurerm-acmebot pins ~> 0.22.0
+# and consumes these provider-backed outputs.
+output "private_endpoints" {
+  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints."
+  value       = length(azapi_resource.private_endpoint) > 0 ? azapi_resource.private_endpoint : null
+}
+
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
