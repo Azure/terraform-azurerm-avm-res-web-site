@@ -2703,6 +2703,10 @@ Description: The name of the resource.
 
 Description: The operating system type of the resource.
 
+### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
+
+Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints.
+
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
