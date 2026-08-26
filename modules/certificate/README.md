@@ -223,10 +223,6 @@ Description: The status of the Key Vault secret poll. Useful for diagnosing miss
 
 Description: The name of the certificate.
 
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The full resource object.
-
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the certificate.

@@ -9,6 +9,7 @@ resource "azapi_resource" "this" {
     }
   }
   ignore_body_changes    = length(local.ignore_body_changes) > 0 ? local.ignore_body_changes : null
+  ignore_null_property   = true
   response_export_values = []
   retry                  = var.retry
 
