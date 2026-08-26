@@ -25,7 +25,6 @@ output "deployment_slots" {
 
 output "identity_principal_id" {
   description = "The system-assigned managed identity principal ID of the resource."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
@@ -65,7 +64,6 @@ output "resource" {
 
 output "resource_id" {
   description = "The resource ID of the App Service."
-  sensitive   = true
   value       = azapi_resource.this.id
 }
 
@@ -76,13 +74,11 @@ output "resource_uri" {
 
 output "system_assigned_mi_principal_id" {
   description = "The system-assigned managed identity principal ID."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
   description = "Map of system-assigned managed identity principal IDs for deployment slots."
-  sensitive   = true
   value = {
     for slot_key, slot in module.slot :
     slot_key => slot.identity_principal_id
