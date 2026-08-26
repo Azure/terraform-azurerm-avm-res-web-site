@@ -63,7 +63,8 @@ output "private_endpoints" {
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = azapi_resource.this
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource.this
 }
 
 output "resource_id" {

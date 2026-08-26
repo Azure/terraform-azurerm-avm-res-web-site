@@ -15,12 +15,14 @@ output "name" {
 
 output "private_endpoints" {
   description = "The private endpoints created for this slot."
-  value       = azapi_resource.private_endpoint
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource.private_endpoint
 }
 
 output "resource" {
   description = "The full slot resource object."
-  value       = azapi_resource.this
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource.this
 }
 
 output "resource_id" {

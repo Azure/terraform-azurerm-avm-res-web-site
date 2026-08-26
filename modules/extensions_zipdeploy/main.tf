@@ -9,7 +9,8 @@ resource "azapi_resource_action" "this" {
       type       = "zip"
     }
   }
-  retry = var.retry
+  response_export_values = []
+  retry                  = var.retry
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
@@ -23,7 +24,7 @@ resource "azapi_resource_action" "this" {
   }
 
   lifecycle {
-    ignore_changes = [body]
+    ignore_changes = [body, response_export_values]
 
     precondition {
       condition     = length(var.ignore_body_changes.web_sites) == 0 && length(var.ignore_body_changes.web_sites_slots) == 0
