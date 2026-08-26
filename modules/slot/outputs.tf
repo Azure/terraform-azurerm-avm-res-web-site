@@ -3,29 +3,17 @@ output "identity_principal_id" {
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
-output "lock" {
-  description = "The lock resource for this slot."
-  value       = one(values(azapi_resource.lock))
-}
-
 output "name" {
   description = "The name of the deployment slot."
   value       = azapi_resource.this.name
 }
 
-output "private_endpoints" {
-  description = "The private endpoints created for this slot."
-  # tflint-ignore: no_entire_resource_output_tffr2
-  value = azapi_resource.private_endpoint
-}
-
-output "resource" {
-  description = "The full slot resource object."
-  # tflint-ignore: no_entire_resource_output_tffr2
-  value = azapi_resource.this
-}
-
 output "resource_id" {
   description = "The resource ID of the deployment slot."
   value       = azapi_resource.this.id
+}
+
+output "server_farm_resource_id" {
+  description = "The normalized service plan resource ID configured on the deployment slot."
+  value       = azapi_resource.this.body.properties.serverFarmId
 }

@@ -84,8 +84,8 @@ run "slot_normalizes_the_inherited_service_plan_resource_id" {
   }
 
   assert {
-    condition     = module.slot["staging"].resource.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
-    error_message = "A slot inheriting the site's plan ID should get the same normalization, got `${module.slot["staging"].resource.body.properties.serverFarmId}`."
+    condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
+    error_message = "A slot inheriting the site's plan ID should get the same normalization, got `${module.slot["staging"].server_farm_resource_id}`."
   }
 }
 
@@ -109,8 +109,8 @@ run "slot_normalizes_its_own_server_farm_id_override" {
   }
 
   assert {
-    condition     = module.slot["staging"].resource.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
-    error_message = "A slot's `server_farm_id` override should be normalized too, not just the inherited ID, got `${module.slot["staging"].resource.body.properties.serverFarmId}`."
+    condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
+    error_message = "A slot's `server_farm_id` override should be normalized too, not just the inherited ID, got `${module.slot["staging"].server_farm_resource_id}`."
   }
 }
 
@@ -136,8 +136,8 @@ run "slot_normalizes_a_lowercase_provider_namespace" {
   }
 
   assert {
-    condition     = module.slot["staging"].resource.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
-    error_message = "A hand-written `microsoft.web` namespace should be normalized back to `Microsoft.Web`, got `${module.slot["staging"].resource.body.properties.serverFarmId}`."
+    condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
+    error_message = "A hand-written `microsoft.web` namespace should be normalized back to `Microsoft.Web`, got `${module.slot["staging"].server_farm_resource_id}`."
   }
 }
 
@@ -161,7 +161,7 @@ run "slot_preserves_a_resource_group_named_server_farms" {
   }
 
   assert {
-    condition     = module.slot["staging"].resource.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/serverFarms/providers/Microsoft.Web/serverfarms/serverFarms"
-    error_message = "The slot normalization must also leave a resource group or plan named `serverFarms` alone, got `${module.slot["staging"].resource.body.properties.serverFarmId}`."
+    condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/serverFarms/providers/Microsoft.Web/serverfarms/serverFarms"
+    error_message = "The slot normalization must also leave a resource group or plan named `serverFarms` alone, got `${module.slot["staging"].server_farm_resource_id}`."
   }
 }
