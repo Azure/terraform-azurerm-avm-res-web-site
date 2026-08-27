@@ -25,7 +25,7 @@ run "logic_app_defaults_to_the_documented_node_version" {
   command = apply
 
   assert {
-    condition     = module.config_appsettings.resource.body.properties["WEBSITE_NODE_DEFAULT_VERSION"] == "~22"
+    condition     = nonsensitive(module.config_appsettings.app_settings)["WEBSITE_NODE_DEFAULT_VERSION"] == "~22"
     error_message = "A Logic App should default to `~22`, matching the documented default for `logic_app_node_version`."
   }
 }
@@ -38,7 +38,7 @@ run "logic_app_node_version_is_configurable" {
   }
 
   assert {
-    condition     = module.config_appsettings.resource.body.properties["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
+    condition     = nonsensitive(module.config_appsettings.app_settings)["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "Setting `logic_app_node_version` should change the `WEBSITE_NODE_DEFAULT_VERSION` app setting."
   }
 }
@@ -51,7 +51,7 @@ run "null_logic_app_node_version_omits_the_setting" {
   }
 
   assert {
-    condition     = !contains(keys(module.config_appsettings.resource.body.properties), "WEBSITE_NODE_DEFAULT_VERSION")
+    condition     = !contains(keys(nonsensitive(module.config_appsettings.app_settings)), "WEBSITE_NODE_DEFAULT_VERSION")
     error_message = "Setting `logic_app_node_version` to `null` should drop `WEBSITE_NODE_DEFAULT_VERSION` from the app settings entirely."
   }
 }
@@ -75,7 +75,7 @@ run "explicit_app_settings_entry_beats_the_module_default" {
   }
 
   assert {
-    condition     = module.config_appsettings.resource.body.properties["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
+    condition     = nonsensitive(module.config_appsettings.app_settings)["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "An explicit `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings` must win over the module's `logic_app_node_version` default."
   }
 }
@@ -95,7 +95,7 @@ run "app_settings_wins_when_both_inputs_are_set" {
   }
 
   assert {
-    condition     = module.config_appsettings.resource.body.properties["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
+    condition     = nonsensitive(module.config_appsettings.app_settings)["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "When both `logic_app_node_version` and `app_settings.WEBSITE_NODE_DEFAULT_VERSION` are set, the `app_settings` entry must win."
   }
 }
@@ -108,7 +108,7 @@ run "non_logic_app_kinds_do_not_get_a_node_version" {
   }
 
   assert {
-    condition     = !contains(keys(module.config_appsettings.resource.body.properties), "WEBSITE_NODE_DEFAULT_VERSION")
+    condition     = !contains(keys(nonsensitive(module.config_appsettings.app_settings)), "WEBSITE_NODE_DEFAULT_VERSION")
     error_message = "Only Logic Apps should get a module-supplied `WEBSITE_NODE_DEFAULT_VERSION`."
   }
 }
