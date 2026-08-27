@@ -990,6 +990,10 @@ Default: `"60s"`
 
 The following outputs are exported:
 
+### <a name="output_delete_query_parameters"></a> [delete\_query\_parameters](#output\_delete\_query\_parameters)
+
+Description: The query parameters sent with the deployment slot's delete request.
+
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
 Description: The principal ID of the system-assigned managed identity (if enabled).

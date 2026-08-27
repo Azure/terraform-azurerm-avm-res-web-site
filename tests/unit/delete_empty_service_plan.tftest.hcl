@@ -67,7 +67,7 @@ run "slots_inherit_delete_empty_service_plan" {
   }
 
   assert {
-    condition     = module.slot["staging"].resource.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["false"])
+    condition     = module.slot["staging"].delete_query_parameters["deleteEmptyServerFarm"] == tolist(["false"])
     error_message = "Deployment slots should inherit `delete_empty_service_plan` from the parent site."
   }
 }
