@@ -1220,13 +1220,27 @@ variable "end_to_end_encryption_enabled" {
 variable "fc1_runtime_name" {
   type        = string
   default     = null
-  description = "The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
+  description = "The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.fc1_runtime_name != null
+    error_message = "`fc1_runtime_name` is required when `function_app_uses_fc1` is `true`. Possible values are `node`, `dotnet-isolated`, `powershell`, `python` and `java`."
+  }
+  validation {
+    condition     = var.fc1_runtime_name == null || contains(["node", "dotnet-isolated", "powershell", "python", "java"], lower(coalesce(var.fc1_runtime_name, "node")))
+    error_message = "`fc1_runtime_name` must be one of `node`, `dotnet-isolated`, `powershell`, `python` or `java`."
+  }
 }
 
 variable "fc1_runtime_version" {
   type        = string
   default     = null
-  description = "The Runtime version of the Flex Consumption Function App."
+  description = "The Runtime version of the Flex Consumption Function App. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.fc1_runtime_version != null
+    error_message = "`fc1_runtime_version` is required when `function_app_uses_fc1` is `true`. Set it to the language version your Flex Consumption Function App targets, for example `20` for `node`."
+  }
 }
 
 variable "ftp_publish_basic_authentication_enabled" {
@@ -1238,7 +1252,12 @@ variable "ftp_publish_basic_authentication_enabled" {
 variable "function_app_uses_fc1" {
   type        = bool
   default     = false
-  description = "Should this Function App run on a Flex Consumption Plan? Defaults to `false`."
+  description = <<DESCRIPTION
+Should this Function App run on a Flex Consumption Plan? Defaults to `false`.
+
+When `true`, these variables become required: `fc1_runtime_name`, `fc1_runtime_version`, `storage_authentication_type` and `storage_container_endpoint`. `storage_user_assigned_identity_id` is also required when `storage_authentication_type` is `UserAssignedIdentity`.
+DESCRIPTION
+  nullable    = false
 }
 
 variable "functions_extension_version" {
@@ -1455,9 +1474,9 @@ variable "logic_app_node_version" {
   type        = string
   default     = "~22"
   description = <<DESCRIPTION
-The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`, the current Node.js LTS supported by Standard Logic Apps. Use a tilde so that Azure picks the latest available minor version of that major version.
+The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`. Use a tilde so that Azure selects the latest available minor version within that major version.
 
-The module applies this default only when you haven't already set `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings` — your own entry always wins. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
+If you set both this variable and `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings`, the `var.app_settings` entry wins. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
 DESCRIPTION
 
   validation {
@@ -2253,14 +2272,28 @@ DESCRIPTION
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account for the Function App."
+  description = "The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`."
   sensitive   = true
+
+  validation {
+    condition     = var.kind != "logicapp" || var.storage_account_access_key != null
+    error_message = "`storage_account_access_key` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+  }
 }
 
 variable "storage_account_name" {
   type        = string
   default     = null
-  description = "The name of the Storage Account for the Function App."
+  description = "The name of the Storage Account for the Function App. Required when `kind` is `logicapp`, and when `storage_uses_managed_identity` is `true`."
+
+  validation {
+    condition     = var.kind != "logicapp" || var.storage_account_name != null
+    error_message = "`storage_account_name` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+  }
+  validation {
+    condition     = var.storage_uses_managed_identity != true || var.storage_account_name != null
+    error_message = "`storage_account_name` is required when `storage_uses_managed_identity` is `true`, because it is used to set the `AzureWebJobsStorage__accountName` app setting."
+  }
 }
 
 variable "storage_account_required" {
@@ -2278,19 +2311,39 @@ variable "storage_account_share_name" {
 variable "storage_authentication_type" {
   type        = string
   default     = null
-  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.storage_authentication_type != null
+    error_message = "`storage_authentication_type` is required when `function_app_uses_fc1` is `true`. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity` and `UserAssignedIdentity`."
+  }
+  validation {
+    condition     = var.storage_authentication_type == null || contains(["storageaccountconnectionstring", "systemassignedidentity", "userassignedidentity"], lower(coalesce(var.storage_authentication_type, "systemassignedidentity")))
+    error_message = "`storage_authentication_type` must be one of `StorageAccountConnectionString`, `SystemAssignedIdentity` or `UserAssignedIdentity`."
+  }
 }
 
 variable "storage_container_endpoint" {
   type        = string
   default     = null
-  description = "The backend storage container endpoint for Flex Consumption Function Apps."
+  description = "The backend storage container endpoint for Flex Consumption Function Apps. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.storage_container_endpoint != null
+    error_message = "`storage_container_endpoint` is required when `function_app_uses_fc1` is `true`. Set it to the blob container that holds the deployment package."
+  }
 }
 
 variable "storage_container_type" {
   type        = string
-  default     = null
-  description = "The storage container type. The current supported type is `blobContainer`."
+  default     = "blobContainer"
+  description = "The storage container type used by Flex Consumption Function Apps. The only supported value today is `blobContainer`, which is the default. Ignored unless `function_app_uses_fc1` is `true`."
+  nullable    = false
+
+  validation {
+    condition     = lower(var.storage_container_type) == "blobcontainer"
+    error_message = "`storage_container_type` must be `blobContainer`, which is the only container type Flex Consumption currently supports."
+  }
 }
 
 variable "storage_shares_to_mount" {
@@ -2318,13 +2371,19 @@ DESCRIPTION
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
-  description = "The ID of the User Assigned Managed Identity for storage."
+  description = "The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || lower(coalesce(var.storage_authentication_type, "systemassignedidentity")) != "userassignedidentity" || var.storage_user_assigned_identity_id != null
+    error_message = "`storage_user_assigned_identity_id` is required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`. Set it to the resource ID of the identity that can read the deployment container."
+  }
 }
 
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Storage Account use a Managed Identity? Defaults to `false`."
+  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
+  nullable    = false
 }
 
 variable "tags" {

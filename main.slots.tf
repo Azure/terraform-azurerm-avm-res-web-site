@@ -88,7 +88,8 @@ resource "azapi_resource_action" "active_slot" {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
-  retry = var.retry
+  response_export_values = []
+  retry                  = var.retry
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
@@ -101,5 +102,8 @@ resource "azapi_resource_action" "active_slot" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [response_export_values]
+  }
   depends_on = [module.slot]
 }

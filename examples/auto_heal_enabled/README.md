@@ -180,7 +180,7 @@ Description: ID of active slot
 
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
-Description: Full output of deployment slots created
+Description: Names and resource IDs of the deployment slots.
 
 ### <a name="output_location"></a> [location](#output\_location)
 
