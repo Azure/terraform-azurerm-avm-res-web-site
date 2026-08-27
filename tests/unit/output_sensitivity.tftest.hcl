@@ -27,7 +27,11 @@ variables {
   }
 }
 
-run "downstream_outputs_do_not_require_sensitive_declarations" {
+# Sensitivity marks propagate from a module output into whatever consumes it, and
+# `terraform validate` cannot see that. These runs are plan/apply-level so the
+# marks are actually evaluated.
+
+run "site_identifiers_are_not_sensitive" {
   command = apply
 
   override_resource {
@@ -55,5 +59,21 @@ run "downstream_outputs_do_not_require_sensitive_declarations" {
   assert {
     condition     = !issensitive(output.system_assigned_mi_principal_id_slots)
     error_message = "An ordinary downstream output must be able to consume `system_assigned_mi_principal_id_slots` without declaring `sensitive = true`."
+  }
+}
+
+run "custom_domain_verification_id_is_sensitive" {
+  command = apply
+
+  assert {
+    condition     = issensitive(output.custom_domain_verification_id)
+    error_message = "`custom_domain_verification_id` must stay sensitive to match how the `azurerm` provider marks it on its App Service resources."
+  }
+
+  # The escape hatch for consumers who publish the value into a public
+  # `asuid.<hostname>` DNS TXT record.
+  assert {
+    condition     = !issensitive(nonsensitive(output.custom_domain_verification_id))
+    error_message = "`nonsensitive()` must be able to unwrap `custom_domain_verification_id` for consumers that publish it in a DNS TXT record."
   }
 }
