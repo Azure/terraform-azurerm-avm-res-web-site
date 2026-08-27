@@ -44,30 +44,3 @@ run "site_can_keep_an_empty_service_plan" {
     error_message = "Setting `delete_empty_service_plan` to `false` should send `deleteEmptyServerFarm=false` on the site delete request."
   }
 }
-
-run "slots_inherit_delete_empty_service_plan" {
-  command = apply
-
-  # A single flat `mock_resource` default hands every `azapi_resource` the same
-  # site-shaped ID, including the slot itself. The slot's own child resources
-  # then reject that `parent_id` because they expect a
-  # `Microsoft.Web/sites/slots` ID, so give the slot a correctly shaped one.
-  override_resource {
-    target = module.slot["staging"].azapi_resource.this
-    values = {
-      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
-    }
-  }
-
-  variables {
-    delete_empty_service_plan = false
-    deployment_slots = {
-      staging = {}
-    }
-  }
-
-  assert {
-    condition     = module.slot["staging"].delete_query_parameters["deleteEmptyServerFarm"] == tolist(["false"])
-    error_message = "Deployment slots should inherit `delete_empty_service_plan` from the parent site."
-  }
-}

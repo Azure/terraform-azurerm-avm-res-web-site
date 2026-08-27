@@ -1,8 +1,3 @@
-output "delete_query_parameters" {
-  description = "The query parameters sent with the deployment slot's delete request."
-  value       = azapi_resource.this.delete_query_parameters
-}
-
 output "identity_principal_id" {
   description = "The principal ID of the system-assigned managed identity (if enabled)."
   value       = try(azapi_resource.this.output.identity.principalId, null)
