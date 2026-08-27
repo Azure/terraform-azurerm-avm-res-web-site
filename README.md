@@ -1979,6 +1979,8 @@ Default: `{}`
 
 Description: Retry configuration for the AzAPI resources declared by this module and its submodules. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
 
+This variable is deliberately nullable: setting it to `null` is meaningful and distinct from the default. `null` disables retries entirely on every AzAPI resource this module and its submodules declare, whereas leaving it unset (or passing `{}`) applies the default retry-on-conflict behavior described below.
+
 - `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
 - `interval_seconds` - (Optional) The initial interval in seconds between retries.
 - `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.

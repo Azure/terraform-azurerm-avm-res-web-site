@@ -18,4 +18,5 @@ variable "site_config" {
   type        = any
   default     = {}
   description = "The site configuration object to transform. Uses `any` type as this is an internal helper; callers validate types."
+  nullable    = false
 }
