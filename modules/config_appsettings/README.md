@@ -133,10 +133,6 @@ Default: `null`
 
 The following outputs are exported:
 
-### <a name="output_app_settings"></a> [app\_settings](#output\_app\_settings)
-
-Description: The app settings written to the site, as sent to ARM.
-
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the config resource.
