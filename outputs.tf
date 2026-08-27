@@ -9,7 +9,13 @@ The custom domain verification ID for the App Service. Use this value to create
 an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation
 for details on the DNS prerequisites that Azure enforces.
+
+This output is `sensitive`, matching how the `azurerm` provider treats
+`custom_domain_verification_id` on its App Service resources. If you need to
+publish it, for example into a DNS TXT record resource whose value is not itself
+sensitive, wrap it in `nonsensitive()`.
 DESCRIPTION
+  sensitive   = true
   value       = try(azapi_resource.this.output.properties.customDomainVerificationId, null)
 }
 
@@ -25,7 +31,6 @@ output "deployment_slots" {
 
 output "identity_principal_id" {
   description = "The system-assigned managed identity principal ID of the resource."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
@@ -65,7 +70,6 @@ output "resource" {
 
 output "resource_id" {
   description = "The resource ID of the App Service."
-  sensitive   = true
   value       = azapi_resource.this.id
 }
 
@@ -76,13 +80,11 @@ output "resource_uri" {
 
 output "system_assigned_mi_principal_id" {
   description = "The system-assigned managed identity principal ID."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
   description = "Map of system-assigned managed identity principal IDs for deployment slots."
-  sensitive   = true
   value = {
     for slot_key, slot in module.slot :
     slot_key => slot.identity_principal_id
