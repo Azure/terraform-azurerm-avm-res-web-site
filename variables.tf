@@ -1457,6 +1457,21 @@ DESCRIPTION
   }
 }
 
+variable "logic_app_node_version" {
+  type        = string
+  default     = "~22"
+  description = <<DESCRIPTION
+The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`. Use a tilde so that Azure selects the latest available minor version within that major version.
+
+If you set both this variable and `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
+DESCRIPTION
+
+  validation {
+    condition     = var.logic_app_node_version == null ? true : can(regex("^~?\\d+(\\.\\d+){0,2}$", var.logic_app_node_version))
+    error_message = "The `logic_app_node_version` must be a Node.js version such as `~22` or `22.11.0`."
+  }
+}
+
 variable "logic_app_runtime_version" {
   type        = string
   default     = "~4"
