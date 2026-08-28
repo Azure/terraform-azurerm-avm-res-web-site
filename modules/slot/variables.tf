@@ -116,6 +116,7 @@ variable "connection_strings" {
   }))
   default     = {}
   description = "Connection strings for the slot."
+  nullable    = false
 }
 
 variable "container_size" {
@@ -683,6 +684,7 @@ variable "site_config" {
   })
   default     = {}
   description = "Site configuration for the deployment slot."
+  nullable    = false
 }
 
 variable "ssh_enabled" {
@@ -714,6 +716,7 @@ variable "storage_shares_to_mount" {
   }))
   default     = {}
   description = "Storage shares to mount on the slot."
+  nullable    = false
 }
 
 variable "tags" {

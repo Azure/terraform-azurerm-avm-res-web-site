@@ -49,6 +49,7 @@ A map of always-ready instances for Flex Consumption Function Apps.
 - `name`: The trigger type or function name. Valid values: `http`, `blob`, `durable`, `function:<target-function-app-name>`.
 - `instance_count`: The number of always-ready instances. Defaults to `0`.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "app_service_active_slot" {
@@ -402,6 +403,7 @@ A map of backup settings for the App Service.
   - `retention_period_days` - (Optional) The number of days to retain backups.
   - `start_time` - (Optional) The start time for the backup schedule.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "builtin_logging_enabled" {
@@ -499,6 +501,7 @@ A map of connection strings to assign to the App Service.
 - `type` - (Optional) The type of the connection string.
 - `value` - (Optional) The value of the connection string.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "container_size" {
@@ -1814,6 +1817,8 @@ variable "retry" {
   description = <<DESCRIPTION
 Retry configuration for the AzAPI resources declared by this module and its submodules. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
 
+This variable is deliberately nullable: setting it to `null` is meaningful and distinct from the default. `null` disables retries entirely on every AzAPI resource this module and its submodules declare, whereas leaving it unset (or passing `{}`) applies the default retry-on-conflict behavior described below.
+
 - `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
 - `interval_seconds` - (Optional) The initial interval in seconds between retries.
 - `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
@@ -2228,6 +2233,7 @@ An object that configures the App Service's site configuration. These map to the
     - `physical_path` - (Optional) The physical path.
     - `virtual_path` - (Optional) The virtual path.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "slot_sensitive_app_settings" {
@@ -2246,6 +2252,7 @@ A map of sensitive values (Storage Access Key) for the Storage Account SMB file 
 The key is the supplied input to `var.deployment_slots.<slot_key>.storage_shares_to_mount`.
 The value is the secret value (storage access key).
 DESCRIPTION
+  nullable    = false
   sensitive   = true
 }
 
@@ -2267,6 +2274,7 @@ A map of sticky settings to assign to the App Service.
 - `app_setting_names` - (Optional) A list of app setting names that should be sticky to the slot.
 - `connection_string_names` - (Optional) A list of connection string names that should be sticky to the slot.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "storage_account_access_key" {
@@ -2366,6 +2374,7 @@ A map of Storage Account file shares to mount to the App Service.
 - `share_name` - (Required) The name of the file share.
 - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "storage_user_assigned_identity_id" {
