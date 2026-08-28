@@ -79,7 +79,9 @@ resource "azapi_resource" "private_endpoint" {
   ignore_body_changes    = length(var.ignore_body_changes.network_private_endpoints) > 0 ? var.ignore_body_changes.network_private_endpoints : null
   response_export_values = []
   retry                  = var.retry
-  tags                   = each.value.tags
+  # Private endpoint tags are defined per endpoint by the AVM interface.
+  # tflint-ignore: azapi_resource_tag
+  tags = each.value.tags
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []

@@ -86,8 +86,10 @@ resource "azapi_resource" "private_endpoint" {
   read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
   retry                  = var.retry
-  tags                   = each.value.tags
-  update_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  # Private endpoint tags are defined per endpoint by the AVM interface.
+  # tflint-ignore: azapi_resource_tag
+  tags           = each.value.tags
+  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
