@@ -88,6 +88,43 @@ run "private_endpoint_accepts_a_resource_group_id" {
   }
 }
 
+run "private_endpoint_resource_groups_resolve_per_key" {
+  command = apply
+
+  # Every other run in this file declares a single private endpoint, which
+  # cannot tell a per-key resolution apart from one value shared across the
+  # whole map. Three endpoints in one map, each taking a different branch of
+  # the local, is the only thing that pins that down.
+  variables {
+    private_endpoints = {
+      bare_name = {
+        subnet_resource_id  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Network/virtualNetworks/unit-test-vnet/subnets/unit-test-subnet"
+        resource_group_name = "unit-test-network-rg"
+      }
+      inherits_app_rg = {
+        subnet_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Network/virtualNetworks/unit-test-vnet/subnets/unit-test-subnet"
+      }
+      resource_id = {
+        subnet_resource_id  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Network/virtualNetworks/unit-test-vnet/subnets/unit-test-subnet"
+        resource_group_name = "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.private_endpoint["bare_name"].parent_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-network-rg"
+    error_message = "With several private endpoints in one map, a bare `resource_group_name` should still resolve against the subscription from `var.parent_id`."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint["inherits_app_rg"].parent_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg"
+    error_message = "An endpoint with no `resource_group_name` must keep the app's resource group even when a sibling endpoint in the same map overrides it."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint["resource_id"].parent_id == "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
+    error_message = "An endpoint given a full resource group ID must keep it, including the other subscription, even when its siblings resolve differently."
+  }
+}
+
 run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
   # Deliberately `plan`, not `apply`, unlike every other run in this file.
   # A variable validation failure happens during planning, so the apply can
@@ -100,6 +137,25 @@ run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
       not_a_resource_group = {
         subnet_resource_id  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Network/virtualNetworks/unit-test-vnet/subnets/unit-test-subnet"
         resource_group_name = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
+      }
+    }
+  }
+
+  expect_failures = [var.private_endpoints]
+}
+
+run "private_endpoint_rejects_an_empty_resource_group_name" {
+  # `plan` for the same reason as the run above.
+  command = plan
+
+  # An empty string is not a near-miss on the ID shape, so the shape check
+  # above passes it through as a bare name and builds
+  # `/subscriptions/{sub}/resourceGroups/`, which only fails once ARM sees it.
+  variables {
+    private_endpoints = {
+      empty_resource_group = {
+        subnet_resource_id  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Network/virtualNetworks/unit-test-vnet/subnets/unit-test-subnet"
+        resource_group_name = ""
       }
     }
   }
