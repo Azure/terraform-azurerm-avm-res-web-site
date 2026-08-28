@@ -598,6 +598,19 @@ DESCRIPTION
   }
 }
 
+variable "delete_empty_service_plan" {
+  type        = bool
+  default     = true
+  description = <<DESCRIPTION
+(Optional) Should the App Service Plan be deleted when this app is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+Set this to `false` to keep an empty App Service Plan, for example when the plan is shared with apps managed elsewhere, or is managed by a separate Terraform configuration.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete>.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "deployment_slots" {
   type = map(object({
     name                                   = optional(string)
