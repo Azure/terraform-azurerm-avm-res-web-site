@@ -37,6 +37,20 @@ locals {
   # properties.functionAppConfig.runtime and scaling through
   # properties.functionAppConfig.scaleAndConcurrency instead, so every field
   # guarded by var.function_app_uses_fc1 below is omitted for FC1 apps.
+  #
+  # ARM names them: "The following list of 5 site configuration properties
+  # (Site.SiteConfig.FtpsState, Site.SiteConfig.Use32BitWorkerProcess,
+  # Site.SiteConfig.PreWarmedInstanceCount, Site.SiteConfig.NetFrameworkVersion,
+  # Site.SiteConfig.FunctionsRuntimeScaleMonitoringEnabled) for Flex Consumption
+  # sites is invalid." That settled #360: functionsRuntimeScaleMonitoringEnabled
+  # really is rejected, despite the azurerm provider's FC1 expander sending it.
+  #
+  # Enforcement is regional. Older stamps silently ignore these properties while
+  # newer ones reject them, and rejection is intended everywhere eventually, so a
+  # deployment that passes in one region proves nothing about the rest.
+  #
+  # minimumElasticInstanceCount is deliberately left alone: no 51021 report names
+  # it and the official FC deprecation table omits it. See #353.
   site_config_body = {
     alwaysOn            = var.function_app_uses_fc1 ? null : var.site_config.always_on
     apiDefinition       = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null

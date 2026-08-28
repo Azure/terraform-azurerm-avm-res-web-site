@@ -42,6 +42,9 @@ resource "azapi_resource" "this" {
       # properties.functionAppConfig.runtime and scaling through
       # properties.functionAppConfig.scaleAndConcurrency instead, so every
       # field guarded by var.function_app_uses_fc1 below is omitted for FC1.
+      # See locals.config.tf in the root module for the property list ARM
+      # returns, the regional-enforcement caveat, and why
+      # minimumElasticInstanceCount is left alone.
       siteConfig = var.site_config != null ? {
         alwaysOn                    = var.function_app_uses_fc1 ? null : var.site_config.always_on
         apiDefinition               = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
