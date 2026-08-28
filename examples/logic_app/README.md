@@ -129,10 +129,10 @@ resource "azapi_resource" "private_dns_zone" {
   parent_id = azapi_resource.resource_group.id
   type      = "Microsoft.Network/privateDnsZones@2024-06-01"
   body      = {}
+  # Custom retries stop when the resource's delete timeout expires (30 minutes by default).
   retry = {
     error_message_regex = ["CannotDeleteResource"]
     interval_seconds    = 10
-    max_retries         = 3
   }
 }
 
@@ -159,8 +159,7 @@ module "avm_res_web_site" {
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
-    FUNCTIONS_RUNTIME_WORKER     = "node"
-    WEBSITE_NODE_DEFAULT_VERSION = "~18"
+    FUNCTIONS_RUNTIME_WORKER = "node"
   }
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey

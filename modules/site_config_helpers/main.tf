@@ -114,6 +114,24 @@ locals {
     try(var.site_config.java_container_version, null),
     !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_container_version, null) : null,
   ), null)
+  # Azure expects Java linuxFxVersion strings shaped `<CONTAINER>|<container-version>-java<java-version>`,
+  # for example `JAVA|21-java21`, `TOMCAT|10.1-java17`, or `JBOSSEAP|7-java11`. Java 8 takes a `jre8`
+  # suffix instead, and a fully qualified three-part `JAVA` container version takes no suffix at all.
+  java_fx_container         = local.java_fx_stack == null ? null : upper(coalesce(try(local.java_fx_stack.java_container, null), "JAVA"))
+  java_fx_container_version = local.java_fx_stack == null ? null : try(coalesce(try(local.java_fx_stack.java_container_version, null), local.java_fx_major_version), null)
+  java_fx_major_version     = try(local.java_fx_stack.java_version, null)
+  java_fx_stack             = try(local.app_stack.java, null)
+  java_fx_suffix = (
+    local.java_fx_container_version == null || local.java_fx_major_version == null ? "" :
+    local.java_fx_major_version == "8" ? (
+      local.java_fx_container == "JAVA" ? (strcontains(local.java_fx_container_version, "u") ? "" : "-jre8") :
+      local.java_fx_container == "TOMCAT" ? (length(split(".", local.java_fx_container_version)) == 3 ? "-java8" : "-jre8") :
+      "-java8"
+    ) :
+    local.java_fx_container == "JAVA" && length(split(".", local.java_fx_container_version)) == 3 ? "" :
+    "-java${local.java_fx_major_version}"
+  )
+  java_fx_version = local.java_fx_container_version != null ? "${local.java_fx_container}|${local.java_fx_container_version}${local.java_fx_suffix}" : null
   java_version = try(coalesce(
     try(var.site_config.java_version, null),
     !local.is_linux && local.app_stack != null ? try(local.app_stack.java.java_version, null) : null,
@@ -125,7 +143,7 @@ locals {
       try(local.app_stack.python != null ? "PYTHON|${local.app_stack.python.python_version}" : null, null),
       try(local.app_stack.node != null ? "NODE|${local.app_stack.node.node_version}" : null, null),
       try(local.app_stack.dotnet != null ? "DOTNETCORE|${local.app_stack.dotnet.dotnet_version}" : null, null),
-      try(local.app_stack.java != null ? "JAVA|${local.app_stack.java.java_version}-${lower(coalesce(local.app_stack.java.java_container, "java"))}${local.app_stack.java.java_container_version != null ? "-${local.app_stack.java.java_container_version}" : ""}" : null, null),
+      local.java_fx_version,
       try(local.app_stack.powershell != null ? "POWERSHELL|${local.app_stack.powershell.powershell_version}" : null, null),
       try(local.app_stack.php != null ? "PHP|${local.app_stack.php.php_version}" : null, null),
     ), null) : null,

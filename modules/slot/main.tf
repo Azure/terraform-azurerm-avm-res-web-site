@@ -25,7 +25,7 @@ resource "azapi_resource" "this" {
       publicNetworkAccess               = var.public_network_access_enabled ? "Enabled" : "Disabled"
       redundancyMode                    = var.redundancy_mode
       scmSiteAlsoStopped                = var.scm_site_also_stopped
-      serverFarmId                      = coalesce(var.server_farm_id, var.service_plan_resource_id)
+      serverFarmId                      = local.server_farm_id
       sshEnabled                        = var.ssh_enabled
       storageAccountRequired            = var.storage_account_required
       virtualNetworkSubnetId            = var.virtual_network_subnet_id
@@ -147,7 +147,10 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
-  ignore_body_changes  = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
+  ignore_body_changes = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
+  delete_query_parameters = {
+    deleteEmptyServerFarm = [tostring(var.delete_empty_service_plan)]
+  }
   ignore_null_property = true
   response_export_values = [
     "identity.principalId",

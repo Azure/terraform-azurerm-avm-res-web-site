@@ -23,6 +23,7 @@ module "slot" {
   connection_strings                       = each.value.connection_strings
   container_size                           = each.value.container_size
   dapr_config                              = each.value.dapr_config
+  delete_empty_service_plan                = var.delete_empty_service_plan
   dns_configuration                        = each.value.dns_configuration
   enabled                                  = each.value.enabled
   end_to_end_encryption_enabled            = each.value.end_to_end_encryption_enabled
@@ -87,7 +88,8 @@ resource "azapi_resource_action" "active_slot" {
     targetSlot   = coalesce(var.deployment_slots[var.app_service_active_slot.slot_key].name, var.app_service_active_slot.slot_key)
     preserveVnet = !var.app_service_active_slot.overwrite_network_config
   }
-  retry = var.retry
+  response_export_values = []
+  retry                  = var.retry
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
@@ -100,5 +102,8 @@ resource "azapi_resource_action" "active_slot" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [response_export_values]
+  }
   depends_on = [module.slot]
 }

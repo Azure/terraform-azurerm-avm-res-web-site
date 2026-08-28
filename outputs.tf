@@ -9,27 +9,28 @@ The custom domain verification ID for the App Service. Use this value to create
 an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation
 for details on the DNS prerequisites that Azure enforces.
+
+This output is `sensitive`, matching how the `azurerm` provider treats
+`custom_domain_verification_id` on its App Service resources. If you need to
+publish it, for example into a DNS TXT record resource whose value is not itself
+sensitive, wrap it in `nonsensitive()`.
 DESCRIPTION
+  sensitive   = true
   value       = try(azapi_resource.this.output.properties.customDomainVerificationId, null)
 }
 
-output "deployment_slot_locks" {
-  description = "The locks of the deployment slots."
-  value = length(module.slot) > 0 ? {
-    for k, v in module.slot : k => v.lock if v.lock != null
-  } : null
-}
-
 output "deployment_slots" {
-  description = "The deployment slots."
+  description = "A map of deployment slots with their names and resource IDs. The map key is the supplied input to var.deployment_slots."
   value = length(module.slot) > 0 ? {
-    for k, v in module.slot : k => v.resource
+    for k, v in module.slot : k => {
+      name        = v.name
+      resource_id = v.resource_id
+    }
   } : null
 }
 
 output "identity_principal_id" {
   description = "The system-assigned managed identity principal ID of the resource."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
@@ -53,33 +54,23 @@ output "os_type" {
   value       = var.os_type
 }
 
+# Compatibility exceptions: polymind-inc/terraform-azurerm-acmebot pins ~> 0.22.0
+# and consumes these provider-backed outputs.
 output "private_endpoints" {
   description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints."
   value       = length(azapi_resource.private_endpoint) > 0 ? azapi_resource.private_endpoint : null
 }
 
-# Module owners should include the full resource via a 'resource' output
-# https://azure.github.io/Azure-Verified-Modules/specs/terraform/#id-tffr2---category-outputs---additional-terraform-outputs
 output "resource" {
   description = "This is the full output for the resource."
   sensitive   = true
-  value       = azapi_resource.this
+  # tflint-ignore: no_entire_resource_output_tffr2
+  value = azapi_resource.this
 }
 
 output "resource_id" {
   description = "The resource ID of the App Service."
-  sensitive   = true
   value       = azapi_resource.this.id
-}
-
-output "resource_lock" {
-  description = "The locks of the resources."
-  value       = length(azapi_resource.lock) > 0 ? azapi_resource.lock : null
-}
-
-output "resource_private_endpoints" {
-  description = "A map of private endpoints. The map key is the supplied input to var.private_endpoints. The map value is the entire azapi_resource."
-  value       = length(azapi_resource.private_endpoint) > 0 ? azapi_resource.private_endpoint : null
 }
 
 output "resource_uri" {
@@ -89,13 +80,11 @@ output "resource_uri" {
 
 output "system_assigned_mi_principal_id" {
   description = "The system-assigned managed identity principal ID."
-  sensitive   = true
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
   description = "Map of system-assigned managed identity principal IDs for deployment slots."
-  sensitive   = true
   value = {
     for slot_key, slot in module.slot :
     slot_key => slot.identity_principal_id

@@ -783,6 +783,18 @@ object({
 
 Default: `null`
 
+### <a name="input_delete_empty_service_plan"></a> [delete\_empty\_service\_plan](#input\_delete\_empty\_service\_plan)
+
+Description: (Optional) Should the App Service Plan be deleted when this app is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+Set this to `false` to keep an empty App Service Plan, for example when the plan is shared with apps managed elsewhere, or is managed by a separate Terraform configuration.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete>.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_deployment_slots"></a> [deployment\_slots](#input\_deployment\_slots)
 
 Description: A map of deployment slots to create for the App Service.
@@ -1392,7 +1404,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_name"></a> [fc1\_runtime\_name](#input\_fc1\_runtime\_name)
 
-Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1400,7 +1412,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
 
-Description: The Runtime version of the Flex Consumption Function App.
+Description: The Runtime version of the Flex Consumption Function App. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1417,6 +1429,8 @@ Default: `false`
 ### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
 
 Description: Should this Function App run on a Flex Consumption Plan? Defaults to `false`.
+
+When `true`, these variables become required: `fc1_runtime_name`, `fc1_runtime_version`, `storage_authentication_type` and `storage_container_endpoint`. `storage_user_assigned_identity_id` is also required when `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `bool`
 
@@ -1633,6 +1647,16 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_logic_app_node_version"></a> [logic\_app\_node\_version](#input\_logic\_app\_node\_version)
+
+Description: The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`. Use a tilde so that Azure selects the latest available minor version within that major version.
+
+If you set both this variable and `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
+
+Type: `string`
+
+Default: `"~22"`
 
 ### <a name="input_logic_app_runtime_version"></a> [logic\_app\_runtime\_version](#input\_logic\_app\_runtime\_version)
 
@@ -2463,7 +2487,7 @@ Default: `{}`
 
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
-Description: The access key of the Storage Account for the Function App.
+Description: The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`.
 
 Type: `string`
 
@@ -2471,7 +2495,7 @@ Default: `null`
 
 ### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
 
-Description: The name of the Storage Account for the Function App.
+Description: The name of the Storage Account for the Function App. Required when `kind` is `logicapp`, and when `storage_uses_managed_identity` is `true`.
 
 Type: `string`
 
@@ -2495,7 +2519,7 @@ Default: `null`
 
 ### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
 
-Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`.
+Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2503,7 +2527,7 @@ Default: `null`
 
 ### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
 
-Description: The backend storage container endpoint for Flex Consumption Function Apps.
+Description: The backend storage container endpoint for Flex Consumption Function Apps. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2511,11 +2535,11 @@ Default: `null`
 
 ### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
 
-Description: The storage container type. The current supported type is `blobContainer`.
+Description: The storage container type used by Flex Consumption Function Apps. The only supported value today is `blobContainer`, which is the default. Ignored unless `function_app_uses_fc1` is `true`.
 
 Type: `string`
 
-Default: `null`
+Default: `"blobContainer"`
 
 ### <a name="input_storage_shares_to_mount"></a> [storage\_shares\_to\_mount](#input\_storage\_shares\_to\_mount)
 
@@ -2545,7 +2569,7 @@ Default: `{}`
 
 ### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
 
-Description: The ID of the User Assigned Managed Identity for storage.
+Description: The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `string`
 
@@ -2553,7 +2577,7 @@ Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 
-Description: Should the Storage Account use a Managed Identity? Defaults to `false`.
+Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
 
 Type: `bool`
 
@@ -2682,13 +2706,14 @@ an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation  
 for details on the DNS prerequisites that Azure enforces.
 
-### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
-
-Description: The locks of the deployment slots.
+This output is `sensitive`, matching how the `azurerm` provider treats
+`custom_domain_verification_id` on its App Service resources. If you need to  
+publish it, for example into a DNS TXT record resource whose value is not itself  
+sensitive, wrap it in `nonsensitive()`.
 
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
-Description: The deployment slots.
+Description: A map of deployment slots with their names and resource IDs. The map key is the supplied input to var.deployment\_slots.
 
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
@@ -2721,14 +2746,6 @@ Description: This is the full output for the resource.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the App Service.
-
-### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
-
-Description: The locks of the resources.
-
-### <a name="output_resource_private_endpoints"></a> [resource\_private\_endpoints](#output\_resource\_private\_endpoints)
-
-Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azapi\_resource.
 
 ### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
