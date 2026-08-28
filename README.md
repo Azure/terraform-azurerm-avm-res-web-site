@@ -2703,6 +2703,11 @@ an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation  
 for details on the DNS prerequisites that Azure enforces.
 
+This output is `sensitive`, matching how the `azurerm` provider treats
+`custom_domain_verification_id` on its App Service resources. If you need to  
+publish it, for example into a DNS TXT record resource whose value is not itself  
+sensitive, wrap it in `nonsensitive()`.
+
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
 Description: A map of deployment slots with their names and resource IDs. The map key is the supplied input to var.deployment\_slots.
