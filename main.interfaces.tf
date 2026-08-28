@@ -77,7 +77,7 @@ resource "azapi_resource" "private_endpoint" {
 
   location               = coalesce(try(var.private_endpoints[each.key].location, null), var.location)
   name                   = each.value.name
-  parent_id              = var.parent_id
+  parent_id              = local.private_endpoint_parent_ids[each.key]
   type                   = var.resource_types.network_private_endpoints
   body                   = each.value.body
   create_headers         = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

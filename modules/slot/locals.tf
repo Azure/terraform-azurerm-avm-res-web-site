@@ -25,6 +25,19 @@ locals {
       virtualPath  = vd.virtual_path
     }]
   }] : null
+  # `resource_group_name` accepts either a bare resource group name or a full
+  # resource group ID. The AVM private endpoints interface specifies an ID, but
+  # this module has always documented a name, so honour both. A resource group
+  # name can never contain "/", so the prefix test is unambiguous. Note that
+  # here `var.parent_id` is the site ID, so the fallback trims it back to the
+  # resource group.
+  private_endpoint_parent_ids = {
+    for pe_key, pe in var.private_endpoints : pe_key => (
+      pe.resource_group_name == null ? regex("^/subscriptions/[^/]+/resourceGroups/[^/]+", var.parent_id) :
+      startswith(pe.resource_group_name, "/subscriptions/") ? pe.resource_group_name :
+      "${regex("^/subscriptions/[^/]+", var.parent_id)}/resourceGroups/${pe.resource_group_name}"
+    )
+  }
   virtual_applications_input = length(var.site_config.virtual_application) > 0 ? var.site_config.virtual_application : [{
     physical_path     = "site\\wwwroot"
     preload_enabled   = false

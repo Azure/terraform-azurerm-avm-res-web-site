@@ -346,6 +346,27 @@ variable "private_endpoints" {
   default     = {}
   description = "Private endpoints for the slot."
   nullable    = false
+
+  validation {
+    condition = alltrue([
+      for rg in [for _, pe in var.private_endpoints : pe.resource_group_name if pe.resource_group_name != null] :
+      !startswith(rg, "/") || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+$", rg))
+    ])
+    error_message = "Each `private_endpoints[*].resource_group_name` must be either a bare resource group name or a full resource group ID of the form `/subscriptions/{sub}/resourceGroups/{rg}`."
+  }
+  # Deliberately a second block rather than another clause on the one above. An
+  # empty string passes that check (it does not start with "/", so the shape
+  # test never runs) and then reads as a bare name, producing a `parent_id` of
+  # `/subscriptions/{sub}/resourceGroups/` that only fails deep inside ARM.
+  # Separate blocks let the error name the actual problem instead of restating
+  # the general shape rule at someone who did not get the shape wrong.
+  validation {
+    condition = alltrue([
+      for rg in [for _, pe in var.private_endpoints : pe.resource_group_name if pe.resource_group_name != null] :
+      trimspace(rg) != ""
+    ])
+    error_message = "Each `private_endpoints[*].resource_group_name` must be non-empty when set. Omit it or set it to `null` to default to the resource group of this resource."
+  }
 }
 
 variable "private_endpoints_inherit_lock" {
