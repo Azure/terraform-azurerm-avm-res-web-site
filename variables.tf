@@ -513,7 +513,7 @@ variable "container_size" {
 variable "content_share_force_disabled" {
   type        = bool
   default     = false
-  description = "Should content share be force disabled for the Function App? Defaults to `false`."
+  description = "Should content share be force disabled for the Function App? Defaults to `false`. Ignored when `function_app_uses_fc1` is `true`: Flex Consumption apps have no content share, and `WEBSITE_CONTENTSHARE` is deprecated there."
 }
 
 variable "custom_domains" {
@@ -1266,7 +1266,13 @@ DESCRIPTION
 variable "functions_extension_version" {
   type        = string
   default     = "~4"
-  description = "The version of the Azure Functions runtime to use. Defaults to `~4`."
+  description = <<DESCRIPTION
+The version of the Azure Functions runtime to use, set through the `FUNCTIONS_EXTENSION_VERSION` app setting. Defaults to `~4`.
+
+Ignored when `function_app_uses_fc1` is `true`. Flex Consumption deprecates `FUNCTIONS_EXTENSION_VERSION` and the backend sets the value itself, so the module does not send it.
+
+If you set both this variable and `FUNCTIONS_EXTENSION_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. That is also how you pin the setting on a Flex Consumption app despite the gate above. (Function App)
+DESCRIPTION
 }
 
 variable "host_names_disabled" {
