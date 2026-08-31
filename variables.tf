@@ -1269,7 +1269,7 @@ variable "functions_extension_version" {
   description = <<DESCRIPTION
 The version of the Azure Functions runtime to use, set through the `FUNCTIONS_EXTENSION_VERSION` app setting. Defaults to `~4`.
 
-Ignored when `function_app_uses_fc1` is `true`. Flex Consumption deprecates `FUNCTIONS_EXTENSION_VERSION` and the backend sets the value itself, so the module does not send it.
+Ignored when `function_app_uses_fc1` is `true`. Flex Consumption deprecates `FUNCTIONS_EXTENSION_VERSION` and the backend sets the value itself, so the module stops volunteering it. That governs what the module writes: an app that already carries the setting keeps its existing value, which Flex Consumption ignores regardless.
 
 If you set both this variable and `FUNCTIONS_EXTENSION_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. That is also how you pin the setting on a Flex Consumption app despite the gate above. (Function App)
 DESCRIPTION

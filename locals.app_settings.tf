@@ -30,6 +30,14 @@ locals {
   # overwritten or ignored. Omitting them stops the module from asserting
   # configuration it does not control, rather than fixing a failing deployment.
   #
+  # Omitting is also the whole of it. modules/config_appsettings writes through
+  # azapi_update_resource, which merges the configured body over what Azure
+  # already has, so dropping a key stops the module volunteering it and leaves
+  # any previously written value live on an existing app. The gate therefore
+  # takes effect for new deployments; upgraded FC1 apps keep the setting they
+  # already had, which FC1 ignores anyway. That limitation is module-wide and
+  # tracked in #382 — do not try to solve it here.
+  #
   # The rest of what this module sends is not on that list. AzureWebJobsStorage
   # and its `__accountName` sibling are the *host* storage connection, which FC1
   # still requires and which the table does not name; only the deployment-storage
