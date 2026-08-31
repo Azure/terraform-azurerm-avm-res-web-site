@@ -1014,7 +1014,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.5.1
+Version: 0.7.0
 
 ### <a name="module_config_appsettings"></a> [config\_appsettings](#module\_config\_appsettings)
 

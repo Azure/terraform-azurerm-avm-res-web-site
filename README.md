@@ -2769,7 +2769,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.5.1
+Version: 0.7.0
 
 ### <a name="module_certificate"></a> [certificate](#module\_certificate)
 
