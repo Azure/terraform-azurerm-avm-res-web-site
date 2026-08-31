@@ -99,7 +99,7 @@ resource "azapi_resource" "role_assignment" {
   body = {
     properties = {
       roleDefinitionId = "/subscriptions/${data.azapi_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
-      principalId      = module.avm_res_web_site.identity_principal_id
+      principalId      = module.avm_res_web_site.system_assigned_mi_principal_id
     }
   }
   ignore_null_property = true

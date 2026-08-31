@@ -29,8 +29,21 @@ output "deployment_slots" {
   } : null
 }
 
+# Compatibility exception: `system_assigned_mi_principal_id` is the name RMFR7
+# prescribes, but this alias predates it and published configurations pinned to
+# earlier releases consume it. See "Deprecated outputs" in the README.
 output "identity_principal_id" {
-  description = "The system-assigned managed identity principal ID of the resource."
+  description = <<DESCRIPTION
+Deprecated alias for `system_assigned_mi_principal_id`. Both outputs evaluate
+the same expression: the principal ID of the site's system-assigned managed
+identity, or `null` when the site has none.
+
+AVM prescribes `system_assigned_mi_principal_id` as the Terraform name for this
+output ([RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7)), so
+new configurations should use that name. This alias is retained for existing
+consumers; removing it would be a breaking change and would be announced as
+one.
+DESCRIPTION
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
@@ -79,12 +92,21 @@ output "resource_uri" {
 }
 
 output "system_assigned_mi_principal_id" {
-  description = "The system-assigned managed identity principal ID."
+  description = <<DESCRIPTION
+The principal ID of the site's system-assigned managed identity, or `null` when
+the site has none.
+
+This is the output name AVM prescribes
+([RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7)). Prefer it
+over the deprecated `identity_principal_id` alias.
+DESCRIPTION
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
   description = "Map of system-assigned managed identity principal IDs for deployment slots."
+  # Sourced from the `slot` submodule's own `identity_principal_id` output,
+  # which is that module's only name for the value and is not deprecated.
   value = {
     for slot_key, slot in module.slot :
     slot_key => slot.identity_principal_id
