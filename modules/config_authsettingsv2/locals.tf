@@ -20,11 +20,20 @@ locals {
   )
   # Build identityProviders using merge to avoid null keys that cause idempotency issues.
   #
-  # Every nested object is contributed by a conditional `merge` arm rather than
-  # emitted as an explicit `null`. Azure materialises an absent sub-object on read
-  # (`"allowedPrincipals": {"groups": null, "identities": null}`), so a configured
-  # `null` never matches what comes back and the plan never converges (#368). A key
-  # that is absent from `body` is not compared at all, which is what we want.
+  # Two shapes are in play here, and the difference matters.
+  #
+  # Nested objects the caller has not supplied are contributed by a conditional
+  # `merge` arm, so the key is absent from `body`. Azure materialises absent
+  # sub-objects on read, so a configured `null` never matches what comes back and
+  # the plan never converges (#368). An absent key is not compared at all.
+  #
+  # The exception is a sub-object the caller can *remove* after having set it.
+  # `azapi_update_resource` merges the configured body over what Azure already
+  # holds, so an omitted key keeps its previous value: omission stops managing a
+  # property rather than clearing it (#378, #382). For those, emit Azure's own
+  # cleared representation — the object with null members — which both clears the
+  # value and matches the response, so it converges too. `allowedPrincipals` and
+  # `jwtClaimChecks` below are the confirmed cases.
   identity_providers = var.identity_providers != null ? merge(
     var.identity_providers.apple != null ? {
       apple = merge(
@@ -70,24 +79,32 @@ locals {
               allowedAudiences = local.aad.validation.allowed_audiences
             },
             local.aad_default_authorization_policy != null ? {
-              defaultAuthorizationPolicy = merge(
-                {
-                  allowedApplications = local.aad_default_authorization_policy.allowed_applications
-                },
-                local.aad_default_authorization_policy.allowed_principals != null ? {
-                  allowedPrincipals = {
-                    groups     = local.aad_default_authorization_policy.allowed_principals.groups
-                    identities = local.aad_default_authorization_policy.allowed_principals.identities
-                  }
-                } : {},
-              )
+              defaultAuthorizationPolicy = {
+                allowedApplications = local.aad_default_authorization_policy.allowed_applications
+                # Emitted with null members rather than omitted. Azure materialises
+                # this sub-object on read as `{"groups": null, "identities": null}`,
+                # so sending exactly that both clears it and matches what comes
+                # back, which is what stops the plan flapping (#368). Omitting the
+                # key instead would converge too, but `azapi_update_resource`
+                # merges over what Azure already holds, so an omitted key keeps its
+                # previous value and a removed policy would silently keep applying
+                # (#378).
+                allowedPrincipals = local.aad_default_authorization_policy.allowed_principals != null ? {
+                  groups     = local.aad_default_authorization_policy.allowed_principals.groups
+                  identities = local.aad_default_authorization_policy.allowed_principals.identities
+                } : { groups = null, identities = null }
+              }
             } : {},
             local.aad.validation.jwt_claim_checks != null ? {
               jwtClaimChecks = {
                 allowedClientApplications = local.aad.validation.jwt_claim_checks.allowed_client_applications
                 allowedGroups             = local.aad.validation.jwt_claim_checks.allowed_groups
               }
-            } : {},
+              } : {
+              # Same reasoning as `allowedPrincipals` above: Azure returns this
+              # materialised with null members, so send that shape to clear it.
+              jwtClaimChecks = { allowedClientApplications = null, allowedGroups = null }
+            },
           )
         } : {},
       )

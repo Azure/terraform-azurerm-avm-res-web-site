@@ -52,14 +52,28 @@ run "unsupplied_nested_objects_are_absent_from_the_body" {
     }
   }
 
+  // `allowedPrincipals` and `jwtClaimChecks` are the two objects a caller can
+  // remove after having set them, so they carry Azure's own cleared shape rather
+  // than being omitted. That clears the value AND matches what the response
+  // returns, so it converges (#368) without leaving a removed policy live (#378).
   assert {
-    condition     = !can(azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.defaultAuthorizationPolicy.allowedPrincipals)
-    error_message = "`allowedPrincipals` must be absent from the body when `allowed_principals` is not supplied. Emitted as null, Azure returns `{groups: null, identities: null}` on the next read and the plan never converges (#368)."
+    condition     = can(azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.defaultAuthorizationPolicy.allowedPrincipals)
+    error_message = "`allowedPrincipals` must be present in the body as Azure's cleared shape, not omitted, so removing it clears it rather than leaving the previous value live (#378)."
   }
 
   assert {
-    condition     = !can(azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.jwtClaimChecks)
-    error_message = "`jwtClaimChecks` must be absent from the body when `jwt_claim_checks` is not supplied (#368)."
+    condition     = azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.defaultAuthorizationPolicy.allowedPrincipals.groups == null && azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.defaultAuthorizationPolicy.allowedPrincipals.identities == null
+    error_message = "The cleared `allowedPrincipals` must carry null members, matching what Azure returns on read, so the plan converges (#368)."
+  }
+
+  assert {
+    condition     = can(azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.jwtClaimChecks)
+    error_message = "`jwtClaimChecks` must be present in the body as Azure's cleared shape, not omitted (#378)."
+  }
+
+  assert {
+    condition     = azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.jwtClaimChecks.allowedClientApplications == null && azapi_update_resource.this.body.properties.identityProviders.azureActiveDirectory.validation.jwtClaimChecks.allowedGroups == null
+    error_message = "The cleared `jwtClaimChecks` must carry null members, matching what Azure returns on read (#368)."
   }
 
   assert {
