@@ -2401,6 +2401,23 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "storage_user_assigned_identity_client_id" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+(Optional) The client ID of the User Assigned Managed Identity the Functions host authenticates as when reaching the default storage account. Sets the `AzureWebJobsStorage__clientId` app setting.
+
+Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the app's system-assigned identity, for which the setting does not apply.
+
+This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
+DESCRIPTION
+
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || var.storage_uses_managed_identity
+    error_message = "`storage_user_assigned_identity_client_id` requires `storage_uses_managed_identity` to be `true`, because it only has meaning as part of an identity-based `AzureWebJobsStorage` connection."
+  }
+}
+
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
@@ -2415,7 +2432,7 @@ variable "storage_user_assigned_identity_id" {
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
+  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
   nullable    = false
 }
 

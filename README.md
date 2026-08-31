@@ -2569,6 +2569,18 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_storage_user_assigned_identity_client_id"></a> [storage\_user\_assigned\_identity\_client\_id](#input\_storage\_user\_assigned\_identity\_client\_id)
+
+Description: (Optional) The client ID of the User Assigned Managed Identity the Functions host authenticates as when reaching the default storage account. Sets the `AzureWebJobsStorage__clientId` app setting.
+
+Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the app's system-assigned identity, for which the setting does not apply.
+
+This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
 
 Description: The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
@@ -2579,7 +2591,7 @@ Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 
-Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
+Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
 
 Type: `bool`
 

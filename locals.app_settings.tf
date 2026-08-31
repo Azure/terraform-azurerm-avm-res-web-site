@@ -20,13 +20,38 @@ locals {
     {
       FUNCTIONS_EXTENSION_VERSION = var.functions_extension_version
     },
-    var.storage_account_name != null ? {
-      AzureWebJobsStorage = var.storage_uses_managed_identity ? "" : (
-        var.storage_account_access_key != null ? "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}" : null
-      )
+    # An identity-based host storage connection *replaces* the connection string
+    # rather than sitting beside it: `AzureWebJobsStorage__accountName` "sets the
+    # account name of the storage account instead of using the connection string
+    # in `AzureWebJobsStorage`". Emitting an empty `AzureWebJobsStorage` alongside
+    # it is not a documented configuration, so omit the setting entirely.
+    var.storage_account_name != null && !var.storage_uses_managed_identity ? {
+      AzureWebJobsStorage = var.storage_account_access_key != null ? "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}" : null
     } : {},
-    var.storage_uses_managed_identity ? {
+    # The host reads an identity-based connection as a set of properties, because
+    # `__` is interpreted as a `:` path separator at runtime. `accountName` alone
+    # tells the host *which* account but not *how* to authenticate, so the host
+    # falls back to looking for a connection string and fails at startup. The
+    # documented trio is accountName + credential + (for a user-assigned identity)
+    # clientId. See the `AzureWebJobsStorage__*` entries in the Functions app
+    # settings reference, and issue #367.
+    #
+    # Each key carries the same case-insensitive override guard #344 introduced
+    # for WEBSITE_NODE_DEFAULT_VERSION: module defaults are merged *after*
+    # `var.app_settings`, so without the guard a caller could not correct these
+    # values. Callers on sovereign clouds or custom storage DNS must set the
+    # `__blobServiceUri`/`__queueServiceUri`/`__tableServiceUri` trio themselves;
+    # those are out of scope here because the module has no endpoint input.
+    var.storage_uses_managed_identity && !contains(local.app_settings_keys, "azurewebjobsstorage__accountname") ? {
       AzureWebJobsStorage__accountName = var.storage_account_name
+    } : {},
+    var.storage_uses_managed_identity && !contains(local.app_settings_keys, "azurewebjobsstorage__credential") ? {
+      AzureWebJobsStorage__credential = "managedidentity"
+    } : {},
+    # Omitted for a system-assigned identity, where the host uses the app's own
+    # identity and the setting does not apply.
+    var.storage_uses_managed_identity && var.storage_user_assigned_identity_client_id != null && !contains(local.app_settings_keys, "azurewebjobsstorage__clientid") ? {
+      AzureWebJobsStorage__clientId = var.storage_user_assigned_identity_client_id
     } : {},
     var.builtin_logging_enabled ? {} : {
       AzureWebJobsFeatureFlags = "EnableWorkerIndexing"
