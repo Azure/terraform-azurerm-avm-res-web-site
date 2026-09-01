@@ -9,13 +9,24 @@ resource "azapi_update_resource" "this" {
     # why omission is the wrong tool here: `azapi_update_resource` merges the
     # configured body over what Azure already holds, so an omitted key keeps its
     # previous value. Removing a schedule would have stopped managing it rather
-    # than clearing it, and a later `enabled = true` could resume a schedule the
-    # caller had deleted, with a clean plan throughout.
+    # than clearing it, with a clean plan throughout (#378, and #382 for the
+    # module-wide limits of `azapi_update_resource`).
     #
-    # There was never a field report of Azure materialising this sub-object, so
-    # #377 traded working clearing behaviour for silent retention to gain
-    # consistency it did not need. See #378, and #382 for the module-wide limits
-    # of `azapi_update_resource`.
+    # Verified: AzAPI's merge overwrites with an explicit null rather than
+    # dropping it, so the null is transmitted. NOT verified: what Azure does with
+    # it. No transition deployment — set a schedule, remove it, read it back —
+    # has been run, so whether the null clears the stored schedule or is ignored
+    # is unknown. The 2025-03-01 schema types `backupSchedule` as an object and
+    # does not declare it nullable, so a null is out of contract either way.
+    #
+    # That unknown is why `enabled` carries a validation instead of being relied
+    # on to paper over it. The API documents `enabled` as "true if the backup
+    # schedule is enabled (must be included in that case), false if the backup
+    # schedule should be disabled", so `enabled = true` without a schedule is
+    # rejected at plan time. A caller who wants to stop backing up sets
+    # `enabled = false`, which is the documented mechanism and does not depend on
+    # how Azure treats the transmitted null. The null is still sent as the best
+    # available clearing value; the disable is what actually carries the intent.
     properties = {
       backupName        = var.backup_name
       enabled           = var.enabled
