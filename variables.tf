@@ -1562,6 +1562,25 @@ Managed identities to be created for the resource.
 - `user_assigned_resource_ids` - (Optional) A set of user-assigned managed identity resource IDs to assign. Defaults to `[]`.
 DESCRIPTION
   nullable    = false
+
+  # `storage_uses_managed_identity` names an identity the Functions host must
+  # authenticate as, but on its own it does not create one. Without these guards a
+  # consumer can emit `AzureWebJobsStorage__credential = managedidentity` for an
+  # app that has no identity at all, which is the #367 startup failure reached by
+  # a different route. The failure surfaces at runtime, so the plan has to catch
+  # it.
+  validation {
+    condition     = !var.storage_uses_managed_identity || var.storage_user_assigned_identity_client_id != null || var.managed_identities.system_assigned
+    error_message = "`storage_uses_managed_identity` is `true` but the app has no identity to authenticate as. Set `managed_identities.system_assigned = true`, or select a user-assigned identity with `storage_user_assigned_identity_client_id`. With neither, the Functions host is told to use a managed identity that does not exist and fails to start."
+  }
+  # `AzureWebJobsStorage__clientId` selects among the identities *assigned to the
+  # app*, so a client ID for an identity that was never attached resolves to
+  # nothing. Client IDs and resource IDs are not comparable, so this can only
+  # check that some user-assigned identity is attached.
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || length(var.managed_identities.user_assigned_resource_ids) > 0
+    error_message = "`storage_user_assigned_identity_client_id` selects a user-assigned identity, so one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The Functions host can only authenticate as an identity the app actually has."
+  }
 }
 
 variable "maximum_instance_count" {
@@ -2343,7 +2362,11 @@ variable "storage_account_share_name" {
 variable "storage_authentication_type" {
   type        = string
   default     = null
-  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+  description = <<DESCRIPTION
+The authentication type Flex Consumption uses to read the deployment package from its blob container. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
+
+This is the deployment connection, `functionAppConfig.deployment.storage.authentication`, not the Functions host's own `AzureWebJobsStorage` connection. The host connection is separate and is configured with `storage_uses_managed_identity`; setting this one does not configure it.
+DESCRIPTION
 
   validation {
     condition     = var.function_app_uses_fc1 != true || var.storage_authentication_type != null
@@ -2432,7 +2455,15 @@ variable "storage_user_assigned_identity_id" {
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
+  description = <<DESCRIPTION
+Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`.
+
+When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned` or a user-assigned identity selected with `storage_user_assigned_identity_client_id`.
+
+Flex Consumption apps may need this *and* `storage_authentication_type`, because they are two different storage connections. This one configures `AzureWebJobsStorage`, the host's own connection for function keys, timer-trigger singletons and trigger metadata, which every plan requires and without which the app cannot start. `storage_authentication_type` configures `functionAppConfig.deployment.storage.authentication`, which is only how the platform reads the deployment package out of its blob container. Configuring the deployment connection does not configure the host connection.
+
+The identity needs `Storage Blob Data Owner` on the host storage account, and `Storage Table Data Contributor` as well if you want the host to be able to write diagnostic events.
+DESCRIPTION
   nullable    = false
 }
 

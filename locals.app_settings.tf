@@ -25,6 +25,21 @@ locals {
     # account name of the storage account instead of using the connection string
     # in `AzureWebJobsStorage`". Emitting an empty `AzureWebJobsStorage` alongside
     # it is not a documented configuration, so omit the setting entirely.
+    #
+    # Omitting it here does not *remove* it from an app that already has it.
+    # `modules/config_appsettings` writes through `azapi_update_resource`, which
+    # GETs the resource, merges this body over it and PUTs the result, so a key
+    # absent from the body keeps whatever Azure already had. That is #382, and it
+    # bites harder here than anywhere else: the documentation presents the root
+    # setting and the `__accountName`/`__credential` pair as alternatives, not as
+    # a configuration that can coexist, so an app carrying a stale
+    # `AzureWebJobsStorage` — including the empty string this module used to
+    # write — stays on the connection-string path and never reaches the identity
+    # settings below. The key has to be deleted out of band before an existing
+    # app picks up identity-based auth; there is nothing this module can emit
+    # that clears it, because a null value is transmitted as a JSON null rather
+    # than dropping the key. #382 tracks the resource-type change that would fix
+    # it properly.
     var.storage_account_name != null && !var.storage_uses_managed_identity ? {
       AzureWebJobsStorage = var.storage_account_access_key != null ? "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}" : null
     } : {},

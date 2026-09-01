@@ -101,6 +101,11 @@ run "caller_supplied_settings_win" {
   variables {
     storage_uses_managed_identity            = true
     storage_user_assigned_identity_client_id = "11111111-2222-3333-4444-555555555555"
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
     app_settings = {
       azurewebjobsstorage__credential  = "workloadidentity"
       AzureWebJobsStorage__clientId    = "99999999-8888-7777-6666-555555555555"
@@ -142,4 +147,37 @@ run "connection_string_path_is_unchanged" {
     condition     = !contains(keys(local.merged_app_settings), "AzureWebJobsStorage__accountName")
     error_message = "Connection-string function apps must not receive identity-based connection settings."
   }
+}
+
+# The two runs below use `command = plan` rather than `apply`, for the reason
+# `conditionally_required_variables.tftest.hcl` records: variable validation is
+# evaluated during plan, so a failure there aborts the apply and Terraform marks
+# the whole run failed even though the failure is the point of the test. #349
+# established that `plan` is the only command an `expect_failures` on a variable
+# can use.
+#
+# `storage_uses_managed_identity = true` asks the Functions host to authenticate
+# with a managed identity. It does not give it one. `managed_identities` defaults
+# to no identity at all, so both of these configurations plan cleanly without the
+# validation and then fail at startup exactly the way #367 describes.
+
+run "managed_identity_storage_requires_an_identity" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+  }
+
+  expect_failures = [var.managed_identities]
+}
+
+run "client_id_requires_an_attached_user_assigned_identity" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity            = true
+    storage_user_assigned_identity_client_id = "11111111-2222-3333-4444-555555555555"
+  }
+
+  expect_failures = [var.managed_identities]
 }
