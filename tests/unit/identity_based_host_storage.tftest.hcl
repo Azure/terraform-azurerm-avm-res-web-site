@@ -181,3 +181,114 @@ run "client_id_requires_an_attached_user_assigned_identity" {
 
   expect_failures = [var.managed_identities]
 }
+
+# An empty string is not "unset". It satisfies every `!= null` check the identity
+# guards make and then reaches Azure as a selector that names no identity, which
+# is the #346 shape: a blank value passing validation and producing something
+# malformed downstream.
+run "empty_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity            = true
+    storage_user_assigned_identity_client_id = ""
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+  }
+
+  expect_failures = [var.storage_user_assigned_identity_client_id]
+}
+
+run "whitespace_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity            = true
+    storage_user_assigned_identity_client_id = "   "
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+  }
+
+  expect_failures = [var.storage_user_assigned_identity_client_id]
+}
+
+# Supplying `AzureWebJobsStorage__clientId` through `app_settings` selects an
+# identity just as well as `storage_user_assigned_identity_client_id` does, and
+# the override guards above exist so that a caller can. This is what
+# polymind-inc/terraform-azurerm-acmebot does today: `storage_uses_managed_identity`,
+# a user-assigned identity attached, and the client ID hand-written into
+# `app_settings`. The identity guard has to recognize that path, or the module
+# rejects a configuration that works.
+run "caller_supplied_client_id_satisfies_the_identity_requirement" {
+  command = apply
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      AzureWebJobsStorage__clientId = "99999999-8888-7777-6666-555555555555"
+    }
+  }
+
+  assert {
+    condition     = local.merged_app_settings["AzureWebJobsStorage__clientId"] == "99999999-8888-7777-6666-555555555555"
+    error_message = "A caller who selects the identity through `app_settings` must keep their own client ID."
+  }
+  assert {
+    condition     = local.merged_app_settings["AzureWebJobsStorage__credential"] == "managedidentity"
+    error_message = "The rest of the identity trio must still be emitted when only the client ID is caller-supplied."
+  }
+  assert {
+    condition     = local.merged_app_settings["AzureWebJobsStorage__accountName"] == "stavmtest"
+    error_message = "The rest of the identity trio must still be emitted when only the client ID is caller-supplied."
+  }
+}
+
+# Azure app setting names are case-insensitive, so the guard compares lowercased
+# keys. A caller who writes the key in any casing has still selected an identity.
+run "caller_supplied_client_id_is_matched_case_insensitively" {
+  command = apply
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      azurewebjobsstorage__clientid = "99999999-8888-7777-6666-555555555555"
+    }
+  }
+
+  assert {
+    condition     = local.merged_app_settings["azurewebjobsstorage__clientid"] == "99999999-8888-7777-6666-555555555555"
+    error_message = "A lowercased caller-supplied client ID must satisfy the identity requirement and reach the app unchanged."
+  }
+}
+
+# `__credential` says *how* to authenticate, not *which* identity to authenticate
+# as, so supplying it tells the module nothing `storage_uses_managed_identity`
+# did not already say. It must not satisfy the identity requirement.
+run "caller_supplied_credential_does_not_satisfy_the_identity_requirement" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    app_settings = {
+      AzureWebJobsStorage__credential = "managedidentity"
+    }
+  }
+
+  expect_failures = [var.managed_identities]
+}

@@ -2595,7 +2595,9 @@ Default: `null`
 
 Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`.
 
-When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned` or a user-assigned identity selected with `storage_user_assigned_identity_client_id`.
+When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned`, a user-assigned identity selected with `storage_user_assigned_identity_client_id`, or `AzureWebJobsStorage__clientId` supplied through `app_settings`.
+
+Omitting `AzureWebJobsStorage` does not delete it from an app that already has one. The module merges its settings over what Azure holds, so an existing app keeps its stale value and stays on the connection-string path. Delete the setting out of band before switching an existing app to identity-based auth. See #382.
 
 Flex Consumption apps may need this *and* `storage_authentication_type`, because they are two different storage connections. This one configures `AzureWebJobsStorage`, the host's own connection for function keys, timer-trigger singletons and trigger metadata, which every plan requires and without which the app cannot start. `storage_authentication_type` configures `functionAppConfig.deployment.storage.authentication`, which is only how the platform reads the deployment package out of its blob container. Configuring the deployment connection does not configure the host connection.
 

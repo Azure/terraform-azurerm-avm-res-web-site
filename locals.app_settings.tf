@@ -36,10 +36,16 @@ locals {
     # `AzureWebJobsStorage` — including the empty string this module used to
     # write — stays on the connection-string path and never reaches the identity
     # settings below. The key has to be deleted out of band before an existing
-    # app picks up identity-based auth; there is nothing this module can emit
-    # that clears it, because a null value is transmitted as a JSON null rather
-    # than dropping the key. #382 tracks the resource-type change that would fix
-    # it properly.
+    # app picks up identity-based auth, and this module has no reliable way to
+    # delete it.
+    #
+    # Only the provider half of that is verified: AzAPI 2.12 transmits a null as
+    # a JSON null rather than dropping the key, which I confirmed in the provider
+    # source. The Azure half is not verified by anyone — whether a transmitted
+    # JSON null clears the setting or is normalized away and leaves the old value
+    # standing. The `Microsoft.Web/sites/config` reference does not say, and no
+    # one has run a live deployment to find out. #382 tracks the resource-type
+    # change that would fix this properly and make the question moot.
     var.storage_account_name != null && !var.storage_uses_managed_identity ? {
       AzureWebJobsStorage = var.storage_account_access_key != null ? "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}" : null
     } : {},
