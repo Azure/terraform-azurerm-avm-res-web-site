@@ -87,7 +87,7 @@ resource "azapi_resource" "private_endpoint" {
   response_export_values = []
   retry                  = var.retry
   # Private endpoint tags are defined per endpoint by the AVM interface.
-  # tflint-ignore: azapi_resource_tag
+  # tflint-ignore: avm_azapi_resource_tags_required
   tags           = each.value.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 

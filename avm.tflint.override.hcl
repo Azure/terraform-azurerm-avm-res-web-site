@@ -1,7 +1,7 @@
-rule "diagnostic_settings" {
+rule "avm_interface_diagnostic_settings" {
   enabled = false
 }
 
-rule "private_endpoints" {
+rule "avm_interface_private_endpoints" {
   enabled = false
 }
