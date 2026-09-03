@@ -40,10 +40,4 @@ resource "azapi_resource" "this" {
       update = timeouts.value.update
     }
   }
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
 }
