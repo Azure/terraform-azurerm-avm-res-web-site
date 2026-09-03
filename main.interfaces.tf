@@ -86,7 +86,9 @@ resource "azapi_resource" "private_endpoint" {
   read_headers           = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = []
   retry                  = var.retry
-  # Private endpoint tags are defined per endpoint by the AVM interface.
+  # TFFR9 requires var.tags, but the canonical private endpoint interface exposes
+  # per-endpoint tags here. Remove this exception when Azure-Verified-Modules#2899
+  # defines the compliant composition.
   # tflint-ignore: avm_azapi_resource_tags_required
   tags           = each.value.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
