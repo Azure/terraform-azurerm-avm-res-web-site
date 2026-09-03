@@ -26,6 +26,17 @@ locals {
   is_linux        = var.os_type == "Linux"
   is_logic_app    = var.kind == "logicapp"
   is_web_app      = var.kind == "webapp"
+  # `resource_group_name` accepts either a bare resource group name or a full
+  # resource group ID. The AVM private endpoints interface specifies an ID, but
+  # this module has always documented a name, so honour both. A resource group
+  # name can never contain "/", so the prefix test is unambiguous.
+  private_endpoint_parent_ids = {
+    for pe_key, pe in var.private_endpoints : pe_key => (
+      pe.resource_group_name == null ? var.parent_id :
+      startswith(pe.resource_group_name, "/subscriptions/") ? pe.resource_group_name :
+      "${regex("^/subscriptions/[^/]+", var.parent_id)}/resourceGroups/${pe.resource_group_name}"
+    )
+  }
   # ARM canonicalizes `properties.serverFarmId` to `/providers/Microsoft.Web/serverfarms/`
   # (lowercase `serverfarms`), but callers commonly supply an ID containing `serverFarms`.
   # AzAPI compares the request body against the API response case-sensitively, so normalize

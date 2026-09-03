@@ -5,12 +5,22 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
+  body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
+}
+
+resource "azapi_resource" "network_resource_group" {
+  location = local.azure_regions[random_integer.region_index.result]
+  name     = "${module.naming.resource_group.name_unique}-network"
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
   tags = {
@@ -267,6 +277,9 @@ module "avm_res_web_site" {
           name                          = "slot-primary"
           private_dns_zone_resource_ids = [azapi_resource.private_dns_zone.id]
           subnet_resource_id            = azapi_resource.subnet.id
+          # Place the private endpoint in a dedicated networking resource group
+          # rather than the app's own resource group.
+          resource_group_name = azapi_resource.network_resource_group.name
           ip_configurations = {
             primary = {
               name               = "api.${azapi_resource.private_dns_zone.name}"

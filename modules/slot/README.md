@@ -205,6 +205,16 @@ object({
 
 Default: `null`
 
+### <a name="input_delete_empty_service_plan"></a> [delete\_empty\_service\_plan](#input\_delete\_empty\_service\_plan)
+
+Description: Should the App Service Plan be deleted when this slot is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites/slots` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete-slot>.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_dns_configuration"></a> [dns\_configuration](#input\_dns\_configuration)
 
 Description: DNS configuration for the slot.
@@ -984,25 +994,17 @@ The following outputs are exported:
 
 Description: The principal ID of the system-assigned managed identity (if enabled).
 
-### <a name="output_lock"></a> [lock](#output\_lock)
-
-Description: The lock resource for this slot.
-
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the deployment slot.
 
-### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
-
-Description: The private endpoints created for this slot.
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The full slot resource object.
-
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the deployment slot.
+
+### <a name="output_server_farm_resource_id"></a> [server\_farm\_resource\_id](#output\_server\_farm\_resource\_id)
+
+Description: The normalized service plan resource ID configured on the deployment slot.
 
 ## Modules
 
@@ -1012,7 +1014,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.5.1
+Version: 0.7.0
 
 ### <a name="module_config_appsettings"></a> [config\_appsettings](#module\_config\_appsettings)
 

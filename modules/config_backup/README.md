@@ -167,10 +167,6 @@ The following outputs are exported:
 
 Description: The name of the config resource.
 
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The full resource object.
-
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the config resource.

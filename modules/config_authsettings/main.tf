@@ -1,7 +1,11 @@
 # Deprecated but kept for backward compatibility.
 # The ARM API uses flat property names (e.g. facebookAppId, microsoftAccountClientId)
-# rather than nested objects. Properties for disabled providers are set to null
-# and excluded by the azapi provider during serialization.
+# rather than nested objects. Properties for disabled providers are set to null,
+# which is safe here precisely because the body is flat: Azure either omits those
+# keys or returns them as null, and `ignore_missing_property` (on by default) keeps
+# the configured null in state either way. The nested-object form of this body would
+# not be safe, because Azure materialises absent sub-objects on read and the plan
+# would never converge — see #368 and `modules/config_authsettingsv2/locals.tf`.
 resource "azapi_update_resource" "this" {
   name      = "authsettings"
   parent_id = var.parent_id

@@ -16,7 +16,7 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -180,7 +180,7 @@ Description: ID of active slot
 
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
-Description: Full output of deployment slots created
+Description: Names and resource IDs of the deployment slots.
 
 ### <a name="output_location"></a> [location](#output\_location)
 
@@ -216,7 +216,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

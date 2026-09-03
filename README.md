@@ -783,6 +783,18 @@ object({
 
 Default: `null`
 
+### <a name="input_delete_empty_service_plan"></a> [delete\_empty\_service\_plan](#input\_delete\_empty\_service\_plan)
+
+Description: (Optional) Should the App Service Plan be deleted when this app is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+Set this to `false` to keep an empty App Service Plan, for example when the plan is shared with apps managed elsewhere, or is managed by a separate Terraform configuration.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete>.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_deployment_slots"></a> [deployment\_slots](#input\_deployment\_slots)
 
 Description: A map of deployment slots to create for the App Service.
@@ -914,7 +926,7 @@ Description: A map of deployment slots to create for the App Service.
   - `private_service_connection_name` - (Optional) The private service connection name.
   - `network_interface_name` - (Optional) The network interface name.
   - `location` - (Optional) The Azure location.
-  - `resource_group_name` - (Optional) The resource group name.
+  - `resource_group_name` - (Optional) The resource group to deploy the private endpoint into. Accepts either a bare resource group name or a full resource group ID (`/subscriptions/{sub}/resourceGroups/{rg}`). Defaults to the resource group of the app.
   - `ip_configurations` - (Optional) A map of IP configurations.
     - `name` - (Required) The name of the IP configuration.
     - `private_ip_address` - (Required) The private IP address.
@@ -1392,7 +1404,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_name"></a> [fc1\_runtime\_name](#input\_fc1\_runtime\_name)
 
-Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`.
+Description: The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1400,7 +1412,7 @@ Default: `null`
 
 ### <a name="input_fc1_runtime_version"></a> [fc1\_runtime\_version](#input\_fc1\_runtime\_version)
 
-Description: The Runtime version of the Flex Consumption Function App.
+Description: The Runtime version of the Flex Consumption Function App. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -1417,6 +1429,8 @@ Default: `false`
 ### <a name="input_function_app_uses_fc1"></a> [function\_app\_uses\_fc1](#input\_function\_app\_uses\_fc1)
 
 Description: Should this Function App run on a Flex Consumption Plan? Defaults to `false`.
+
+When `true`, these variables become required: `fc1_runtime_name`, `fc1_runtime_version`, `storage_authentication_type` and `storage_container_endpoint`. `storage_user_assigned_identity_id` is also required when `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `bool`
 
@@ -1634,6 +1648,16 @@ object({
 
 Default: `null`
 
+### <a name="input_logic_app_node_version"></a> [logic\_app\_node\_version](#input\_logic\_app\_node\_version)
+
+Description: The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`. Use a tilde so that Azure selects the latest available minor version within that major version.
+
+If you set both this variable and `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
+
+Type: `string`
+
+Default: `"~22"`
+
 ### <a name="input_logic_app_runtime_version"></a> [logic\_app\_runtime\_version](#input\_logic\_app\_runtime\_version)
 
 Description: The runtime version for the Logic App. Defaults to `~4`.
@@ -1761,7 +1785,7 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `private_service_connection_name` - (Optional) The name of the private service connection.
 - `network_interface_name` - (Optional) The name of the network interface.
 - `location` - (Optional) The Azure location. Defaults to the resource group location.
-- `resource_group_name` - (Optional) The resource group. Defaults to the resource group of this resource.
+- `resource_group_name` - (Optional) The resource group to deploy the private endpoint into. Accepts either a bare resource group name or a full resource group ID (`/subscriptions/{sub}/resourceGroups/{rg}`). Defaults to the resource group of this resource.
 - `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
   - `name` - (Required) The name of the IP configuration.
   - `private_ip_address` - (Required) The private IP address.
@@ -1977,6 +2001,8 @@ Default: `{}`
 
 Description: Retry configuration for the AzAPI resources declared by this module and its submodules. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
 
+This variable is deliberately nullable: setting it to `null` is meaningful and distinct from the default. `null` disables retries entirely on every AzAPI resource this module and its submodules declare, whereas leaving it unset (or passing `{}`) applies the default retry-on-conflict behavior described below.
+
 - `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
 - `interval_seconds` - (Optional) The initial interval in seconds between retries.
 - `max_interval_seconds` - (Optional) The maximum interval in seconds between retries.
@@ -2042,6 +2068,9 @@ Default: `null`
 ### <a name="input_site_config"></a> [site\_config](#input\_site\_config)
 
 Description: An object that configures the App Service's site configuration. These map to the ARM API `siteConfig` properties.
+
+> [!NOTE]
+> When `function_app_uses_fc1` is `true`, Flex Consumption (FC1) sites reject several `siteConfig` properties with ARM error `51021`, so the module omits them: `always_on`, `application_stack` (and the `linux_fx_version`, `windows_fx_version`, `dotnet_framework_version`, `php_version`, `python_version`, `node_version`, `java_version`, `java_container`, `java_container_version`, and `powershell_version` values it derives), `app_scale_limit`, `ftps_state`, `pre_warmed_instance_count`, `runtime_scale_monitoring_enabled`, and `use_32_bit_worker`. Set the runtime with `fc1_runtime_name` and `fc1_runtime_version`, and the scaling limits with `maximum_instance_count`, `instance_memory_in_mb`, and `always_ready` instead.
 
 - `always_on` - (Optional) If this App is Always On enabled. Defaults to `true`.
 - `api_definition_url` - (Optional) The URL of the API definition.
@@ -2460,7 +2489,7 @@ Default: `{}`
 
 ### <a name="input_storage_account_access_key"></a> [storage\_account\_access\_key](#input\_storage\_account\_access\_key)
 
-Description: The access key of the Storage Account for the Function App.
+Description: The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`.
 
 Type: `string`
 
@@ -2468,7 +2497,7 @@ Default: `null`
 
 ### <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)
 
-Description: The name of the Storage Account for the Function App.
+Description: The name of the Storage Account for the Function App. Required when `kind` is `logicapp`, and when `storage_uses_managed_identity` is `true`.
 
 Type: `string`
 
@@ -2492,7 +2521,7 @@ Default: `null`
 
 ### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
 
-Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`.
+Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2500,7 +2529,7 @@ Default: `null`
 
 ### <a name="input_storage_container_endpoint"></a> [storage\_container\_endpoint](#input\_storage\_container\_endpoint)
 
-Description: The backend storage container endpoint for Flex Consumption Function Apps.
+Description: The backend storage container endpoint for Flex Consumption Function Apps. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
 
 Type: `string`
 
@@ -2508,11 +2537,11 @@ Default: `null`
 
 ### <a name="input_storage_container_type"></a> [storage\_container\_type](#input\_storage\_container\_type)
 
-Description: The storage container type. The current supported type is `blobContainer`.
+Description: The storage container type used by Flex Consumption Function Apps. The only supported value today is `blobContainer`, which is the default. Ignored unless `function_app_uses_fc1` is `true`.
 
 Type: `string`
 
-Default: `null`
+Default: `"blobContainer"`
 
 ### <a name="input_storage_shares_to_mount"></a> [storage\_shares\_to\_mount](#input\_storage\_shares\_to\_mount)
 
@@ -2542,7 +2571,7 @@ Default: `{}`
 
 ### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
 
-Description: The ID of the User Assigned Managed Identity for storage.
+Description: The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
 
 Type: `string`
 
@@ -2550,7 +2579,7 @@ Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 
-Description: Should the Storage Account use a Managed Identity? Defaults to `false`.
+Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
 
 Type: `bool`
 
@@ -2679,13 +2708,14 @@ an `asuid.<custom-hostname>` TXT record in your DNS zone before binding a custom
 domain via `var.custom_domains`. See the `custom_domains` variable documentation  
 for details on the DNS prerequisites that Azure enforces.
 
-### <a name="output_deployment_slot_locks"></a> [deployment\_slot\_locks](#output\_deployment\_slot\_locks)
-
-Description: The locks of the deployment slots.
+This output is `sensitive`, matching how the `azurerm` provider treats
+`custom_domain_verification_id` on its App Service resources. If you need to  
+publish it, for example into a DNS TXT record resource whose value is not itself  
+sensitive, wrap it in `nonsensitive()`.
 
 ### <a name="output_deployment_slots"></a> [deployment\_slots](#output\_deployment\_slots)
 
-Description: The deployment slots.
+Description: A map of deployment slots with their names and resource IDs. The map key is the supplied input to var.deployment\_slots.
 
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
@@ -2719,14 +2749,6 @@ Description: This is the full output for the resource.
 
 Description: The resource ID of the App Service.
 
-### <a name="output_resource_lock"></a> [resource\_lock](#output\_resource\_lock)
-
-Description: The locks of the resources.
-
-### <a name="output_resource_private_endpoints"></a> [resource\_private\_endpoints](#output\_resource\_private\_endpoints)
-
-Description: A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azapi\_resource.
-
 ### <a name="output_resource_uri"></a> [resource\_uri](#output\_resource\_uri)
 
 Description: The default hostname of the resource.
@@ -2747,7 +2769,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.5.1
+Version: 0.7.0
 
 ### <a name="module_certificate"></a> [certificate](#module\_certificate)
 

@@ -16,7 +16,7 @@ The example uses `kind = "functionapp"` and `os_type = "Windows"`.
 ```hcl
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
-  version = "0.11.0"
+  version = "0.12.0"
 
   is_recommended = true
 }
@@ -28,12 +28,22 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
   location = local.azure_regions[random_integer.region_index.result]
   name     = module.naming.resource_group.name_unique
+  type     = "Microsoft.Resources/resourceGroups@2025-04-01"
+  body     = {}
+  tags = {
+    SecurityControl = "Ignore" # Useful for test environments
+  }
+}
+
+resource "azapi_resource" "network_resource_group" {
+  location = local.azure_regions[random_integer.region_index.result]
+  name     = "${module.naming.resource_group.name_unique}-network"
   type     = "Microsoft.Resources/resourceGroups@2025-04-01"
   body     = {}
   tags = {
@@ -228,6 +238,9 @@ module "avm_res_web_site" {
       name                          = "primary-interfaces"
       private_dns_zone_resource_ids = [azapi_resource.private_dns_zone.id]
       subnet_resource_id            = azapi_resource.subnet.id
+      # Place the private endpoint in a dedicated networking resource group
+      # rather than the app's own resource group.
+      resource_group_name = azapi_resource.network_resource_group.name
 
       tags = {
         webapp = "${module.naming.function_app.name_unique}-interfaces"
@@ -357,6 +370,7 @@ The following resources are used by this module:
 - [azapi_resource.application_insights](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.log_analytics_workspace](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.network_interface](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.network_resource_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.network_security_group](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_dns_zone](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.private_dns_zone_virtual_network_link](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -440,13 +454,13 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/avm-utl-regions/azurerm
 
-Version: 0.11.0
+Version: 0.12.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

@@ -16,7 +16,7 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -159,8 +159,7 @@ module "avm_res_web_site" {
   parent_id                = azapi_resource.resource_group.id
   service_plan_resource_id = azapi_resource.service_plan.id
   app_settings = {
-    FUNCTIONS_RUNTIME_WORKER     = "node"
-    WEBSITE_NODE_DEFAULT_VERSION = "~18"
+    FUNCTIONS_RUNTIME_WORKER = "node"
   }
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
@@ -289,7 +288,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

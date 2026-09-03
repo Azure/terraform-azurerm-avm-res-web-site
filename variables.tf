@@ -49,6 +49,7 @@ A map of always-ready instances for Flex Consumption Function Apps.
 - `name`: The trigger type or function name. Valid values: `http`, `blob`, `durable`, `function:<target-function-app-name>`.
 - `instance_count`: The number of always-ready instances. Defaults to `0`.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "app_service_active_slot" {
@@ -402,6 +403,7 @@ A map of backup settings for the App Service.
   - `retention_period_days` - (Optional) The number of days to retain backups.
   - `start_time` - (Optional) The start time for the backup schedule.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "builtin_logging_enabled" {
@@ -499,6 +501,7 @@ A map of connection strings to assign to the App Service.
 - `type` - (Optional) The type of the connection string.
 - `value` - (Optional) The value of the connection string.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "container_size" {
@@ -596,6 +599,19 @@ DESCRIPTION
     error_message = "The log_level must be one of: `debug`, `error`, `info`, or `warn`."
     condition     = var.dapr_config == null || try(var.dapr_config.log_level, null) == null || can(index(["debug", "error", "info", "warn"], var.dapr_config.log_level))
   }
+}
+
+variable "delete_empty_service_plan" {
+  type        = bool
+  default     = true
+  description = <<DESCRIPTION
+(Optional) Should the App Service Plan be deleted when this app is deleted and it was the last app on that plan? Defaults to `true`, which matches the Azure REST API default.
+
+Set this to `false` to keep an empty App Service Plan, for example when the plan is shared with apps managed elsewhere, or is managed by a separate Terraform configuration.
+
+This maps to the `deleteEmptyServerFarm` query parameter on the `Microsoft.Web/sites` delete operation. See <https://learn.microsoft.com/rest/api/appservice/web-apps/delete>.
+DESCRIPTION
+  nullable    = false
 }
 
 variable "deployment_slots" {
@@ -1053,7 +1069,7 @@ A map of deployment slots to create for the App Service.
   - `private_service_connection_name` - (Optional) The private service connection name.
   - `network_interface_name` - (Optional) The network interface name.
   - `location` - (Optional) The Azure location.
-  - `resource_group_name` - (Optional) The resource group name.
+  - `resource_group_name` - (Optional) The resource group to deploy the private endpoint into. Accepts either a bare resource group name or a full resource group ID (`/subscriptions/{sub}/resourceGroups/{rg}`). Defaults to the resource group of the app.
   - `ip_configurations` - (Optional) A map of IP configurations.
     - `name` - (Required) The name of the IP configuration.
     - `private_ip_address` - (Required) The private IP address.
@@ -1207,13 +1223,27 @@ variable "end_to_end_encryption_enabled" {
 variable "fc1_runtime_name" {
   type        = string
   default     = null
-  description = "The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`."
+  description = "The Runtime of the Flex Consumption Function App. Possible values are `node`, `dotnet-isolated`, `powershell`, `python`, `java`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.fc1_runtime_name != null
+    error_message = "`fc1_runtime_name` is required when `function_app_uses_fc1` is `true`. Possible values are `node`, `dotnet-isolated`, `powershell`, `python` and `java`."
+  }
+  validation {
+    condition     = var.fc1_runtime_name == null || contains(["node", "dotnet-isolated", "powershell", "python", "java"], lower(coalesce(var.fc1_runtime_name, "node")))
+    error_message = "`fc1_runtime_name` must be one of `node`, `dotnet-isolated`, `powershell`, `python` or `java`."
+  }
 }
 
 variable "fc1_runtime_version" {
   type        = string
   default     = null
-  description = "The Runtime version of the Flex Consumption Function App."
+  description = "The Runtime version of the Flex Consumption Function App. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.fc1_runtime_version != null
+    error_message = "`fc1_runtime_version` is required when `function_app_uses_fc1` is `true`. Set it to the language version your Flex Consumption Function App targets, for example `20` for `node`."
+  }
 }
 
 variable "ftp_publish_basic_authentication_enabled" {
@@ -1225,7 +1255,12 @@ variable "ftp_publish_basic_authentication_enabled" {
 variable "function_app_uses_fc1" {
   type        = bool
   default     = false
-  description = "Should this Function App run on a Flex Consumption Plan? Defaults to `false`."
+  description = <<DESCRIPTION
+Should this Function App run on a Flex Consumption Plan? Defaults to `false`.
+
+When `true`, these variables become required: `fc1_runtime_name`, `fc1_runtime_version`, `storage_authentication_type` and `storage_container_endpoint`. `storage_user_assigned_identity_id` is also required when `storage_authentication_type` is `UserAssignedIdentity`.
+DESCRIPTION
+  nullable    = false
 }
 
 variable "functions_extension_version" {
@@ -1438,6 +1473,21 @@ DESCRIPTION
   }
 }
 
+variable "logic_app_node_version" {
+  type        = string
+  default     = "~22"
+  description = <<DESCRIPTION
+The Node.js version that the Logic App runtime uses on Windows, set through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`. Use a tilde so that Azure selects the latest available minor version within that major version.
+
+If you set both this variable and `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. Setting this variable to `null` also drops the key from the module's Logic App defaults. (Logic App)
+DESCRIPTION
+
+  validation {
+    condition     = var.logic_app_node_version == null ? true : can(regex("^~?\\d+(\\.\\d+){0,2}$", var.logic_app_node_version))
+    error_message = "The `logic_app_node_version` must be a Node.js version such as `~22` or `22.11.0`."
+  }
+}
+
 variable "logic_app_runtime_version" {
   type        = string
   default     = "~4"
@@ -1589,12 +1639,33 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `private_service_connection_name` - (Optional) The name of the private service connection.
 - `network_interface_name` - (Optional) The name of the network interface.
 - `location` - (Optional) The Azure location. Defaults to the resource group location.
-- `resource_group_name` - (Optional) The resource group. Defaults to the resource group of this resource.
+- `resource_group_name` - (Optional) The resource group to deploy the private endpoint into. Accepts either a bare resource group name or a full resource group ID (`/subscriptions/{sub}/resourceGroups/{rg}`). Defaults to the resource group of this resource.
 - `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
   - `name` - (Required) The name of the IP configuration.
   - `private_ip_address` - (Required) The private IP address.
 DESCRIPTION
   nullable    = false
+
+  validation {
+    condition = alltrue([
+      for rg in [for _, pe in var.private_endpoints : pe.resource_group_name if pe.resource_group_name != null] :
+      !startswith(rg, "/") || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+$", rg))
+    ])
+    error_message = "Each `private_endpoints[*].resource_group_name` must be either a bare resource group name or a full resource group ID of the form `/subscriptions/{sub}/resourceGroups/{rg}`."
+  }
+  # Deliberately a second block rather than another clause on the one above. An
+  # empty string passes that check (it does not start with "/", so the shape
+  # test never runs) and then reads as a bare name, producing a `parent_id` of
+  # `/subscriptions/{sub}/resourceGroups/` that only fails deep inside ARM.
+  # Separate blocks let the error name the actual problem instead of restating
+  # the general shape rule at someone who did not get the shape wrong.
+  validation {
+    condition = alltrue([
+      for rg in [for _, pe in var.private_endpoints : pe.resource_group_name if pe.resource_group_name != null] :
+      trimspace(rg) != ""
+    ])
+    error_message = "Each `private_endpoints[*].resource_group_name` must be non-empty when set. Omit it or set it to `null` to default to the resource group of this resource."
+  }
 }
 
 variable "private_endpoints_inherit_lock" {
@@ -1766,6 +1837,8 @@ variable "retry" {
   default     = {}
   description = <<DESCRIPTION
 Retry configuration for the AzAPI resources declared by this module and its submodules. Defaults to retrying the conflict Azure returns while another operation on the site is in progress.
+
+This variable is deliberately nullable: setting it to `null` is meaningful and distinct from the default. `null` disables retries entirely on every AzAPI resource this module and its submodules declare, whereas leaving it unset (or passing `{}`) applies the default retry-on-conflict behavior described below.
 
 - `error_message_regex` - (Optional) A list of regular expressions matched against error messages. A match triggers a retry.
 - `interval_seconds` - (Optional) The initial interval in seconds between retries.
@@ -2014,6 +2087,9 @@ variable "site_config" {
   description = <<DESCRIPTION
 An object that configures the App Service's site configuration. These map to the ARM API `siteConfig` properties.
 
+> [!NOTE]
+> When `function_app_uses_fc1` is `true`, Flex Consumption (FC1) sites reject several `siteConfig` properties with ARM error `51021`, so the module omits them: `always_on`, `application_stack` (and the `linux_fx_version`, `windows_fx_version`, `dotnet_framework_version`, `php_version`, `python_version`, `node_version`, `java_version`, `java_container`, `java_container_version`, and `powershell_version` values it derives), `app_scale_limit`, `ftps_state`, `pre_warmed_instance_count`, `runtime_scale_monitoring_enabled`, and `use_32_bit_worker`. Set the runtime with `fc1_runtime_name` and `fc1_runtime_version`, and the scaling limits with `maximum_instance_count`, `instance_memory_in_mb`, and `always_ready` instead.
+
 - `always_on` - (Optional) If this App is Always On enabled. Defaults to `true`.
 - `api_definition_url` - (Optional) The URL of the API definition.
 - `api_management_api_id` - (Optional) The ID of the API Management API.
@@ -2181,6 +2257,7 @@ An object that configures the App Service's site configuration. These map to the
     - `physical_path` - (Optional) The physical path.
     - `virtual_path` - (Optional) The virtual path.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "slot_sensitive_app_settings" {
@@ -2199,6 +2276,7 @@ A map of sensitive values (Storage Access Key) for the Storage Account SMB file 
 The key is the supplied input to `var.deployment_slots.<slot_key>.storage_shares_to_mount`.
 The value is the secret value (storage access key).
 DESCRIPTION
+  nullable    = false
   sensitive   = true
 }
 
@@ -2220,19 +2298,34 @@ A map of sticky settings to assign to the App Service.
 - `app_setting_names` - (Optional) A list of app setting names that should be sticky to the slot.
 - `connection_string_names` - (Optional) A list of connection string names that should be sticky to the slot.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account for the Function App."
+  description = "The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`."
   sensitive   = true
+
+  validation {
+    condition     = var.kind != "logicapp" || var.storage_account_access_key != null
+    error_message = "`storage_account_access_key` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+  }
 }
 
 variable "storage_account_name" {
   type        = string
   default     = null
-  description = "The name of the Storage Account for the Function App."
+  description = "The name of the Storage Account for the Function App. Required when `kind` is `logicapp`, and when `storage_uses_managed_identity` is `true`."
+
+  validation {
+    condition     = var.kind != "logicapp" || var.storage_account_name != null
+    error_message = "`storage_account_name` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+  }
+  validation {
+    condition     = var.storage_uses_managed_identity != true || var.storage_account_name != null
+    error_message = "`storage_account_name` is required when `storage_uses_managed_identity` is `true`, because it is used to set the `AzureWebJobsStorage__accountName` app setting."
+  }
 }
 
 variable "storage_account_required" {
@@ -2250,19 +2343,39 @@ variable "storage_account_share_name" {
 variable "storage_authentication_type" {
   type        = string
   default     = null
-  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`."
+  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.storage_authentication_type != null
+    error_message = "`storage_authentication_type` is required when `function_app_uses_fc1` is `true`. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity` and `UserAssignedIdentity`."
+  }
+  validation {
+    condition     = var.storage_authentication_type == null || contains(["storageaccountconnectionstring", "systemassignedidentity", "userassignedidentity"], lower(coalesce(var.storage_authentication_type, "systemassignedidentity")))
+    error_message = "`storage_authentication_type` must be one of `StorageAccountConnectionString`, `SystemAssignedIdentity` or `UserAssignedIdentity`."
+  }
 }
 
 variable "storage_container_endpoint" {
   type        = string
   default     = null
-  description = "The backend storage container endpoint for Flex Consumption Function Apps."
+  description = "The backend storage container endpoint for Flex Consumption Function Apps. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || var.storage_container_endpoint != null
+    error_message = "`storage_container_endpoint` is required when `function_app_uses_fc1` is `true`. Set it to the blob container that holds the deployment package."
+  }
 }
 
 variable "storage_container_type" {
   type        = string
-  default     = null
-  description = "The storage container type. The current supported type is `blobContainer`."
+  default     = "blobContainer"
+  description = "The storage container type used by Flex Consumption Function Apps. The only supported value today is `blobContainer`, which is the default. Ignored unless `function_app_uses_fc1` is `true`."
+  nullable    = false
+
+  validation {
+    condition     = lower(var.storage_container_type) == "blobcontainer"
+    error_message = "`storage_container_type` must be `blobContainer`, which is the only container type Flex Consumption currently supports."
+  }
 }
 
 variable "storage_shares_to_mount" {
@@ -2285,18 +2398,25 @@ A map of Storage Account file shares to mount to the App Service.
 - `share_name` - (Required) The name of the file share.
 - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
-  description = "The ID of the User Assigned Managed Identity for storage."
+  description = "The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`."
+
+  validation {
+    condition     = var.function_app_uses_fc1 != true || lower(coalesce(var.storage_authentication_type, "systemassignedidentity")) != "userassignedidentity" || var.storage_user_assigned_identity_id != null
+    error_message = "`storage_user_assigned_identity_id` is required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`. Set it to the resource ID of the identity that can read the deployment container."
+  }
 }
 
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Storage Account use a Managed Identity? Defaults to `false`."
+  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
+  nullable    = false
 }
 
 variable "tags" {

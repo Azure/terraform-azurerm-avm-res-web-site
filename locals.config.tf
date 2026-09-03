@@ -32,6 +32,25 @@ locals {
 }
 
 locals {
+  # Flex Consumption (FC1) sites reject a subset of siteConfig properties with
+  # ARM error 51021. The runtime stack is expressed through
+  # properties.functionAppConfig.runtime and scaling through
+  # properties.functionAppConfig.scaleAndConcurrency instead, so every field
+  # guarded by var.function_app_uses_fc1 below is omitted for FC1 apps.
+  #
+  # ARM names them: "The following list of 5 site configuration properties
+  # (Site.SiteConfig.FtpsState, Site.SiteConfig.Use32BitWorkerProcess,
+  # Site.SiteConfig.PreWarmedInstanceCount, Site.SiteConfig.NetFrameworkVersion,
+  # Site.SiteConfig.FunctionsRuntimeScaleMonitoringEnabled) for Flex Consumption
+  # sites is invalid." That settled #360: functionsRuntimeScaleMonitoringEnabled
+  # really is rejected, despite the azurerm provider's FC1 expander sending it.
+  #
+  # Enforcement is regional. Older stamps silently ignore these properties while
+  # newer ones reject them, and rejection is intended everywhere eventually, so a
+  # deployment that passes in one region proves nothing about the rest.
+  #
+  # minimumElasticInstanceCount is deliberately left alone: no 51021 report names
+  # it and the official FC deprecation table omits it. See #353.
   site_config_body = {
     alwaysOn            = var.function_app_uses_fc1 ? null : var.site_config.always_on
     apiDefinition       = var.site_config.api_definition_url != null ? { url = var.site_config.api_definition_url } : null
@@ -57,7 +76,7 @@ locals {
         reroutePercentage         = rule.reroute_percentage
       }]
     } : null
-    ftpsState = var.site_config.ftps_state
+    ftpsState = var.function_app_uses_fc1 ? null : var.site_config.ftps_state
     handlerMappings = var.site_config.handler_mappings != null ? [for hm in var.site_config.handler_mappings : {
       arguments       = hm.arguments
       extension       = hm.extension
@@ -80,7 +99,7 @@ locals {
     minTlsCipherSuite                      = var.site_config.min_tls_cipher_suite
     minTlsVersion                          = var.site_config.minimum_tls_version
     numberOfWorkers                        = var.site_config.worker_count
-    preWarmedInstanceCount                 = var.site_config.pre_warmed_instance_count
+    preWarmedInstanceCount                 = var.function_app_uses_fc1 ? null : var.site_config.pre_warmed_instance_count
     remoteDebuggingEnabled                 = var.site_config.remote_debugging_enabled
     remoteDebuggingVersion                 = var.site_config.remote_debugging_version
     requestTracingEnabled                  = var.site_config.request_tracing_enabled
@@ -90,28 +109,28 @@ locals {
     scmIpSecurityRestrictionsUseMain       = var.site_config.scm_use_main_ip_restriction
     scmMinTlsVersion                       = var.site_config.scm_minimum_tls_version
     tracingOptions                         = var.site_config.tracing_options
-    use32BitWorkerProcess                  = var.site_config.use_32_bit_worker
+    use32BitWorkerProcess                  = var.function_app_uses_fc1 ? null : var.site_config.use_32_bit_worker
     virtualApplications                    = local.virtual_applications
     vnetPrivatePortsCount                  = var.site_config.vnet_private_ports_count
     vnetRouteAllEnabled                    = var.site_config.vnet_route_all_enabled
     webSocketsEnabled                      = var.site_config.websockets_enabled
     websiteTimeZone                        = var.site_config.website_time_zone
-    linuxFxVersion                         = module.site_config_helpers.linux_fx_version
-    windowsFxVersion                       = module.site_config_helpers.windows_fx_version
-    netFrameworkVersion                    = module.site_config_helpers.net_framework_version
-    phpVersion                             = module.site_config_helpers.php_version
-    pythonVersion                          = module.site_config_helpers.python_version
-    nodeVersion                            = module.site_config_helpers.node_version
-    javaVersion                            = module.site_config_helpers.java_version
-    javaContainer                          = module.site_config_helpers.java_container
-    javaContainerVersion                   = module.site_config_helpers.java_container_version
-    powerShellVersion                      = module.site_config_helpers.powershell_version
-    functionsRuntimeScaleMonitoringEnabled = local.is_function_app ? var.site_config.runtime_scale_monitoring_enabled : null
+    linuxFxVersion                         = var.function_app_uses_fc1 ? null : module.site_config_helpers.linux_fx_version
+    windowsFxVersion                       = var.function_app_uses_fc1 ? null : module.site_config_helpers.windows_fx_version
+    netFrameworkVersion                    = var.function_app_uses_fc1 ? null : module.site_config_helpers.net_framework_version
+    phpVersion                             = var.function_app_uses_fc1 ? null : module.site_config_helpers.php_version
+    pythonVersion                          = var.function_app_uses_fc1 ? null : module.site_config_helpers.python_version
+    nodeVersion                            = var.function_app_uses_fc1 ? null : module.site_config_helpers.node_version
+    javaVersion                            = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_version
+    javaContainer                          = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container
+    javaContainerVersion                   = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container_version
+    powerShellVersion                      = var.function_app_uses_fc1 ? null : module.site_config_helpers.powershell_version
+    functionsRuntimeScaleMonitoringEnabled = local.is_function_app && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
     minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
     scmType                                = local.is_logic_app ? var.site_config.scm_type : null
     acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity
     acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
-    functionAppScaleLimit                  = local.is_function_app ? var.site_config.app_scale_limit : null
+    functionAppScaleLimit                  = local.is_function_app && !var.function_app_uses_fc1 ? var.site_config.app_scale_limit : null
     localMySqlEnabled                      = local.is_web_app ? var.site_config.local_mysql_enabled : null
     autoSwapSlotName                       = var.site_config.auto_swap_slot_name
   }

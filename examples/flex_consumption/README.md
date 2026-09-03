@@ -16,7 +16,7 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -134,9 +134,19 @@ module "avm_res_web_site" {
       azapi_resource.user_assigned_identity.id
     ]
   }
-  maximum_instance_count            = 100
-  os_type                           = "Linux"
-  public_network_access_enabled     = true
+  maximum_instance_count        = 100
+  os_type                       = "Linux"
+  public_network_access_enabled = true
+  # Regression coverage for issue #283: an FC1 site must not send
+  # siteConfig.linuxFxVersion (ARM error 51021), even when the caller supplies
+  # an application stack. The runtime comes from fc1_runtime_* instead.
+  site_config = {
+    application_stack = {
+      node = {
+        node_version = "20"
+      }
+    }
+  }
   storage_account_access_key        = data.azapi_resource_action.storage_keys.output.keys[0].value
   storage_authentication_type       = "UserAssignedIdentity"
   storage_container_endpoint        = azapi_resource.storage_container.id
@@ -239,7 +249,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

@@ -1,6 +1,6 @@
 module "avm_interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
-  version = "0.5.1"
+  version = "0.7.0"
 
   lock               = var.lock
   managed_identities = var.managed_identities
@@ -73,13 +73,15 @@ resource "azapi_resource" "private_endpoint" {
 
   location               = coalesce(try(var.private_endpoints[each.key].location, null), var.location)
   name                   = each.value.name
-  parent_id              = regex("^(/subscriptions/[^/]+/resourceGroups/[^/]+)", var.parent_id)[0]
+  parent_id              = local.private_endpoint_parent_ids[each.key]
   type                   = var.resource_types.network_private_endpoints
   body                   = each.value.body
   ignore_body_changes    = length(var.ignore_body_changes.network_private_endpoints) > 0 ? var.ignore_body_changes.network_private_endpoints : null
   response_export_values = []
   retry                  = var.retry
-  tags                   = each.value.tags
+  # Private endpoint tags are defined per endpoint by the AVM interface.
+  # tflint-ignore: azapi_resource_tag
+  tags = each.value.tags
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
