@@ -393,10 +393,10 @@ variable "backup" {
   description = <<DESCRIPTION
 A map of backup settings for the App Service.
 
-- `enabled` - (Optional) Is backup enabled? Defaults to `true`. A `schedule` is required whenever this is `true`; set it to `false` to disable the backup configuration.
+- `enabled` - (Optional) Is backup enabled? Defaults to `true`.
 - `name` - (Optional) The name of the backup.
 - `storage_account_url` - (Optional) The SAS URL to the Storage Account container for backup.
-- `schedule` - (Optional) A map of backup schedule settings. Required when `enabled` is `true`.
+- `schedule` - (Optional) A map of backup schedule settings.
   - `frequency_interval` - (Optional) How often the backup should be executed.
   - `frequency_unit` - (Optional) The unit of time for the backup frequency. Possible values are `Day` and `Hour`.
   - `keep_at_least_one_backup` - (Optional) Should at least one backup always be kept?
@@ -404,17 +404,6 @@ A map of backup settings for the App Service.
   - `start_time` - (Optional) The start time for the backup schedule.
 DESCRIPTION
   nullable    = false
-
-  validation {
-    # The App Service backup configuration API documents `enabled` as "true if
-    # the backup schedule is enabled (must be included in that case), false if
-    # the backup schedule should be disabled", and the 2025-03-01 schema types
-    # `backupSchedule` as a non-nullable object with four required members. There
-    # is no in-contract body for an enabled backup without a schedule, so reject
-    # it here rather than sending one and guessing at how Azure normalises it.
-    condition     = alltrue([for b in var.backup : b.schedule != null && length(b.schedule) > 0 if b.enabled])
-    error_message = "Every enabled `backup` entry must supply a `schedule`. Add one, or set `enabled = false` to disable the backup configuration."
-  }
 }
 
 variable "builtin_logging_enabled" {

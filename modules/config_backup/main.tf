@@ -19,14 +19,10 @@ resource "azapi_update_resource" "this" {
     # is unknown. The 2025-03-01 schema types `backupSchedule` as an object and
     # does not declare it nullable, so a null is out of contract either way.
     #
-    # That unknown is why `enabled` carries a validation instead of being relied
-    # on to paper over it. The API documents `enabled` as "true if the backup
-    # schedule is enabled (must be included in that case), false if the backup
-    # schedule should be disabled", so `enabled = true` without a schedule is
-    # rejected at plan time. A caller who wants to stop backing up sets
-    # `enabled = false`, which is the documented mechanism and does not depend on
-    # how Azure treats the transmitted null. The null is still sent as the best
-    # available clearing value; the disable is what actually carries the intent.
+    # A caller who wants to stop backing up sets `enabled = false`, which is the
+    # documented mechanism and does not depend on how Azure treats the
+    # transmitted null. The module continues to accept `enabled = true` without
+    # a schedule for compatibility with its existing public input contract.
     properties = {
       backupName        = var.backup_name
       enabled           = var.enabled

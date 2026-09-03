@@ -1,10 +1,8 @@
-// `schedule` is optional, so `backupSchedule = null` is reachable — but only
-// with `enabled = false`. The 2025-03-01 API documents `enabled` as "true if the
-// backup schedule is enabled (must be included in that case), false if the
-// backup schedule should be disabled", and types `backupSchedule` as an object
-// with four required members and no nullability, so there is no in-contract body
-// for an enabled backup without a schedule. `enabled = true` with no schedule is
-// rejected at variable validation instead of being sent.
+// `schedule` is optional, so `backupSchedule = null` is reachable. The module
+// has always accepted `enabled = true` without a schedule, even though the
+// 2025-03-01 API documents a schedule as required in that case. Preserve that
+// public input contract here; tightening it belongs in a separately classified
+// breaking change.
 //
 // When the schedule is absent the key is still emitted as an explicit `null`.
 // #377 omitted it instead, to match the treatment `authsettingsV2` needed for
@@ -94,9 +92,10 @@ run "scheduled_backup_sends_the_schedule" {
   }
 }
 
-// The combination the REST contract forbids must not reach Azure at all.
-run "enabled_without_a_schedule_is_rejected" {
-  command = plan
+// This shape was accepted before #384. Keep the compatibility assertion
+// separate from the disabled-backup clearing case above.
+run "enabled_without_a_schedule_remains_accepted" {
+  command = apply
 
   variables {
     backup_name         = "unit-test-backup"
@@ -104,5 +103,8 @@ run "enabled_without_a_schedule_is_rejected" {
     storage_account_url = "https://unittest.blob.core.windows.net/backups?sv=stub"
   }
 
-  expect_failures = [var.enabled]
+  assert {
+    condition     = azapi_update_resource.this.body.properties.enabled == true && azapi_update_resource.this.body.properties.backupSchedule == null
+    error_message = "An enabled backup without a schedule must remain accepted for compatibility with the existing public input contract."
+  }
 }

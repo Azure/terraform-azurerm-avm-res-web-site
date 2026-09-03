@@ -18,12 +18,7 @@ variable "backup_name" {
 variable "enabled" {
   type        = bool
   default     = true
-  description = "Is backup enabled? Defaults to `true`. A schedule is required whenever this is `true`; set it to `false` to disable the backup configuration."
-
-  validation {
-    condition     = !var.enabled || var.schedule != null
-    error_message = "`enabled` is `true` but no `schedule` was supplied. The App Service backup configuration API documents `enabled` as \"true if the backup schedule is enabled (must be included in that case), false if the backup schedule should be disabled\", and the 2025-03-01 schema types `backupSchedule` as a non-nullable object whose `frequencyInterval`, `frequencyUnit`, `keepAtLeastOneBackup` and `retentionPeriodInDays` members are all required. Supply `schedule`, or set `enabled = false` to disable backups."
-  }
+  description = "Is backup enabled? Defaults to `true`."
 }
 
 variable "ignore_body_changes" {
@@ -79,7 +74,7 @@ variable "schedule" {
   })
   default     = null
   description = <<DESCRIPTION
-The backup schedule configuration. Required whenever `enabled` is `true`.
+The backup schedule configuration.
 
 - `frequency_interval` - (Optional) How often the backup should be executed.
 - `frequency_unit` - (Optional) The unit of time for the backup frequency. Possible values are `Day` and `Hour`.
