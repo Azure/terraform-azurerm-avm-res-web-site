@@ -1,14 +1,16 @@
-// Companion coverage to `modules/config_authsettingsv2/tests/unit/null_nested_objects.tftest.hcl`
-// for the second body in this module that emitted a nested object as an explicit
-// `null` (#368). `schedule` is optional all the way up — the root passes `null`
-// whenever a `backup` entry omits its schedule — so `backupSchedule = null` was
-// reachable from ordinary configuration.
+// `schedule` is optional, so `backupSchedule = null` is reachable. The module
+// has always accepted `enabled = true` without a schedule, even though the
+// 2025-03-01 API documents a schedule as required in that case. Preserve that
+// public input contract here; tightening it belongs in a separately classified
+// breaking change.
 //
-// Unlike `authsettingsV2` there is no field report of Azure materialising this
-// particular sub-object, so this is the prophylactic half of the fix. It is
-// behaviour-preserving either way: omitting a key is exactly what the provider's
-// own `ignore_null_property` does before it sends the request, and a key that is
-// absent from `body` is never compared against the response.
+// When the schedule is absent the key is still emitted as an explicit `null`.
+// #377 omitted it instead, to match the treatment `authsettingsV2` needed for
+// #368. That was wrong here: `azapi_update_resource` merges the configured body
+// over what Azure already holds, so an omitted key keeps its previous value, and
+// removing a schedule would have stopped managing it rather than clearing it
+// (#378). Whether the transmitted null clears the stored schedule is unverified;
+// `enabled = false` is what carries the caller's intent either way.
 
 mock_provider "azapi" {}
 
@@ -16,29 +18,28 @@ variables {
   parent_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
 }
 
-run "unscheduled_backup_omits_the_schedule" {
+run "disabled_backup_clears_the_schedule" {
   command = apply
 
   variables {
     backup_name         = "unit-test-backup"
-    enabled             = true
+    enabled             = false
     storage_account_url = "https://unittest.blob.core.windows.net/backups?sv=stub"
   }
 
   assert {
-    condition     = !can(azapi_update_resource.this.body.properties.backupSchedule)
-    error_message = "`backupSchedule` must be absent from the body when no schedule is supplied, rather than emitted as null (#368)."
+    condition     = azapi_update_resource.this.body.properties.backupSchedule == null
+    error_message = "`backupSchedule` must be sent as an explicit null when no schedule is supplied, so removing a schedule clears it rather than leaving the previous one live (#378)."
   }
 
-  // The rest of the backup configuration is unconditional and must be unaffected
-  // by moving the schedule into a `merge` arm.
+  // The rest of the backup configuration is unconditional and must be unaffected.
   assert {
     condition     = try(nonsensitive(azapi_update_resource.this.body.properties.backupName) == "unit-test-backup", false)
     error_message = "`backupName` must still reach the body."
   }
 
   assert {
-    condition     = try(nonsensitive(azapi_update_resource.this.body.properties.enabled) == true, false)
+    condition     = try(nonsensitive(azapi_update_resource.this.body.properties.enabled) == false, false)
     error_message = "`enabled` must still reach the body."
   }
 
@@ -88,5 +89,22 @@ run "scheduled_backup_sends_the_schedule" {
   assert {
     condition     = try(nonsensitive(azapi_update_resource.this.body.properties.backupSchedule.startTime) == "2026-01-01T00:00:00Z", false)
     error_message = "A supplied `start_time` must reach the request body unchanged."
+  }
+}
+
+// This shape was accepted before #384. Keep the compatibility assertion
+// separate from the disabled-backup clearing case above.
+run "enabled_without_a_schedule_remains_accepted" {
+  command = apply
+
+  variables {
+    backup_name         = "unit-test-backup"
+    enabled             = true
+    storage_account_url = "https://unittest.blob.core.windows.net/backups?sv=stub"
+  }
+
+  assert {
+    condition     = azapi_update_resource.this.body.properties.enabled == true && azapi_update_resource.this.body.properties.backupSchedule == null
+    error_message = "An enabled backup without a schedule must remain accepted for compatibility with the existing public input contract."
   }
 }

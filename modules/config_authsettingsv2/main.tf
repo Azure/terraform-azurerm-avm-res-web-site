@@ -16,11 +16,9 @@ resource "azapi_update_resource" "this" {
           requireAuthentication       = var.require_authentication
           unauthenticatedClientAction = var.unauthenticated_client_action
         }
-        httpSettings = local.http_settings
-      },
-      local.identity_providers != null ? {
+        httpSettings      = local.http_settings
         identityProviders = local.identity_providers
-      } : {},
+      },
       local.login != null ? {
         login = local.login
       } : {},

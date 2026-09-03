@@ -3,29 +3,38 @@ resource "azapi_update_resource" "this" {
   parent_id = var.parent_id
   type      = var.resource_types.web_sites_config
   body = {
-    # `backupSchedule` is contributed by a conditional `merge` arm rather than
-    # emitted as an explicit `null`, so it is absent from the request body when
-    # no schedule is configured. That is what `ignore_null_property` would do if
-    # `azapi_update_resource` offered it, and a key absent from `body` is never
-    # compared against the response. Unlike `authsettingsV2` there is no field
-    # report of Azure materialising this sub-object; this is the same construct
-    # kept consistent rather than a confirmed repro. See #368.
-    properties = merge(
-      {
-        backupName        = var.backup_name
-        enabled           = var.enabled
-        storageAccountUrl = var.storage_account_url
-      },
-      var.schedule != null ? {
-        backupSchedule = {
-          frequencyInterval     = var.schedule.frequency_interval
-          frequencyUnit         = var.schedule.frequency_unit
-          keepAtLeastOneBackup  = var.schedule.keep_at_least_one_backup
-          retentionPeriodInDays = var.schedule.retention_period_days
-          startTime             = var.schedule.start_time
-        }
-      } : {},
-    )
+    # `backupSchedule` stays an explicit `null` when no schedule is configured.
+    # #377 briefly omitted the key instead, on the theory that a key absent from
+    # `body` is never compared against the response. That is true, and it is also
+    # why omission is the wrong tool here: `azapi_update_resource` merges the
+    # configured body over what Azure already holds, so an omitted key keeps its
+    # previous value. Removing a schedule would have stopped managing it rather
+    # than clearing it, with a clean plan throughout (#378, and #382 for the
+    # module-wide limits of `azapi_update_resource`).
+    #
+    # Verified: AzAPI's merge overwrites with an explicit null rather than
+    # dropping it, so the null is transmitted. NOT verified: what Azure does with
+    # it. No transition deployment — set a schedule, remove it, read it back —
+    # has been run, so whether the null clears the stored schedule or is ignored
+    # is unknown. The 2025-03-01 schema types `backupSchedule` as an object and
+    # does not declare it nullable, so a null is out of contract either way.
+    #
+    # A caller who wants to stop backing up sets `enabled = false`, which is the
+    # documented mechanism and does not depend on how Azure treats the
+    # transmitted null. The module continues to accept `enabled = true` without
+    # a schedule for compatibility with its existing public input contract.
+    properties = {
+      backupName        = var.backup_name
+      enabled           = var.enabled
+      storageAccountUrl = var.storage_account_url
+      backupSchedule = var.schedule != null ? {
+        frequencyInterval     = var.schedule.frequency_interval
+        frequencyUnit         = var.schedule.frequency_unit
+        keepAtLeastOneBackup  = var.schedule.keep_at_least_one_backup
+        retentionPeriodInDays = var.schedule.retention_period_days
+        startTime             = var.schedule.start_time
+      } : null
+    }
   }
   response_export_values = []
   retry                  = var.retry
