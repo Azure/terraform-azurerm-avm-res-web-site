@@ -5,7 +5,7 @@ resource "azapi_resource" "this" {
   type      = var.resource_types.web_certificates
   body = {
     properties = {
-      serverFarmId       = var.server_farm_id
+      serverFarmId       = local.server_farm_id
       keyVaultId         = var.key_vault_id
       keyVaultSecretName = var.key_vault_secret_name
       pfxBlob            = var.pfx_blob
