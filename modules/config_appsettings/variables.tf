@@ -18,12 +18,6 @@ variable "parent_id" {
   }
 }
 
-variable "is_slot" {
-  type        = bool
-  default     = false
-  description = "Whether the parent resource is a deployment slot. Defaults to `false`."
-}
-
 variable "ignore_body_changes" {
   type = object({
     web_sites_config       = optional(list(string), [])
@@ -38,6 +32,12 @@ The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and t
 - `web_sites_slots_config` - Paths ignored on the app settings on a slot.
 DESCRIPTION
   nullable    = false
+}
+
+variable "is_slot" {
+  type        = bool
+  default     = false
+  description = "Whether the parent resource is a deployment slot. Defaults to `false`."
 }
 
 variable "resource_types" {

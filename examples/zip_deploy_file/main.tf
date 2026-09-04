@@ -101,11 +101,11 @@ resource "azapi_resource" "container" {
 
 resource "azurerm_storage_blob" "app_zip" {
   name                   = "app.zip"
-  storage_account_name   = azapi_resource.storage_account.name
-  storage_container_name = azapi_resource.container.name
   type                   = "Block"
   content_md5            = data.archive_file.app.output_md5
   source                 = data.archive_file.app.output_path
+  storage_account_name   = azapi_resource.storage_account.name
+  storage_container_name = azapi_resource.container.name
 }
 
 resource "time_static" "sas" {}
