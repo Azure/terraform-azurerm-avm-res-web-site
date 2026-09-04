@@ -137,6 +137,11 @@ run "managed_identity_storage_requires_storage_account_name" {
     kind                          = "functionapp"
     os_type                       = "Linux"
     storage_uses_managed_identity = true
+    # An identity is separately required, and would otherwise fail its own
+    # validation and be reported as an unexpected failure alongside this one.
+    managed_identities = {
+      system_assigned = true
+    }
   }
 
   expect_failures = [var.storage_account_name]

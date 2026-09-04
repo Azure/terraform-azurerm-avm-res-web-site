@@ -2521,7 +2521,9 @@ Default: `null`
 
 ### <a name="input_storage_authentication_type"></a> [storage\_authentication\_type](#input\_storage\_authentication\_type)
 
-Description: The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
+Description: The authentication type Flex Consumption uses to read the deployment package from its blob container. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
+
+This is the deployment connection, `functionAppConfig.deployment.storage.authentication`, not the Functions host's own `AzureWebJobsStorage` connection. The host connection is separate and is configured with `storage_uses_managed_identity`; setting this one does not configure it.
 
 Type: `string`
 
@@ -2569,6 +2571,18 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_storage_user_assigned_identity_client_id"></a> [storage\_user\_assigned\_identity\_client\_id](#input\_storage\_user\_assigned\_identity\_client\_id)
+
+Description: (Optional) The client ID of the User Assigned Managed Identity the Functions host authenticates as when reaching the default storage account. Sets the `AzureWebJobsStorage__clientId` app setting.
+
+Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the app's system-assigned identity, for which the setting does not apply.
+
+This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_storage_user_assigned_identity_id"></a> [storage\_user\_assigned\_identity\_id](#input\_storage\_user\_assigned\_identity\_id)
 
 Description: The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
@@ -2579,7 +2593,15 @@ Default: `null`
 
 ### <a name="input_storage_uses_managed_identity"></a> [storage\_uses\_managed\_identity](#input\_storage\_uses\_managed\_identity)
 
-Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`.
+Description: Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`.
+
+When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned`, a user-assigned identity selected with `storage_user_assigned_identity_client_id`, or `AzureWebJobsStorage__clientId` supplied through `app_settings`.
+
+Omitting `AzureWebJobsStorage` does not delete it from an app that already has one. The module merges its settings over what Azure holds, so an existing app keeps its stale value and stays on the connection-string path. Delete the setting out of band before switching an existing app to identity-based auth. See #382.
+
+Flex Consumption apps may need this *and* `storage_authentication_type`, because they are two different storage connections. This one configures `AzureWebJobsStorage`, the host's own connection for function keys, timer-trigger singletons and trigger metadata, which every plan requires and without which the app cannot start. `storage_authentication_type` configures `functionAppConfig.deployment.storage.authentication`, which is only how the platform reads the deployment package out of its blob container. Configuring the deployment connection does not configure the host connection.
+
+The identity needs `Storage Blob Data Owner` on the host storage account, and `Storage Table Data Contributor` as well if you want the host to be able to write diagnostic events.
 
 Type: `bool`
 
