@@ -33,6 +33,19 @@ variable "host_names" {
   description = "(Optional) The host names the certificate applies to. If omitted, Azure derives them from the certificate's subject alternative names."
 }
 
+variable "ignore_body_changes" {
+  type = object({
+    web_certificates = optional(list(string), [])
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
+
+- `web_certificates` - Paths ignored on the certificate.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "key_vault_id" {
   type        = string
   default     = null
@@ -64,19 +77,6 @@ variable "pfx_blob" {
   default     = null
   description = "(Optional) The base64-encoded contents of the PFX file. Mutually exclusive with `key_vault_id`."
   sensitive   = true
-}
-
-variable "ignore_body_changes" {
-  type = object({
-    web_certificates = optional(list(string), [])
-  })
-  default     = {}
-  description = <<DESCRIPTION
-Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
-
-- `web_certificates` - Paths ignored on the certificate.
-DESCRIPTION
-  nullable    = false
 }
 
 variable "resource_types" {
