@@ -4,6 +4,28 @@ This is an Azure Verified Module (AVM) for deploying and managing Azure App Serv
 
 It supports Linux and Windows operating systems, deployment slots, custom domains, managed identities, private endpoints, diagnostic settings, Application Insights integration, IP restrictions, auto heal, storage mounts, and Flex Consumption plans.
 
+## Deprecated outputs
+
+`identity_principal_id` is a deprecated alias for
+`system_assigned_mi_principal_id`. Both evaluate the same expression, and
+[RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7) prescribes
+`system_assigned_mi_principal_id` as the Terraform name for a resource module's
+system-assigned managed identity principal ID. New configurations should use
+that name:
+
+```hcl
+principal_id = module.web_app.system_assigned_mi_principal_id
+```
+
+The alias stays. Published configurations pinned to earlier releases consume it,
+so dropping it would break them on their next version bump for no gain beyond
+tidiness. If it is ever removed, that will be called out as a breaking change in
+the release notes.
+
+The `slot` submodule is unaffected: it exposes only `identity_principal_id`, and
+the root module already projects that under the AVM name as
+`system_assigned_mi_principal_id_slots`.
+
 ## Migration from earlier module versions
 
 Starting with the `azapi`-based releases of this module, the main site resource
