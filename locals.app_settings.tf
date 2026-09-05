@@ -39,9 +39,23 @@ locals {
   logic_app_settings = local.is_logic_app ? merge(
     {
       FUNCTIONS_EXTENSION_VERSION = var.logic_app_runtime_version
-      FUNCTIONS_WORKER_RUNTIME    = "node"
       AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     },
+    # The Standard Logic App app settings reference documents `dotnet` as the
+    # required value: "This setting's value was previously set to `node`, but now
+    # the required value is `dotnet` for all new and existing deployed Standard
+    # logic apps. This change shouldn't affect your workflow's runtime, so
+    # everything should work the same way as before." The module shipped `node`.
+    #
+    # Guarded the same way #344 guarded WEBSITE_NODE_DEFAULT_VERSION, because
+    # module defaults merge *after* `var.app_settings` and would otherwise
+    # discard a caller's own entry without saying so. Unlike the Node version
+    # there is deliberately no root variable to null this out: Azure requires the
+    # setting, and the guard only yields when the caller has supplied a value of
+    # their own, so the key is always present.
+    !contains(local.app_settings_keys, "functions_worker_runtime") ? {
+      FUNCTIONS_WORKER_RUNTIME = "dotnet"
+    } : {},
     var.logic_app_node_version != null && !contains(local.app_settings_keys, "website_node_default_version") ? {
       WEBSITE_NODE_DEFAULT_VERSION = var.logic_app_node_version
     } : {},
