@@ -693,7 +693,7 @@ Default: `null`
 
 ### <a name="input_content_share_force_disabled"></a> [content\_share\_force\_disabled](#input\_content\_share\_force\_disabled)
 
-Description: Should content share be force disabled for the Function App? Defaults to `false`.
+Description: Should content share be force disabled for the Function App? Defaults to `false`. Ignored when `function_app_uses_fc1` is `true`: Flex Consumption apps have no content share, and `WEBSITE_CONTENTSHARE` is deprecated there.
 
 Type: `bool`
 
@@ -1438,7 +1438,11 @@ Default: `false`
 
 ### <a name="input_functions_extension_version"></a> [functions\_extension\_version](#input\_functions\_extension\_version)
 
-Description: The version of the Azure Functions runtime to use. Defaults to `~4`.
+Description: The version of the Azure Functions runtime to use, set through the `FUNCTIONS_EXTENSION_VERSION` app setting. Defaults to `~4`.
+
+Ignored when `function_app_uses_fc1` is `true`. Flex Consumption deprecates `FUNCTIONS_EXTENSION_VERSION` and the backend sets the value itself, so the module stops volunteering it. That governs what the module writes: an app that already carries the setting keeps its existing value, which Flex Consumption ignores regardless.
+
+If you set both this variable and `FUNCTIONS_EXTENSION_VERSION` in `var.app_settings`, the `var.app_settings` entry wins, under any casing — Azure treats app setting names as case-insensitive. That is also how you pin the setting on a Flex Consumption app despite the gate above. (Function App)
 
 Type: `string`
 
