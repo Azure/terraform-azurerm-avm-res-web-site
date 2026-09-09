@@ -1598,13 +1598,13 @@ DESCRIPTION
     condition     = !var.storage_uses_managed_identity || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || length(local.storage_user_assigned_identity_client_ids) == 1
     error_message = "`storage_uses_managed_identity` is `true` but the app has no identity to authenticate as. Set `managed_identities.system_assigned = true`, select a user-assigned identity with `storage_user_assigned_identity_client_id`, or supply `AzureWebJobsStorage__clientId` yourself through `app_settings`. With none of those, the Functions host is told to use a managed identity that does not exist and fails to start."
   }
-  # `AzureWebJobsStorage__clientId` selects among the identities *assigned to the
-  # app*, so a client ID for an identity that was never attached resolves to
-  # nothing. Client IDs and resource IDs are not comparable, so this can only
-  # check that some user-assigned identity is attached.
+  # `AzureWebJobsStorage__clientId` selects among the identities assigned to the
+  # app. Client IDs and resource IDs are not comparable, so this can prove only
+  # that at least one user-assigned identity is attached, not that the selected
+  # client ID belongs to that identity.
   validation {
     condition     = (var.storage_user_assigned_identity_client_id == null && length(local.storage_user_assigned_identity_client_ids) == 0) || length(var.managed_identities.user_assigned_resource_ids) > 0
-    error_message = "`storage_user_assigned_identity_client_id` and `app_settings.AzureWebJobsStorage__clientId` select a user-assigned identity, so one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The Functions host can only authenticate as an identity the app actually has."
+    error_message = "`storage_user_assigned_identity_client_id` and `app_settings.AzureWebJobsStorage__clientId` select a user-assigned identity, so at least one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The module cannot compare a client ID with those ARM resource IDs; ensure the selected client ID belongs to an attached identity."
   }
 }
 
@@ -2458,6 +2458,8 @@ variable "storage_user_assigned_identity_client_id" {
 Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the app's system-assigned identity, for which the setting does not apply.
 
 This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
+
+The module verifies that at least one user-assigned identity is attached when this value is set, but it cannot compare the client ID with the attached ARM resource IDs. Ensure this client ID belongs to one of those identities.
 DESCRIPTION
 
   validation {

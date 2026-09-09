@@ -2579,6 +2579,8 @@ Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the a
 
 This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
 
+The module verifies that at least one user-assigned identity is attached when this value is set, but it cannot compare the client ID with the attached ARM resource IDs. Ensure this client ID belongs to one of those identities.
+
 Type: `string`
 
 Default: `null`
