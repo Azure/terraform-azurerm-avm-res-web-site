@@ -73,6 +73,21 @@ variable "app_settings" {
 A map of key-value pairs for App Settings and custom values to assign to the App Service.
 These are set via the `Microsoft.Web/sites/config` (name: `appsettings`) sub-resource.
 DESCRIPTION
+
+  validation {
+    condition = (
+      length([
+        for key, value in coalesce(var.app_settings, {}) : value
+        if lower(key) == "azurewebjobsstorage__clientid"
+      ]) <= 1 &&
+      alltrue([
+        for key, value in coalesce(var.app_settings, {}) :
+        value == trimspace(value) && can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+        if lower(key) == "azurewebjobsstorage__clientid"
+      ])
+    )
+    error_message = "`app_settings` must contain at most one case-insensitive `AzureWebJobsStorage__clientId` entry, and its value must be a valid client ID UUID."
+  }
 }
 
 variable "application_insights_connection_string" {
@@ -1562,6 +1577,35 @@ Managed identities to be created for the resource.
 - `user_assigned_resource_ids` - (Optional) A set of user-assigned managed identity resource IDs to assign. Defaults to `[]`.
 DESCRIPTION
   nullable    = false
+
+  # `storage_uses_managed_identity` names an identity the Functions host must
+  # authenticate as, but on its own it does not create one. Without these guards a
+  # consumer can emit `AzureWebJobsStorage__credential = managedidentity` for an
+  # app that has no identity at all, which is the #367 startup failure reached by
+  # a different route. The failure surfaces at runtime, so the plan has to catch
+  # it.
+  #
+  # Supplying `AzureWebJobsStorage__clientId` through `var.app_settings` selects
+  # an identity just as well as the input does. The case-insensitive extraction
+  # in `locals.app_settings.tf` validates that path before allowing it to satisfy
+  # the identity requirement.
+  #
+  # `AzureWebJobsStorage__credential` deliberately does not count. It says *how*
+  # to authenticate, not *which* identity to authenticate as, so a caller who
+  # supplies it has told us no more than `storage_uses_managed_identity` already
+  # did. `__clientId` is the only key that names an identity.
+  validation {
+    condition     = !var.storage_uses_managed_identity || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || length(local.storage_user_assigned_identity_client_ids) == 1
+    error_message = "`storage_uses_managed_identity` is `true` but the app has no identity to authenticate as. Set `managed_identities.system_assigned = true`, select a user-assigned identity with `storage_user_assigned_identity_client_id`, or supply `AzureWebJobsStorage__clientId` yourself through `app_settings`. With none of those, the Functions host is told to use a managed identity that does not exist and fails to start."
+  }
+  # `AzureWebJobsStorage__clientId` selects among the identities assigned to the
+  # app. Client IDs and resource IDs are not comparable, so this can prove only
+  # that at least one user-assigned identity is attached, not that the selected
+  # client ID belongs to that identity.
+  validation {
+    condition     = (var.storage_user_assigned_identity_client_id == null && length(local.storage_user_assigned_identity_client_ids) == 0) || length(var.managed_identities.user_assigned_resource_ids) > 0
+    error_message = "`storage_user_assigned_identity_client_id` and `app_settings.AzureWebJobsStorage__clientId` select a user-assigned identity, so at least one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The module cannot compare a client ID with those ARM resource IDs; ensure the selected client ID belongs to an attached identity."
+  }
 }
 
 variable "maximum_instance_count" {
@@ -2343,7 +2387,11 @@ variable "storage_account_share_name" {
 variable "storage_authentication_type" {
   type        = string
   default     = null
-  description = "The authentication type for the backend storage account. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored."
+  description = <<DESCRIPTION
+The authentication type Flex Consumption uses to read the deployment package from its blob container. Possible values are `StorageAccountConnectionString`, `SystemAssignedIdentity`, and `UserAssignedIdentity`. Required when `function_app_uses_fc1` is `true`, otherwise ignored.
+
+This is the deployment connection, `functionAppConfig.deployment.storage.authentication`, not the Functions host's own `AzureWebJobsStorage` connection. The host connection is separate and is configured with `storage_uses_managed_identity`; setting this one does not configure it.
+DESCRIPTION
 
   validation {
     condition     = var.function_app_uses_fc1 != true || var.storage_authentication_type != null
@@ -2401,6 +2449,38 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "storage_user_assigned_identity_client_id" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+(Optional) The client ID of the User Assigned Managed Identity the Functions host authenticates as when reaching the default storage account. Sets the `AzureWebJobsStorage__clientId` app setting.
+
+Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the app's system-assigned identity, for which the setting does not apply.
+
+This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
+
+The module verifies that at least one user-assigned identity is attached when this value is set, but it cannot compare the client ID with the attached ARM resource IDs. Ensure this client ID belongs to one of those identities.
+DESCRIPTION
+
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || var.storage_uses_managed_identity
+    error_message = "`storage_user_assigned_identity_client_id` requires `storage_uses_managed_identity` to be `true`, because it only has meaning as part of an identity-based `AzureWebJobsStorage` connection."
+  }
+  # An empty string is not "unset": it satisfies every `!= null` check above and
+  # then reaches Azure as `AzureWebJobsStorage__clientId = ""`, a selector that
+  # names no identity. #346 was the same shape — an empty `resource_group_name`
+  # passed validation and built a malformed ID — and `trimspace` was the fix
+  # there too. Callers who mean "use the system-assigned identity" pass `null`.
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || trimspace(var.storage_user_assigned_identity_client_id) != ""
+    error_message = "`storage_user_assigned_identity_client_id` must be a client ID or `null`, not an empty string. An empty value is emitted as `AzureWebJobsStorage__clientId = \"\"`, which selects no identity and leaves the Functions host unable to authenticate to storage."
+  }
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || (var.storage_user_assigned_identity_client_id == trimspace(var.storage_user_assigned_identity_client_id) && can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.storage_user_assigned_identity_client_id)))
+    error_message = "`storage_user_assigned_identity_client_id` must be a valid client ID UUID or `null`."
+  }
+}
+
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
@@ -2415,7 +2495,17 @@ variable "storage_user_assigned_identity_id" {
 variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
-  description = "Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`. This applies to non-Flex Consumption Function Apps; Flex Consumption apps use `storage_authentication_type` instead. Requires `storage_account_name` when `true`."
+  description = <<DESCRIPTION
+Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`.
+
+When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned`, a user-assigned identity selected with `storage_user_assigned_identity_client_id`, or `AzureWebJobsStorage__clientId` supplied through `app_settings`.
+
+Omitting `AzureWebJobsStorage` does not delete it from an app that already has one. The module merges its settings over what Azure holds, so an existing app keeps its stale value and stays on the connection-string path. Delete the setting out of band before switching an existing app to identity-based auth. See #382.
+
+Flex Consumption apps may need this *and* `storage_authentication_type`, because they are two different storage connections. This one configures `AzureWebJobsStorage`, the host's own connection for function keys, timer-trigger singletons and trigger metadata, which every plan requires and without which the app cannot start. `storage_authentication_type` configures `functionAppConfig.deployment.storage.authentication`, which is only how the platform reads the deployment package out of its blob container. Configuring the deployment connection does not configure the host connection.
+
+The identity needs `Storage Blob Data Owner` on the host storage account, and `Storage Table Data Contributor` as well if you want the host to be able to write diagnostic events.
+DESCRIPTION
   nullable    = false
 }
 

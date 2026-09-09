@@ -1,3 +1,11 @@
+output "host_storage_binding" {
+  description = "The identity-based host storage settings Azure stored for the Function App."
+  value = {
+    account_name = try(nonsensitive(data.azapi_resource_action.app_settings.sensitive_output.properties.AzureWebJobsStorage__accountName), null)
+    credential   = try(nonsensitive(data.azapi_resource_action.app_settings.sensitive_output.properties.AzureWebJobsStorage__credential), null)
+  }
+}
+
 output "location" {
   description = "This is the full output for the resource."
   value       = module.avm_res_web_site.location
