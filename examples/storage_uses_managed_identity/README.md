@@ -8,6 +8,17 @@ By setting `storage_uses_managed_identity = true` and enabling a system-assigned
 
 The example uses `kind = "functionapp"` and `os_type = "Windows"`.
 
+It reads the deployed app settings back from Azure and verifies the
+identity-based setting pair is present and the plain `AzureWebJobsStorage`
+connection string is absent. The assertions are data-source postconditions, so
+an incorrect deployed value fails the E2E run rather than producing a warning.
+Only those three paths are exported, and they are kept in AzAPI's sensitive
+output so an unexpected connection string is not written to ordinary state.
+
+These checks prove the configuration Azure stored for a new deployment. The
+example does not deploy function code, so it does not prove Functions host
+startup or an existing app's transition from a connection string.
+
 ```hcl
 resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
@@ -165,6 +176,7 @@ The following resources are used by this module:
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 - [random_uuid.role_assignment](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
 - [azapi_client_config.current](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
+- [azapi_resource_action.app_settings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_action) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

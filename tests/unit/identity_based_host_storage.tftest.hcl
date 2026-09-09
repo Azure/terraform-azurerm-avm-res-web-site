@@ -218,6 +218,38 @@ run "whitespace_client_id_is_rejected" {
   expect_failures = [var.storage_user_assigned_identity_client_id]
 }
 
+run "malformed_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity            = true
+    storage_user_assigned_identity_client_id = "not-a-client-id"
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+  }
+
+  expect_failures = [var.storage_user_assigned_identity_client_id]
+}
+
+run "padded_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity            = true
+    storage_user_assigned_identity_client_id = " 11111111-2222-3333-4444-555555555555 "
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+  }
+
+  expect_failures = [var.storage_user_assigned_identity_client_id]
+}
+
 # Supplying `AzureWebJobsStorage__clientId` through `app_settings` selects an
 # identity just as well as `storage_user_assigned_identity_client_id` does, and
 # the override guards above exist so that a caller can. This is what
@@ -275,6 +307,92 @@ run "caller_supplied_client_id_is_matched_case_insensitively" {
     condition     = local.merged_app_settings["azurewebjobsstorage__clientid"] == "99999999-8888-7777-6666-555555555555"
     error_message = "A lowercased caller-supplied client ID must satisfy the identity requirement and reach the app unchanged."
   }
+}
+
+run "caller_supplied_empty_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      AzureWebJobsStorage__clientId = ""
+    }
+  }
+
+  expect_failures = [var.app_settings]
+}
+
+run "caller_supplied_malformed_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      AzureWebJobsStorage__clientId = "not-a-client-id"
+    }
+  }
+
+  expect_failures = [var.app_settings]
+}
+
+run "caller_supplied_padded_client_id_is_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      AzureWebJobsStorage__clientId = " 99999999-8888-7777-6666-555555555555 "
+    }
+  }
+
+  expect_failures = [var.app_settings]
+}
+
+run "caller_supplied_client_id_requires_an_attached_identity" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    app_settings = {
+      AzureWebJobsStorage__clientId = "99999999-8888-7777-6666-555555555555"
+    }
+  }
+
+  expect_failures = [var.managed_identities]
+}
+
+run "case_insensitive_duplicate_client_ids_are_rejected" {
+  command = plan
+
+  variables {
+    storage_uses_managed_identity = true
+    managed_identities = {
+      user_assigned_resource_ids = [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-avm-test",
+      ]
+    }
+    app_settings = {
+      AzureWebJobsStorage__clientId = "99999999-8888-7777-6666-555555555555"
+      azurewebjobsstorage__clientid = "11111111-2222-3333-4444-555555555555"
+    }
+  }
+
+  expect_failures = [var.app_settings]
 }
 
 # `__credential` says *how* to authenticate, not *which* identity to authenticate

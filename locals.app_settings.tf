@@ -8,6 +8,10 @@ locals {
   # one who writes `WEBSITE_NODE_DEFAULT_VERSION` and must suppress the module
   # default just the same.
   app_settings_keys = [for key in keys(local.app_settings) : lower(key)]
+  storage_user_assigned_identity_client_ids = [
+    for key, value in local.app_settings : value
+    if lower(key) == "azurewebjobsstorage__clientid"
+  ]
   application_insights_connection_string = try(coalesce(
     var.site_config.application_insights_connection_string,
     var.application_insights_connection_string,

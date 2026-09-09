@@ -73,6 +73,21 @@ variable "app_settings" {
 A map of key-value pairs for App Settings and custom values to assign to the App Service.
 These are set via the `Microsoft.Web/sites/config` (name: `appsettings`) sub-resource.
 DESCRIPTION
+
+  validation {
+    condition = (
+      length([
+        for key, value in coalesce(var.app_settings, {}) : value
+        if lower(key) == "azurewebjobsstorage__clientid"
+      ]) <= 1 &&
+      alltrue([
+        for key, value in coalesce(var.app_settings, {}) :
+        value == trimspace(value) && can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+        if lower(key) == "azurewebjobsstorage__clientid"
+      ])
+    )
+    error_message = "`app_settings` must contain at most one case-insensitive `AzureWebJobsStorage__clientId` entry, and its value must be a valid client ID UUID."
+  }
 }
 
 variable "application_insights_connection_string" {
@@ -1571,19 +1586,16 @@ DESCRIPTION
   # it.
   #
   # Supplying `AzureWebJobsStorage__clientId` through `var.app_settings` selects
-  # an identity just as well as the input does. That is a supported path, not a
-  # workaround — the case-insensitive override guards in `locals.app_settings.tf`
-  # exist so a caller can set that key themselves, and
-  # polymind-inc/terraform-azurerm-acmebot does exactly that today. A validation
-  # that rejects a configuration which works is worse than the hole it closes, so
-  # the caller-supplied key counts.
+  # an identity just as well as the input does. The case-insensitive extraction
+  # in `locals.app_settings.tf` validates that path before allowing it to satisfy
+  # the identity requirement.
   #
   # `AzureWebJobsStorage__credential` deliberately does not count. It says *how*
   # to authenticate, not *which* identity to authenticate as, so a caller who
   # supplies it has told us no more than `storage_uses_managed_identity` already
   # did. `__clientId` is the only key that names an identity.
   validation {
-    condition     = !var.storage_uses_managed_identity || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || contains(local.app_settings_keys, "azurewebjobsstorage__clientid")
+    condition     = !var.storage_uses_managed_identity || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || length(local.storage_user_assigned_identity_client_ids) == 1
     error_message = "`storage_uses_managed_identity` is `true` but the app has no identity to authenticate as. Set `managed_identities.system_assigned = true`, select a user-assigned identity with `storage_user_assigned_identity_client_id`, or supply `AzureWebJobsStorage__clientId` yourself through `app_settings`. With none of those, the Functions host is told to use a managed identity that does not exist and fails to start."
   }
   # `AzureWebJobsStorage__clientId` selects among the identities *assigned to the
@@ -1591,8 +1603,8 @@ DESCRIPTION
   # nothing. Client IDs and resource IDs are not comparable, so this can only
   # check that some user-assigned identity is attached.
   validation {
-    condition     = var.storage_user_assigned_identity_client_id == null || length(var.managed_identities.user_assigned_resource_ids) > 0
-    error_message = "`storage_user_assigned_identity_client_id` selects a user-assigned identity, so one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The Functions host can only authenticate as an identity the app actually has."
+    condition     = (var.storage_user_assigned_identity_client_id == null && length(local.storage_user_assigned_identity_client_ids) == 0) || length(var.managed_identities.user_assigned_resource_ids) > 0
+    error_message = "`storage_user_assigned_identity_client_id` and `app_settings.AzureWebJobsStorage__clientId` select a user-assigned identity, so one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The Functions host can only authenticate as an identity the app actually has."
   }
 }
 
@@ -2460,6 +2472,10 @@ DESCRIPTION
   validation {
     condition     = var.storage_user_assigned_identity_client_id == null || trimspace(var.storage_user_assigned_identity_client_id) != ""
     error_message = "`storage_user_assigned_identity_client_id` must be a client ID or `null`, not an empty string. An empty value is emitted as `AzureWebJobsStorage__clientId = \"\"`, which selects no identity and leaves the Functions host unable to authenticate to storage."
+  }
+  validation {
+    condition     = var.storage_user_assigned_identity_client_id == null || (var.storage_user_assigned_identity_client_id == trimspace(var.storage_user_assigned_identity_client_id) && can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.storage_user_assigned_identity_client_id)))
+    error_message = "`storage_user_assigned_identity_client_id` must be a valid client ID UUID or `null`."
   }
 }
 
