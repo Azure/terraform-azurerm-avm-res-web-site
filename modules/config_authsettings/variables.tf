@@ -105,6 +105,20 @@ Google authentication configuration.
 DESCRIPTION
 }
 
+variable "ignore_body_changes" {
+  type = object({
+    web_sites_config = optional(list(string), [])
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
+
+The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and this module manages its resource with a type that does not accept the argument. The variable exists for interface consistency; setting a non-empty value fails the plan with an explicit error rather than being silently ignored.
+- `web_sites_config` - Paths ignored on the v1 auth settings.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "issuer" {
   type        = string
   default     = null
@@ -127,20 +141,6 @@ Microsoft authentication configuration.
 - `client_secret_setting_name` - (Optional) The app setting name that contains the client secret.
 - `oauth_scopes` - (Optional) A list of OAuth scopes to request.
 DESCRIPTION
-}
-
-variable "ignore_body_changes" {
-  type = object({
-    web_sites_config = optional(list(string), [])
-  })
-  default     = {}
-  description = <<DESCRIPTION
-Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Paths use dot notation, and a change takes effect only after an apply.
-
-The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and this module manages its resource with a type that does not accept the argument. The variable exists for interface consistency; setting a non-empty value fails the plan with an explicit error rather than being silently ignored.
-- `web_sites_config` - Paths ignored on the v1 auth settings.
-DESCRIPTION
-  nullable    = false
 }
 
 variable "resource_types" {
@@ -195,6 +195,7 @@ Per-operation timeouts applied to the AzAPI resources declared by this module. D
 - `update` - (Optional) Timeout for update operations.
 DESCRIPTION
 }
+
 variable "token_refresh_extension_hours" {
   type        = number
   default     = 72

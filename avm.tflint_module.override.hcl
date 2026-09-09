@@ -1,11 +1,11 @@
-rule "required_output_rmfr7" {
+rule "avm_output_resource_id_required" {
   enabled = false
 }
 
-rule "required_module_source_tffr1" {
+rule "avm_terraform_module_source_required" {
   enabled = false
 }
 
-rule "private_endpoints" {
+rule "avm_interface_private_endpoints" {
   enabled = false
 }

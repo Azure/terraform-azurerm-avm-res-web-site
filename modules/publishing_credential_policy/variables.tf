@@ -29,12 +29,6 @@ variable "allow" {
   description = "Should basic authentication be allowed for this publishing credential type? Defaults to `false`."
 }
 
-variable "is_slot" {
-  type        = bool
-  default     = false
-  description = "Whether the parent resource is a deployment slot. Defaults to `false`."
-}
-
 variable "ignore_body_changes" {
   type = object({
     web_sites_basic_publishing_credentials_policies       = optional(list(string), [])
@@ -49,6 +43,12 @@ The AzAPI provider exposes `ignore_body_changes` on `azapi_resource` only, and t
 - `web_sites_slots_basic_publishing_credentials_policies` - Paths ignored on the publishing credential policy on a slot.
 DESCRIPTION
   nullable    = false
+}
+
+variable "is_slot" {
+  type        = bool
+  default     = false
+  description = "Whether the parent resource is a deployment slot. Defaults to `false`."
 }
 
 variable "resource_types" {

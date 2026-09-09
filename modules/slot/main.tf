@@ -150,10 +150,10 @@ resource "azapi_resource" "this" {
       } : null
     }
   }
-  ignore_body_changes = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
   delete_query_parameters = {
     deleteEmptyServerFarm = [tostring(var.delete_empty_service_plan)]
   }
+  ignore_body_changes  = length(var.ignore_body_changes.web_sites_slots) > 0 ? var.ignore_body_changes.web_sites_slots : null
   ignore_null_property = true
   response_export_values = [
     "identity.principalId",
@@ -216,8 +216,8 @@ module "config_azurestorageaccounts" {
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
     access_key = var.storage_shares_access_keys[k]
   }) }
-  is_slot             = true
   ignore_body_changes = var.ignore_body_changes.config_azurestorageaccounts
+  is_slot             = true
   resource_types      = var.resource_types.config_azurestorageaccounts
   retry               = var.retry
   timeouts            = var.timeouts
