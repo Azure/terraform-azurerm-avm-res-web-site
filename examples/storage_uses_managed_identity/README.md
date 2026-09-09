@@ -201,6 +201,10 @@ Default: `true`
 
 The following outputs are exported:
 
+### <a name="output_host_storage_binding"></a> [host\_storage\_binding](#output\_host\_storage\_binding)
+
+Description: The identity-based host storage settings Azure stored for the Function App.
+
 ### <a name="output_location"></a> [location](#output\_location)
 
 Description: This is the full output for the resource.
