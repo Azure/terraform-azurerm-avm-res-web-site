@@ -116,10 +116,11 @@ run "non_fc1_extension_version_is_configurable" {
 # without an explicit gate it silently overwrites whatever the consumer set
 # here. This is the same shape #344 fixed for WEBSITE_NODE_DEFAULT_VERSION.
 #
-# This run, `app_settings_wins_when_both_inputs_are_set` and
-# `lowercase_app_settings_entry_beats_the_module_default` are the discriminating
-# set for the `!contains(local.app_settings_keys, ...)` clause: strip it and
-# those three alone fail, while the rest still pass.
+# This run, `app_settings_wins_when_both_inputs_are_set`,
+# `lowercase_app_settings_entry_beats_the_module_default` and
+# `an_explicit_null_app_settings_entry_still_suppresses_the_default` are the
+# discriminating set for the `!contains(local.app_settings_keys, ...)` clause:
+# strip it and those four alone fail, while the rest still pass.
 run "explicit_app_settings_entry_beats_the_module_default" {
   command = apply
 
@@ -199,6 +200,27 @@ run "fc1_keeps_an_explicit_app_settings_entry" {
   assert {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == "~4"
     error_message = "Gating the module default must not strip a `FUNCTIONS_EXTENSION_VERSION` the caller set explicitly through `var.app_settings`."
+  }
+}
+
+# A caller who writes the key with an explicit `null` has still *set* it, so the
+# guard yields and the module's own value stays out. The entry survives into the
+# request body as a JSON null rather than disappearing, which is the behavior
+# #384 settled on for the module generally; whether Azure then clears the setting
+# or ignores the null is the open question in #382, and nothing here can answer
+# it.
+run "an_explicit_null_app_settings_entry_still_suppresses_the_default" {
+  command = apply
+
+  variables {
+    app_settings = {
+      FUNCTIONS_EXTENSION_VERSION = null
+    }
+  }
+
+  assert {
+    condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == null
+    error_message = "An explicit `null` is a caller-set key, so the module must not overwrite it with `functions_extension_version`."
   }
 }
 
