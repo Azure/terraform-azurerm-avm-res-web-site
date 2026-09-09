@@ -1,8 +1,9 @@
 data "azapi_resource_action" "app_settings" {
-  type        = "Microsoft.Web/sites@2025-03-01"
-  resource_id = module.avm_res_web_site.resource_id
-  action      = "config/appsettings/list"
-  method      = "POST"
+  action                 = "config/appsettings/list"
+  method                 = "POST"
+  resource_id            = module.avm_res_web_site.resource_id
+  type                   = "Microsoft.Web/sites@2025-03-01"
+  response_export_values = []
   sensitive_response_export_values = [
     "properties.AzureWebJobsStorage",
     "properties.AzureWebJobsStorage__accountName",
@@ -23,6 +24,5 @@ data "azapi_resource_action" "app_settings" {
       error_message = "A new identity-based host storage deployment must not retain a plain AzureWebJobsStorage connection string."
     }
   }
-
   depends_on = [module.avm_res_web_site]
 }
