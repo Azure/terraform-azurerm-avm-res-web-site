@@ -1,9 +1,3 @@
-output "identity_principal_id" {
-  description = "The principal ID for the identity."
-  sensitive   = true
-  value       = module.avm_res_web_site.identity_principal_id
-}
-
 output "location" {
   description = "This is the full output for the resource."
   value       = module.avm_res_web_site.location
@@ -38,4 +32,10 @@ output "storage_account_id" {
 output "storage_account_name" {
   description = "Full output of storage account created"
   value       = azapi_resource.storage_account.name
+}
+
+output "system_assigned_mi_principal_id" {
+  description = "The principal ID for the identity."
+  sensitive   = true
+  value       = module.avm_res_web_site.system_assigned_mi_principal_id
 }

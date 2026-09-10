@@ -6,6 +6,40 @@ This is an Azure Verified Module (AVM) for deploying and managing Azure App Serv
 
 It supports Linux and Windows operating systems, deployment slots, custom domains, managed identities, private endpoints, diagnostic settings, Application Insights integration, IP restrictions, auto heal, storage mounts, and Flex Consumption plans.
 
+## Deprecated outputs
+
+`identity_principal_id` is a deprecated alias for
+`system_assigned_mi_principal_id`. Both evaluate the same expression, and
+[RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7) prescribes
+`system_assigned_mi_principal_id` as the Terraform name for a resource module's
+system-assigned managed identity principal ID. New configurations should use
+that name:
+
+```hcl
+principal_id = module.web_app.system_assigned_mi_principal_id
+```
+
+The alias stays. Published configurations pinned to earlier releases consume it,
+so dropping it would break them on their next version bump for no gain beyond
+tidiness. If it is ever removed, that will be called out as a breaking change in
+the release notes.
+
+Terraform 1.15 added a native `deprecated` argument for `output` blocks
+([hashicorp/terraform#38001](https://github.com/hashicorp/terraform/issues/38001)),
+which makes Terraform warn any caller that references the output. This module
+does not use it, and cannot: Terraform rejects `deprecated` on an output
+belonging to whichever module is currently the *root* — "Root module outputs
+cannot be deprecated, as there is no higher-level module to inform of the
+deprecation" — and this module is loaded as the root by its own
+`terraform validate` and unit tests. Adopting the argument would buy consumers a
+warning at the cost of a module that no longer validates or tests standalone, so
+the deprecation is recorded in prose here and in the output's description
+instead. This is unchanged as of Terraform 1.16.
+
+The `slot` submodule is unaffected: it exposes only `identity_principal_id`, and
+the root module already projects that under the AVM name as
+`system_assigned_mi_principal_id_slots`.
+
 ## Migration from earlier module versions
 
 Starting with the `azapi`-based releases of this module, the main site resource
@@ -2747,7 +2781,18 @@ Description: A map of deployment slots with their names and resource IDs. The ma
 
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
-Description: The system-assigned managed identity principal ID of the resource.
+Description: DEPRECATED, use `system_assigned_mi_principal_id` instead; the principal ID of  
+the site's system-assigned managed identity, or `null` when the site has none.
+
+Both outputs evaluate the same expression. AVM prescribes
+`system_assigned_mi_principal_id` as the Terraform name for this output
+([RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7)), so new  
+configurations should use that name. This alias is retained for existing  
+consumers; removing it would be a breaking change and would be announced as  
+one.
+
+Terraform's native `deprecated` output argument is deliberately not used here;  
+see "Deprecated outputs" in the README for why it cannot be.
 
 ### <a name="output_kind"></a> [kind](#output\_kind)
 
@@ -2783,7 +2828,12 @@ Description: The default hostname of the resource.
 
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 
-Description: The system-assigned managed identity principal ID.
+Description: The principal ID of the site's system-assigned managed identity, or `null` when  
+the site has none.
+
+This is the output name AVM prescribes
+([RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7)). Prefer it  
+over the deprecated `identity_principal_id` alias.
 
 ### <a name="output_system_assigned_mi_principal_id_slots"></a> [system\_assigned\_mi\_principal\_id\_slots](#output\_system\_assigned\_mi\_principal\_id\_slots)
 

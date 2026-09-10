@@ -408,10 +408,6 @@ Default: `true`
 
 The following outputs are exported:
 
-### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
-
-Description: The principal ID for the identity.
-
 ### <a name="output_location"></a> [location](#output\_location)
 
 Description: This is the full output for the resource.
@@ -439,6 +435,10 @@ Description: The ID of the storage account
 ### <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name)
 
 Description: Full output of storage account created
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: The principal ID for the identity.
 
 ## Modules
 
