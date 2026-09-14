@@ -25,16 +25,10 @@ tidiness. If it is ever removed, that will be called out as a breaking change in
 the release notes.
 
 Terraform 1.15 added a native `deprecated` argument for `output` blocks
-([hashicorp/terraform#38001](https://github.com/hashicorp/terraform/issues/38001)),
-which makes Terraform warn any caller that references the output. This module
-does not use it, and cannot: Terraform rejects `deprecated` on an output
-belonging to whichever module is currently the *root* — "Root module outputs
-cannot be deprecated, as there is no higher-level module to inform of the
-deprecation" — and this module is loaded as the root by its own
-`terraform validate` and unit tests. Adopting the argument would buy consumers a
-warning at the cost of a module that no longer validates or tests standalone, so
-the deprecation is recorded in prose here and in the output's description
-instead. This is unchanged as of Terraform 1.16.
+([hashicorp/terraform#38001](https://github.com/hashicorp/terraform/issues/38001)).
+This module uses it so Terraform warns when a configuration references the
+alias. The native warning is why this release raises the minimum supported
+Terraform version to 1.15.
 
 The `slot` submodule is unaffected: it exposes only `identity_principal_id`, and
 the root module already projects that under the AVM name as
@@ -2790,9 +2784,6 @@ Both outputs evaluate the same expression. AVM prescribes
 configurations should use that name. This alias is retained for existing  
 consumers; removing it would be a breaking change and would be announced as  
 one.
-
-Terraform's native `deprecated` output argument is deliberately not used here;  
-see "Deprecated outputs" in the README for why it cannot be.
 
 ### <a name="output_kind"></a> [kind](#output\_kind)
 

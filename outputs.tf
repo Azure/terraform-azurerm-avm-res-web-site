@@ -33,6 +33,7 @@ output "deployment_slots" {
 # prescribes, but this alias predates it and published configurations pinned to
 # earlier releases consume it. See "Deprecated outputs" in the README.
 output "identity_principal_id" {
+  deprecated  = "Use `system_assigned_mi_principal_id` instead."
   description = <<DESCRIPTION
 DEPRECATED, use `system_assigned_mi_principal_id` instead; the principal ID of
 the site's system-assigned managed identity, or `null` when the site has none.
@@ -43,9 +44,6 @@ Both outputs evaluate the same expression. AVM prescribes
 configurations should use that name. This alias is retained for existing
 consumers; removing it would be a breaking change and would be announced as
 one.
-
-Terraform's native `deprecated` output argument is deliberately not used here;
-see "Deprecated outputs" in the README for why it cannot be.
 DESCRIPTION
   value       = try(azapi_resource.this.output.identity.principalId, null)
 }
