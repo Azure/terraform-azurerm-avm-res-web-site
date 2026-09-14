@@ -23,10 +23,22 @@ tidiness. If it is ever removed, that will be called out as a breaking change in
 the release notes.
 
 Terraform 1.15 added a native `deprecated` argument for `output` blocks
-([hashicorp/terraform#38001](https://github.com/hashicorp/terraform/issues/38001)).
-This module uses it so Terraform warns when a configuration references the
-alias. The native warning is why this release raises the minimum supported
-Terraform version to 1.15.
+([hashicorp/terraform#38001](https://github.com/hashicorp/terraform/issues/38001)),
+which makes Terraform warn at every reference to the alias. This module cannot
+use it yet, because Terraform rejects `deprecated` when this reusable module is
+tested or validated directly:
+
+```text
+Root module outputs cannot be deprecated, as there is no higher-level module to
+inform of the deprecation.
+```
+
+The missing reusable-module contexts are tracked in
+[hashicorp/terraform#39207](https://github.com/hashicorp/terraform/issues/39207)
+for `terraform test` and
+[hashicorp/terraform#39208](https://github.com/hashicorp/terraform/issues/39208)
+for `terraform validate`. Until Terraform provides them, the deprecation is
+recorded here and in the output description instead.
 
 The `slot` submodule is unaffected: it exposes only `identity_principal_id`, and
 the root module already projects that under the AVM name as

@@ -175,7 +175,7 @@ module "avm_res_web_site" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.15)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_archive"></a> [archive](#requirement\_archive) (>= 2.0.0, < 3.0.0)
 

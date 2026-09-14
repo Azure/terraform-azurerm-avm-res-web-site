@@ -33,7 +33,6 @@ output "deployment_slots" {
 # prescribes, but this alias predates it and published configurations pinned to
 # earlier releases consume it. See "Deprecated outputs" in the README.
 output "identity_principal_id" {
-  deprecated  = "Use `system_assigned_mi_principal_id` instead."
   description = <<DESCRIPTION
 DEPRECATED, use `system_assigned_mi_principal_id` instead; the principal ID of
 the site's system-assigned managed identity, or `null` when the site has none.
