@@ -221,7 +221,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
   kind             = "webapp"
   logs = {
     app_service_logs = {

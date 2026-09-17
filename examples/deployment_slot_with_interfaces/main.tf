@@ -293,7 +293,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
   kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU

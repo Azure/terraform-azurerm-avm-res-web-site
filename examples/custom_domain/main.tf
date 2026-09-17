@@ -237,7 +237,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry              = false
   kind                          = "functionapp"
   os_type                       = "Windows"
   public_network_access_enabled = true
