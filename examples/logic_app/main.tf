@@ -152,7 +152,7 @@ module "avm_res_web_site" {
   }
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
-  enable_telemetry                       = var.enable_telemetry
+  enable_telemetry                       = false
   kind                                   = "logicapp"
   os_type                                = "Windows"
   private_endpoints = {

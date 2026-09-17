@@ -18,7 +18,8 @@ module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.12.0"
 
-  is_recommended = true
+  enable_telemetry = false
+  is_recommended   = true
 }
 
 resource "random_integer" "region_index" {
@@ -222,7 +223,7 @@ module "avm_res_web_site" {
       ]
     }
   }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
   kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU

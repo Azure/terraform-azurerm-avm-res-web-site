@@ -155,7 +155,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry              = false
   kind                          = "webapp"
   os_type                       = "Linux"
   public_network_access_enabled = true

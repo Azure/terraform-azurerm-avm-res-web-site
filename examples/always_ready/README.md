@@ -139,7 +139,7 @@ module "avm_res_web_site" {
   }
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
-  enable_telemetry                       = var.enable_telemetry
+  enable_telemetry                       = false
   fc1_runtime_name                       = "node"
   fc1_runtime_version                    = "20"
   function_app_uses_fc1                  = true
