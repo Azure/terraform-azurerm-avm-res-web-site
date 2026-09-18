@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service Azure Storage mounts",
+  "moduleDescription": "This submodule manages the Azure Storage Accounts mount configuration (`Microsoft.Web/sites/config`, name: `azurestorageaccounts`) for an Azure App Service site.",
+  "canonicalType": "Microsoft.Web/sites/config",
+  "telemetryIdPrefix": "46d3xtrf.res.3e2e313"
+}

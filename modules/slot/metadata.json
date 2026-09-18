@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service deployment slots",
+  "moduleDescription": "This submodule manages deployment slots (`Microsoft.Web/sites/slots`) for an Azure App Service site.",
+  "canonicalType": "Microsoft.Web/sites/slots",
+  "telemetryIdPrefix": "46d3xtrf.res.779efaf"
+}
