@@ -132,7 +132,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry              = false
+  enable_telemetry              = var.enable_telemetry
   kind                          = "webapp"
   os_type                       = "Windows"
   public_network_access_enabled = true
@@ -209,7 +209,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_production_api_key"></a> [production\_api\_key](#input\_production\_api\_key)
 

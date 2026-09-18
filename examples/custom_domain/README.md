@@ -317,7 +317,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry              = false
+  enable_telemetry              = var.enable_telemetry
   kind                          = "functionapp"
   os_type                       = "Windows"
   public_network_access_enabled = true
@@ -385,7 +385,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 
