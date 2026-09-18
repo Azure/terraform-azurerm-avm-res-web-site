@@ -304,7 +304,7 @@ module "avm_res_web_site" {
       }
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
@@ -384,7 +384,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 

@@ -74,6 +74,6 @@ module "avm_res_web_site" {
   service_plan_resource_id               = azapi_resource.service_plan.id
   application_insights_connection_string = azapi_resource.application_insights.output.properties.ConnectionString
   application_insights_key               = azapi_resource.application_insights.output.properties.InstrumentationKey
-  enable_telemetry                       = false
+  enable_telemetry                       = var.enable_telemetry
   public_network_access_enabled          = true
 }

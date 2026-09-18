@@ -18,7 +18,7 @@ module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.12.0"
 
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   is_recommended   = true
 }
 
@@ -223,7 +223,7 @@ module "avm_res_web_site" {
       ]
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   kind             = "functionapp"
   managed_identities = {
     # Identities can only be used with the Standard SKU
@@ -403,7 +403,7 @@ Description:   This variable controls whether or not telemetry is enabled for th
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 
