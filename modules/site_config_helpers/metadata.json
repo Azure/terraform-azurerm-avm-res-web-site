@@ -1,0 +1,6 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "site_config_helpers submodule",
+  "moduleDescription": "This submodule provides helper locals for transforming site configuration inputs into the format expected by the AzAPI provider for Azure App Service sites.",
+  "canonicalType": "helper"
+}
