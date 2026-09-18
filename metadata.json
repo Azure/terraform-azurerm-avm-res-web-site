@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "Web/Function App",
+  "moduleDescription": "AVM Resource Module for Web/Function App",
+  "canonicalType": "Microsoft.Web/sites",
+  "owners": [
+    "donovm4"
+  ],
+  "telemetryIdPrefix": "46d3xtrf.res.81ed2f1"
+}

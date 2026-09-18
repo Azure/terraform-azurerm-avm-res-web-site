@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service zip deployment",
+  "moduleDescription": "This submodule manages zip deployment (`extensions/zipdeploy`) for an Azure App Service site or slot.",
+  "canonicalType": "Microsoft.Web/sites",
+  "telemetryIdPrefix": "46d3xtrf.res.0ff21a9"
+}

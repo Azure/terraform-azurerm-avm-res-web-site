@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service logging configuration",
+  "moduleDescription": "This submodule manages the logging configuration (`Microsoft.Web/sites/config`, name: `logs`) for an Azure App Service site.",
+  "canonicalType": "Microsoft.Web/sites/config",
+  "telemetryIdPrefix": "46d3xtrf.res.434e7ec"
+}

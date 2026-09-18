@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service hostname bindings",
+  "moduleDescription": "This submodule manages hostname bindings (`Microsoft.Web/sites/hostNameBindings`) for an Azure App Service site.",
+  "canonicalType": "Microsoft.Web/sites/hostNameBindings",
+  "telemetryIdPrefix": "46d3xtrf.res.cc00bc3"
+}

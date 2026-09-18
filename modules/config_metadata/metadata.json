@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service metadata configuration",
+  "moduleDescription": "This submodule manages the metadata configuration (`Microsoft.Web/sites/config`, name: `metadata`) for an Azure App Service site.",
+  "canonicalType": "Microsoft.Web/sites/config",
+  "telemetryIdPrefix": "46d3xtrf.res.fe9b67d"
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "App Service certificate",
+  "moduleDescription": "This submodule manages an App Service certificate (`Microsoft.Web/certificates`). The certificate can either be sourced from Azure Key Vault (recommended, supports auto-renewal) or uploaded inline as a base64-encoded PFX blob.",
+  "canonicalType": "Microsoft.Web/certificates",
+  "telemetryIdPrefix": "46d3xtrf.res.829e313"
+}
