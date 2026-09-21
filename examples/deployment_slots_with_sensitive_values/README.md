@@ -209,7 +209,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_production_api_key"></a> [production\_api\_key](#input\_production\_api\_key)
 
