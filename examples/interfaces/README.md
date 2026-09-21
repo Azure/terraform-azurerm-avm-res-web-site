@@ -403,7 +403,7 @@ Description:   This variable controls whether or not telemetry is enabled for th
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ## Outputs
 
