@@ -6,5 +6,11 @@
   "owners": [
     "donovm4"
   ],
-  "telemetryIdPrefix": "46d3xtrf.res.81ed2f1"
+  "telemetryIdPrefix": "46d3xtrf.res.81ed2f1",
+  "alternativeNames": [
+    "App Service",
+    "Web Site",
+    "Logic App",
+    "Function App"
+  ]
 }
