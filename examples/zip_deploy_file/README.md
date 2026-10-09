@@ -16,7 +16,7 @@ resource "random_integer" "region_index" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.3"
+  version = "0.4.4"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -269,7 +269,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.3
+Version: 0.4.4
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
