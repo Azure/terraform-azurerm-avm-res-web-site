@@ -511,7 +511,7 @@ variable "connection_strings" {
   }))
   default     = {}
   description = <<DESCRIPTION
-A map of connection strings to assign to the App Service.
+A map of connection strings to assign to the App Service. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
 - `name` - (Optional) The name of the connection string.
 - `type` - (Optional) The type of the connection string.
 - `value` - (Optional) The value of the connection string.
@@ -944,8 +944,9 @@ variable "deployment_slots" {
       type  = optional(string)
       value = optional(string)
     })), {})
-    zip_deploy_file          = optional(string)
-    zip_deploy_wait_duration = optional(string, "60s")
+    manage_connection_strings = optional(bool, true)
+    zip_deploy_file           = optional(string)
+    zip_deploy_wait_duration  = optional(string, "60s")
     custom_domains = optional(map(object({
       hostname        = string
       ssl_state       = optional(string)
@@ -965,6 +966,7 @@ A map of deployment slots to create for the App Service.
 - `client_certificate_enabled` - (Optional) Should client certificates be enabled? Defaults to `false`.
 - `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
 - `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
+- `manage_connection_strings` - (Optional) Whether to manage the slot's connection strings. Defaults to `true`, even for an empty map. Set to `false` to leave them unmanaged and skip the slot config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure.
 - `container_size` - (Optional) The size of the function container in MB.
 - `dapr_config` - (Optional) Dapr configuration object.
 - `dns_configuration` - (Optional) DNS configuration object.
@@ -1103,7 +1105,7 @@ A map of deployment slots to create for the App Service.
   - `name` - (Required) The name of the storage mount.
   - `share_name` - (Required) The name of the file share.
   - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
-- `connection_strings` - (Optional) A map of connection strings for the slot.
+- `connection_strings` - (Optional) A map of connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
   - `name` - (Optional) The name of the connection string.
   - `type` - (Optional) The type of the connection string.
   - `value` - (Optional) The value of the connection string.
@@ -1561,6 +1563,13 @@ A map of logs configuration for the App Service.
     - `retention_in_days` - (Optional) The retention period in days. Defaults to `0`.
     - `retention_in_mb` - (Required) The maximum size in MB before being rotated.
 DESCRIPTION
+  nullable    = false
+}
+
+variable "manage_connection_strings" {
+  type        = bool
+  default     = true
+  description = "Whether to manage the site's connection strings. Defaults to `true`, including when `connection_strings` is empty. Set to `false` to leave connection strings unmanaged and skip the config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure."
   nullable    = false
 }
 

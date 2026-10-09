@@ -163,7 +163,7 @@ Default: `"Required"`
 
 ### <a name="input_connection_strings"></a> [connection\_strings](#input\_connection\_strings)
 
-Description: Connection strings for the slot.
+Description: Connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
 
 Type:
 
@@ -390,6 +390,14 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_manage_connection_strings"></a> [manage\_connection\_strings](#input\_manage\_connection\_strings)
+
+Description: Whether to manage the slot's connection strings. Defaults to `true`, including for an empty map. Set to `false` to leave them unmanaged and skip the config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_managed_environment_id"></a> [managed\_environment\_id](#input\_managed\_environment\_id)
 
