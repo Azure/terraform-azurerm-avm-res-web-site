@@ -24,6 +24,15 @@
 # Consumption Function App, and Logic App Standard).
 
 # ===========================
+# Connection Strings
+# ===========================
+
+moved {
+  from = module.config_connectionstrings
+  to   = module.config_connectionstrings["default"]
+}
+
+# ===========================
 # Custom Hostname Bindings
 # ===========================
 

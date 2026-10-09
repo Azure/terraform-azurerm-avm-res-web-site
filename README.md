@@ -706,7 +706,7 @@ Default: `"Required"`
 
 ### <a name="input_connection_strings"></a> [connection\_strings](#input\_connection\_strings)
 
-Description: A map of connection strings to assign to the App Service.
+Description: A map of connection strings to assign to the App Service. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
 - `name` - (Optional) The name of the connection string.
 - `type` - (Optional) The type of the connection string.
 - `value` - (Optional) The value of the connection string.
@@ -847,6 +847,8 @@ Description: A map of deployment slots to create for the App Service.
 - `client_certificate_enabled` - (Optional) Should client certificates be enabled? Defaults to `false`.
 - `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
 - `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
+- `connection_strings` - (Optional) Connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
+- `manage_connection_strings` - (Optional) Whether to manage the slot's connection strings. Defaults to `true`, even for an empty map. Set to `false` to leave them unmanaged and skip the slot config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure.
 - `container_size` - (Optional) The size of the function container in MB.
 - `dapr_config` - (Optional) Dapr configuration object.
 - `dns_configuration` - (Optional) DNS configuration object.
@@ -1313,8 +1315,9 @@ map(object({
       type  = optional(string)
       value = optional(string)
     })), {})
-    zip_deploy_file          = optional(string)
-    zip_deploy_wait_duration = optional(string, "60s")
+    manage_connection_strings = optional(bool, true)
+    zip_deploy_file           = optional(string)
+    zip_deploy_wait_duration  = optional(string, "60s")
     custom_domains = optional(map(object({
       hostname        = string
       ssl_state       = optional(string)
@@ -1761,6 +1764,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_manage_connection_strings"></a> [manage\_connection\_strings](#input\_manage\_connection\_strings)
+
+Description: Whether to manage the site's connection strings. Defaults to `true`, including when `connection_strings` is empty. Set to `false` to leave connection strings unmanaged and skip the config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_managed_environment_id"></a> [managed\_environment\_id](#input\_managed\_environment\_id)
 

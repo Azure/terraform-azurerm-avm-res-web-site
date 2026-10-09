@@ -41,6 +41,7 @@ module "slot" {
   lock = each.value.lock != null ? each.value.lock : (
     var.deployment_slots_inherit_lock && var.lock != null ? var.lock : null
   )
+  manage_connection_strings               = each.value.manage_connection_strings
   managed_environment_id                  = each.value.managed_environment_id
   managed_identities                      = each.value.managed_identities
   private_endpoints                       = each.value.private_endpoints
