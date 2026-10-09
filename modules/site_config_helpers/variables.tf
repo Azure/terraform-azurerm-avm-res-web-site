@@ -1,3 +1,9 @@
+variable "is_function_app" {
+  type        = bool
+  description = "Whether the site is a Function App, used to select the isolated .NET Linux stack."
+  nullable    = false
+}
+
 variable "os_type" {
   type        = string
   description = "The OS type. Must be `Linux` or `Windows`."

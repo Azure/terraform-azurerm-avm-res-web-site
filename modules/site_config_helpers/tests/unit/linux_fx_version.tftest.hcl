@@ -3,7 +3,8 @@
 # `JBOSSEAP|7-java11`.
 
 variables {
-  os_type = "Linux"
+  is_function_app = false
+  os_type         = "Linux"
 }
 
 run "java_defaults_container_to_java" {
