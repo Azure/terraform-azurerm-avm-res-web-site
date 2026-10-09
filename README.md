@@ -847,7 +847,6 @@ Description: A map of deployment slots to create for the App Service.
 - `client_certificate_enabled` - (Optional) Should client certificates be enabled? Defaults to `false`.
 - `client_certificate_exclusion_paths` - (Optional) Paths to exclude from client certificate authentication.
 - `client_certificate_mode` - (Optional) The client certificate mode. Defaults to `Required`.
-- `connection_strings` - (Optional) Connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
 - `manage_connection_strings` - (Optional) Whether to manage the slot's connection strings. Defaults to `true`, even for an empty map. Set to `false` to leave them unmanaged and skip the slot config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure.
 - `container_size` - (Optional) The size of the function container in MB.
 - `dapr_config` - (Optional) Dapr configuration object.
@@ -987,7 +986,7 @@ Description: A map of deployment slots to create for the App Service.
   - `name` - (Required) The name of the storage mount.
   - `share_name` - (Required) The name of the file share.
   - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
-- `connection_strings` - (Optional) A map of connection strings for the slot.
+- `connection_strings` - (Optional) A map of connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`.
   - `name` - (Optional) The name of the connection string.
   - `type` - (Optional) The type of the connection string.
   - `value` - (Optional) The value of the connection string.
