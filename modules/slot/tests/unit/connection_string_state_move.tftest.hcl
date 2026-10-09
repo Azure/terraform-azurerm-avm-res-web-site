@@ -12,7 +12,7 @@ run "existing_unkeyed_slot_connection_strings" {
   state_key = "migration"
 
   module {
-    source = "./tests/unit/fixtures/legacy_connectionstrings"
+    source = "../../tests/unit/fixtures/legacy_slot_connectionstrings"
   }
 }
 
