@@ -22,6 +22,12 @@ No resources.
 
 The following input variables are required:
 
+### <a name="input_is_function_app"></a> [is\_function\_app](#input\_is\_function\_app)
+
+Description: Whether the site is a Function App, used to select the isolated .NET Linux stack.
+
+Type: `bool`
+
 ### <a name="input_os_type"></a> [os\_type](#input\_os\_type)
 
 Description: The OS type. Must be `Linux` or `Windows`.

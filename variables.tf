@@ -2286,7 +2286,7 @@ An object that configures the App Service's site configuration. These map to the
     - `dotnet_version` - (Optional) The .NET version.
     - `current_stack` - (Optional) The current stack.
     - `use_custom_runtime` - (Optional) Use a custom runtime? Defaults to `false`.
-    - `use_dotnet_isolated_runtime` - (Optional) Use the isolated runtime? Defaults to `false`.
+    - `use_dotnet_isolated_runtime` - (Optional) Use the isolated worker runtime for Linux Function Apps? When `true`, the derived `linux_fx_version` is `DOTNET-ISOLATED|<dotnet_version>` instead of `DOTNETCORE|<dotnet_version>`. Defaults to `false`; explicit `linux_fx_version` takes precedence.
   - `java` - (Optional) Java configuration.
     - `java_version` - (Optional) The Java version.
     - `java_container` - (Optional) The Java container.
