@@ -1,6 +1,7 @@
 module "site_config_helpers" {
   source = "../site_config_helpers"
 
+  is_function_app    = var.is_function_app
   os_type            = var.os_type
   managed_identities = var.managed_identities
   site_config        = var.site_config

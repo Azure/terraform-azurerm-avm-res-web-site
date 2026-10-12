@@ -142,7 +142,7 @@ locals {
       try(local.app_stack.docker != null ? "DOCKER|${trimprefix(coalesce(local.app_stack.docker.docker_registry_url, ""), "https://")}/${local.app_stack.docker.docker_image_name}:${local.app_stack.docker.docker_image_tag}" : null, null),
       try(local.app_stack.python != null ? "PYTHON|${local.app_stack.python.python_version}" : null, null),
       try(local.app_stack.node != null ? "NODE|${local.app_stack.node.node_version}" : null, null),
-      try(local.app_stack.dotnet != null ? "DOTNETCORE|${local.app_stack.dotnet.dotnet_version}" : null, null),
+      try(local.app_stack.dotnet != null ? "${var.is_function_app && try(local.app_stack.dotnet.use_dotnet_isolated_runtime == true, false) ? "DOTNET-ISOLATED" : "DOTNETCORE"}|${local.app_stack.dotnet.dotnet_version}" : null, null),
       local.java_fx_version,
       try(local.app_stack.powershell != null ? "POWERSHELL|${local.app_stack.powershell.powershell_version}" : null, null),
       try(local.app_stack.php != null ? "PHP|${local.app_stack.php.php_version}" : null, null),
