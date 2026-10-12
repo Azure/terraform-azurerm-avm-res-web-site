@@ -10,7 +10,8 @@ module "config_appsettings" {
 }
 
 module "config_connectionstrings" {
-  source = "./modules/config_connectionstrings"
+  source   = "./modules/config_connectionstrings"
+  for_each = var.manage_connection_strings ? { "default" = {} } : {}
 
   connection_strings  = var.connection_strings
   parent_id           = azapi_resource.this.id

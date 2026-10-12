@@ -115,7 +115,7 @@ variable "connection_strings" {
     value = optional(string)
   }))
   default     = {}
-  description = "Connection strings for the slot."
+  description = "Connection strings for the slot. An empty map still updates the connection strings endpoint when `manage_connection_strings` is `true`."
   nullable    = false
 }
 
@@ -288,6 +288,13 @@ variable "lock" {
   })
   default     = null
   description = "The lock to apply to the slot."
+}
+
+variable "manage_connection_strings" {
+  type        = bool
+  default     = true
+  description = "Whether to manage the slot's connection strings. Defaults to `true`, including for an empty map. Set to `false` to leave them unmanaged and skip the config endpoint. Switching from `true` to `false` removes the update resource from Terraform state without deleting connection strings in Azure."
+  nullable    = false
 }
 
 variable "managed_environment_id" {
