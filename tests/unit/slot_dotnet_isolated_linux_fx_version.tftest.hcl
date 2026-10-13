@@ -6,6 +6,10 @@ mock_provider "azapi" {
   }
 }
 
+mock_provider "modtm" {}
+mock_provider "random" {}
+mock_provider "time" {}
+
 variables {
   kind                     = "functionapp,linux"
   is_function_app          = true
@@ -24,8 +28,20 @@ variables {
   }
 }
 
+run "bind_transitive_mock_provider_source" {
+  command = apply
+
+  module {
+    source = "./tests/unit/fixtures/mock_provider_sources"
+  }
+}
+
 run "isolated_function_slot_uses_isolated_stack" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   assert {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "DOTNET-ISOLATED|10.0"
@@ -35,6 +51,10 @@ run "isolated_function_slot_uses_isolated_stack" {
 
 run "web_app_slot_keeps_dotnetcore" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     kind            = "app,linux"
@@ -49,6 +69,10 @@ run "web_app_slot_keeps_dotnetcore" {
 
 run "explicit_slot_linux_stack_wins" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     site_config = {
@@ -70,6 +94,10 @@ run "explicit_slot_linux_stack_wins" {
 
 run "flex_consumption_slot_omits_linux_stack" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     function_app_uses_fc1 = true

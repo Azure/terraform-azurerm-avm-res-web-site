@@ -6,7 +6,7 @@ module "avm_interfaces" {
   managed_identities = var.managed_identities
   private_endpoints = {
     for k, v in var.private_endpoints : k => merge(v, {
-      subresource_name = "sites-${var.name}"
+      subresource_name = coalesce(v.subresource_name, "sites-${var.name}")
       lock             = v.lock != null ? v.lock : (var.private_endpoints_inherit_lock && var.lock != null ? var.lock : null)
       ip_configurations = {
         for ip_key, ip_val in v.ip_configurations : ip_key => merge(ip_val, {
@@ -124,7 +124,7 @@ resource "azapi_resource" "lock_private_endpoint" {
   for_each = module.avm_interfaces.lock_private_endpoint_azapi
 
   name                   = each.value.name
-  parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
+  parent_id              = azapi_resource.private_endpoint[each.value.pe_key].id
   type                   = var.resource_types.authorization_locks
   body                   = each.value.body
   ignore_body_changes    = length(var.ignore_body_changes.authorization_locks) > 0 ? var.ignore_body_changes.authorization_locks : null
@@ -147,7 +147,7 @@ resource "azapi_resource" "role_assignment_private_endpoint" {
   for_each = module.avm_interfaces.role_assignments_private_endpoint_azapi
 
   name                   = each.value.name
-  parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
+  parent_id              = azapi_resource.private_endpoint[each.value.pe_key].id
   type                   = var.resource_types.authorization_role_assignments
   body                   = each.value.body
   ignore_body_changes    = length(var.ignore_body_changes.authorization_role_assignments) > 0 ? var.ignore_body_changes.authorization_role_assignments : null

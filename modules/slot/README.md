@@ -427,7 +427,10 @@ Default: `{}`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
-Description: Private endpoints for the slot.
+Description: Private endpoints for the slot. `subresource_name` defaults to `sites-<slot-name>`.  
+Each endpoint supports an optional role assignment `name` (UUID), `lock.notes`,  
+and IP configuration `member_name` (defaults to `sites-<slot-name>`).  
+Omitting assignment names retains generated UUIDs.
 
 Type:
 
@@ -435,6 +438,7 @@ Type:
 map(object({
     name = optional(string, null)
     role_assignments = optional(map(object({
+      name                                   = optional(string, null)
       role_definition_id_or_name             = string
       principal_id                           = string
       description                            = optional(string, null)
@@ -445,11 +449,13 @@ map(object({
       principal_type                         = optional(string, null)
     })), {})
     lock = optional(object({
-      kind = string
-      name = optional(string, null)
+      kind  = string
+      name  = optional(string, null)
+      notes = optional(string, null)
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
+    subresource_name                        = optional(string, null)
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
