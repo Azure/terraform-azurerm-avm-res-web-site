@@ -88,11 +88,6 @@ moved {
   to   = azapi_resource.private_endpoint
 }
 
-moved {
-  from = azurerm_private_endpoint.this_unmanaged_dns_zone_groups
-  to   = azapi_resource.private_dns_zone_group
-}
-
 # Note: Slot private endpoints are now managed inside module.slot. They will be
 # destroyed and recreated when upgrading due to instance key structure changes.
 

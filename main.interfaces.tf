@@ -8,7 +8,7 @@ module "avm_interfaces" {
   managed_identities     = var.managed_identities
   private_endpoints = {
     for k, v in var.private_endpoints : k => merge(v, {
-      subresource_name = "sites"
+      subresource_name = coalesce(v.subresource_name, "sites")
     })
   }
   private_endpoints_manage_dns_zone_group = var.private_endpoints_manage_dns_zone_group
@@ -120,7 +120,7 @@ resource "azapi_resource" "lock_private_endpoint" {
   for_each = module.avm_interfaces.lock_private_endpoint_azapi
 
   name                   = each.value.name
-  parent_id              = azapi_resource.private_endpoint[each.value.private_endpoint_key].id
+  parent_id              = azapi_resource.private_endpoint[each.value.pe_key].id
   type                   = var.resource_types.authorization_locks
   body                   = each.value.body
   ignore_body_changes    = length(var.ignore_body_changes.authorization_locks) > 0 ? var.ignore_body_changes.authorization_locks : null

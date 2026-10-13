@@ -7,7 +7,7 @@
 // gets at the same resource attribute and leaves the root-to-slot assignment in
 // `main.slots.tf` as the static wiring it is.
 //
-// As with the other submodule tests here, `mock_provider` does not run the
+// As with the other submodule tests, `mock_provider` does not run the
 // azapi provider's own delete path, so this pins the query parameter we build,
 // not Azure's handling of it.
 
@@ -19,6 +19,10 @@ mock_provider "azapi" {
   }
 }
 
+mock_provider "modtm" {}
+mock_provider "random" {}
+mock_provider "time" {}
+
 variables {
   kind                     = "webapp"
   location                 = "eastus"
@@ -28,8 +32,20 @@ variables {
   service_plan_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
 }
 
+run "bind_transitive_mock_provider_source" {
+  command = apply
+
+  module {
+    source = "./tests/unit/fixtures/mock_provider_sources"
+  }
+}
+
 run "slot_defaults_to_deleting_an_empty_service_plan" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   assert {
     condition     = azapi_resource.this.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["true"])
@@ -39,6 +55,10 @@ run "slot_defaults_to_deleting_an_empty_service_plan" {
 
 run "slot_can_keep_an_empty_service_plan" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     delete_empty_service_plan = false

@@ -23,6 +23,10 @@ mock_provider "azapi" {
   }
 }
 
+mock_provider "modtm" {}
+mock_provider "random" {}
+mock_provider "time" {}
+
 variables {
   kind                     = "webapp"
   location                 = "eastus"
@@ -32,8 +36,20 @@ variables {
   service_plan_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
 }
 
+run "bind_transitive_mock_provider_source" {
+  command = apply
+
+  module {
+    source = "./tests/unit/fixtures/mock_provider_sources"
+  }
+}
+
 run "slot_private_endpoint_defaults_to_the_app_resource_group" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     private_endpoints = {
@@ -52,6 +68,10 @@ run "slot_private_endpoint_defaults_to_the_app_resource_group" {
 run "slot_private_endpoint_accepts_a_bare_resource_group_name" {
   command = apply
 
+  module {
+    source = "./modules/slot"
+  }
+
   variables {
     private_endpoints = {
       bare_name = {
@@ -69,6 +89,10 @@ run "slot_private_endpoint_accepts_a_bare_resource_group_name" {
 
 run "slot_private_endpoint_accepts_a_resource_group_id" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     private_endpoints = {
@@ -95,6 +119,10 @@ run "slot_private_endpoint_accepts_a_resource_group_id" {
 
 run "slot_private_endpoint_resource_groups_resolve_per_key" {
   command = apply
+
+  module {
+    source = "./modules/slot"
+  }
 
   # Every other run in this file declares a single private endpoint, which
   # cannot tell a per-key resolution apart from one value shared across the
@@ -137,6 +165,10 @@ run "slot_private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
   # expected failure occurred. `expect_failures` on a variable requires `plan`.
   command = plan
 
+  module {
+    source = "./modules/slot"
+  }
+
   variables {
     private_endpoints = {
       not_a_resource_group = {
@@ -152,6 +184,10 @@ run "slot_private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
 run "slot_private_endpoint_rejects_an_empty_resource_group_name" {
   # `plan` for the same reason as the run above.
   command = plan
+
+  module {
+    source = "./modules/slot"
+  }
 
   # An empty string is not a near-miss on the ID shape, so the shape check
   # above passes it through as a bare name and builds

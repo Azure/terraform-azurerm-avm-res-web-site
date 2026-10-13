@@ -46,6 +46,25 @@ the root module already projects that under the AVM name as
 
 ## Migration from earlier module versions
 
+Private endpoint controls are supported on both the site and deployment slots:
+role assignment `name`, `lock.notes`, `subresource_name`, and IP configuration
+`member_name`. Omitted subresources retain `sites` for the site and
+`sites-<slot-name>` for slots. Existing generated names and member defaults
+are unchanged. Supplying a previously ignored assignment name or subresource
+can change resource names or require replacement; review the plan before applying.
+
+For older AzureRM configurations with
+`private_endpoints_manage_dns_zone_group = false`, the resource address
+`azurerm_private_endpoint.this_unmanaged_dns_zone_groups` identifies the
+**endpoint**, not a DNS zone group. No automatic move from that address is
+provided: moving it to `azapi_resource.private_dns_zone_group` would target the
+wrong resource type, and both old endpoint collections cannot share an
+unconditional move to the unified endpoint address. Before upgrading, back up
+state and confirm the actual endpoint addresses, resource IDs, and provider
+conversion support. Establish a consumer-specific migration and inspect a
+plan for unintended deletion or replacement. These endpoint-control fixes
+do not establish a state-safe upgrade from an AzureRM-based release.
+
 Starting with the `azapi`-based releases of this module, the main site resource
 is implemented as a single `azapi_resource.this` regardless of the app kind.
 Previous versions of this module used a different `azurerm_*` resource per

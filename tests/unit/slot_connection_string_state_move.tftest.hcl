@@ -6,19 +6,33 @@ mock_provider "azapi" {
   }
 }
 mock_provider "time" {}
+mock_provider "modtm" {}
+mock_provider "random" {}
+
+run "bind_transitive_mock_provider_source" {
+  command = apply
+
+  module {
+    source = "./tests/unit/fixtures/mock_provider_sources"
+  }
+}
 
 run "existing_unkeyed_slot_connection_strings" {
   command   = apply
   state_key = "migration"
 
   module {
-    source = "../../tests/unit/fixtures/legacy_slot_connectionstrings"
+    source = "./tests/unit/fixtures/legacy_slot_connectionstrings"
   }
 }
 
 run "move_existing_slot_connection_strings_without_replacement" {
   command   = apply
   state_key = "migration"
+
+  module {
+    source = "./modules/slot"
+  }
 
   variables {
     kind                     = "app"

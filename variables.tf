@@ -894,6 +894,7 @@ variable "deployment_slots" {
     private_endpoints = optional(map(object({
       name = optional(string, null)
       role_assignments = optional(map(object({
+        name                                   = optional(string, null)
         role_definition_id_or_name             = string
         principal_id                           = string
         description                            = optional(string, null)
@@ -904,11 +905,13 @@ variable "deployment_slots" {
         principal_type                         = optional(string, null)
       })), {})
       lock = optional(object({
-        kind = string
-        name = optional(string, null)
+        kind  = string
+        name  = optional(string, null)
+        notes = optional(string, null)
       }), null)
       tags                                    = optional(map(string), null)
       subnet_resource_id                      = string
+      subresource_name                        = optional(string, null)
       private_dns_zone_group_name             = optional(string, "default")
       private_dns_zone_resource_ids           = optional(set(string), [])
       application_security_group_associations = optional(map(string), {})
@@ -1067,6 +1070,7 @@ A map of deployment slots to create for the App Service.
 - `private_endpoints` - (Optional) Private endpoints for the slot.
   - `name` - (Optional) The name of the private endpoint.
   - `role_assignments` - (Optional) A map of role assignments for the private endpoint.
+    - `name` - (Optional) The role assignment UUID. If omitted, a random UUID is generated.
     - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
     - `principal_id` - (Required) The ID of the principal.
     - `description` - (Optional) The description of the role assignment.
@@ -1078,8 +1082,10 @@ A map of deployment slots to create for the App Service.
   - `lock` - (Optional) The lock for the private endpoint.
     - `kind` - (Required) The type of lock.
     - `name` - (Optional) The name of the lock.
+    - `notes` - (Optional) Notes stored on the endpoint lock.
   - `tags` - (Optional) Tags for the private endpoint.
   - `subnet_resource_id` - (Required) The resource ID of the subnet.
+  - `subresource_name` - (Optional) The private link group ID. Defaults to `sites-<slot-name>`.
   - `private_dns_zone_group_name` - (Optional) The private DNS zone group name. Defaults to `default`.
   - `private_dns_zone_resource_ids` - (Optional) A set of private DNS zone resource IDs.
   - `application_security_group_associations` - (Optional) A map of application security group associations.
@@ -1090,6 +1096,7 @@ A map of deployment slots to create for the App Service.
   - `ip_configurations` - (Optional) A map of IP configurations.
     - `name` - (Required) The name of the IP configuration.
     - `private_ip_address` - (Required) The private IP address.
+    - `member_name` - (Optional) The IP configuration member name. Defaults to `sites-<slot-name>`.
 - `role_assignments` - (Optional) Role assignments for the slot.
   - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
   - `principal_id` - (Required) The ID of the principal.
@@ -1645,6 +1652,7 @@ variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
     role_assignments = optional(map(object({
+      name                                   = optional(string, null)
       role_definition_id_or_name             = string
       principal_id                           = string
       description                            = optional(string, null)
@@ -1655,11 +1663,13 @@ variable "private_endpoints" {
       principal_type                         = optional(string, null)
     })), {})
     lock = optional(object({
-      kind = string
-      name = optional(string, null)
+      kind  = string
+      name  = optional(string, null)
+      notes = optional(string, null)
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
+    subresource_name                        = optional(string, null)
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -1679,6 +1689,7 @@ A map of private endpoints to create on this resource. The map key is deliberate
 
 - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
 - `role_assignments` - (Optional) A map of role assignments to create on the private endpoint.
+  - `name` - (Optional) The role assignment UUID. If omitted, a random UUID is generated. Changing it replaces the assignment.
   - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
   - `principal_id` - (Required) The ID of the principal.
   - `description` - (Optional) The description of the role assignment.
@@ -1690,8 +1701,10 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `lock` - (Optional) The lock level to apply to the private endpoint.
   - `kind` - (Required) The type of lock. Possible values are `CanNotDelete` and `ReadOnly`.
   - `name` - (Optional) The name of the lock.
+  - `notes` - (Optional) Notes stored on the endpoint lock.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+- `subresource_name` - (Optional) The private link group ID. Defaults to `sites`; slot endpoints default to `sites-<slot-name>`.
 - `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group.
 - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate.
 - `application_security_group_associations` - (Optional) A map of resource IDs of application security groups.
@@ -1702,6 +1715,7 @@ A map of private endpoints to create on this resource. The map key is deliberate
 - `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
   - `name` - (Required) The name of the IP configuration.
   - `private_ip_address` - (Required) The private IP address.
+  - `member_name` - (Optional) The IP configuration member name. Defaults to `default` for the site and `sites-<slot-name>` for slots.
 DESCRIPTION
   nullable    = false
 

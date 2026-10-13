@@ -48,6 +48,25 @@ the root module already projects that under the AVM name as
 
 ## Migration from earlier module versions
 
+Private endpoint controls are supported on both the site and deployment slots:
+role assignment `name`, `lock.notes`, `subresource_name`, and IP configuration
+`member_name`. Omitted subresources retain `sites` for the site and
+`sites-<slot-name>` for slots. Existing generated names and member defaults
+are unchanged. Supplying a previously ignored assignment name or subresource
+can change resource names or require replacement; review the plan before applying.
+
+For older AzureRM configurations with
+`private_endpoints_manage_dns_zone_group = false`, the resource address
+`azurerm_private_endpoint.this_unmanaged_dns_zone_groups` identifies the
+**endpoint**, not a DNS zone group. No automatic move from that address is
+provided: moving it to `azapi_resource.private_dns_zone_group` would target the
+wrong resource type, and both old endpoint collections cannot share an
+unconditional move to the unified endpoint address. Before upgrading, back up
+state and confirm the actual endpoint addresses, resource IDs, and provider
+conversion support. Establish a consumer-specific migration and inspect a
+plan for unintended deletion or replacement. These endpoint-control fixes
+do not establish a state-safe upgrade from an AzureRM-based release.
+
 Starting with the `azapi`-based releases of this module, the main site resource
 is implemented as a single `azapi_resource.this` regardless of the app kind.
 Previous versions of this module used a different `azurerm_*` resource per
@@ -948,6 +967,7 @@ Description: A map of deployment slots to create for the App Service.
 - `private_endpoints` - (Optional) Private endpoints for the slot.
   - `name` - (Optional) The name of the private endpoint.
   - `role_assignments` - (Optional) A map of role assignments for the private endpoint.
+    - `name` - (Optional) The role assignment UUID. If omitted, a random UUID is generated.
     - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
     - `principal_id` - (Required) The ID of the principal.
     - `description` - (Optional) The description of the role assignment.
@@ -959,8 +979,10 @@ Description: A map of deployment slots to create for the App Service.
   - `lock` - (Optional) The lock for the private endpoint.
     - `kind` - (Required) The type of lock.
     - `name` - (Optional) The name of the lock.
+    - `notes` - (Optional) Notes stored on the endpoint lock.
   - `tags` - (Optional) Tags for the private endpoint.
   - `subnet_resource_id` - (Required) The resource ID of the subnet.
+  - `subresource_name` - (Optional) The private link group ID. Defaults to `sites-<slot-name>`.
   - `private_dns_zone_group_name` - (Optional) The private DNS zone group name. Defaults to `default`.
   - `private_dns_zone_resource_ids` - (Optional) A set of private DNS zone resource IDs.
   - `application_security_group_associations` - (Optional) A map of application security group associations.
@@ -971,6 +993,7 @@ Description: A map of deployment slots to create for the App Service.
   - `ip_configurations` - (Optional) A map of IP configurations.
     - `name` - (Required) The name of the IP configuration.
     - `private_ip_address` - (Required) The private IP address.
+    - `member_name` - (Optional) The IP configuration member name. Defaults to `sites-<slot-name>`.
 - `role_assignments` - (Optional) Role assignments for the slot.
   - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
   - `principal_id` - (Required) The ID of the principal.
@@ -1264,6 +1287,7 @@ map(object({
     private_endpoints = optional(map(object({
       name = optional(string, null)
       role_assignments = optional(map(object({
+        name                                   = optional(string, null)
         role_definition_id_or_name             = string
         principal_id                           = string
         description                            = optional(string, null)
@@ -1274,11 +1298,13 @@ map(object({
         principal_type                         = optional(string, null)
       })), {})
       lock = optional(object({
-        kind = string
-        name = optional(string, null)
+        kind  = string
+        name  = optional(string, null)
+        notes = optional(string, null)
       }), null)
       tags                                    = optional(map(string), null)
       subnet_resource_id                      = string
+      subresource_name                        = optional(string, null)
       private_dns_zone_group_name             = optional(string, "default")
       private_dns_zone_resource_ids           = optional(set(string), [])
       application_security_group_associations = optional(map(string), {})
@@ -1820,6 +1846,7 @@ Description: A map of private endpoints to create on this resource. The map key 
 
 - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
 - `role_assignments` - (Optional) A map of role assignments to create on the private endpoint.
+  - `name` - (Optional) The role assignment UUID. If omitted, a random UUID is generated. Changing it replaces the assignment.
   - `role_definition_id_or_name` - (Required) The ID or name of the role definition.
   - `principal_id` - (Required) The ID of the principal.
   - `description` - (Optional) The description of the role assignment.
@@ -1831,8 +1858,10 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `lock` - (Optional) The lock level to apply to the private endpoint.
   - `kind` - (Required) The type of lock. Possible values are `CanNotDelete` and `ReadOnly`.
   - `name` - (Optional) The name of the lock.
+  - `notes` - (Optional) Notes stored on the endpoint lock.
 - `tags` - (Optional) A mapping of tags to assign to the private endpoint.
 - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+- `subresource_name` - (Optional) The private link group ID. Defaults to `sites`; slot endpoints default to `sites-<slot-name>`.
 - `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group.
 - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate.
 - `application_security_group_associations` - (Optional) A map of resource IDs of application security groups.
@@ -1843,6 +1872,7 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `ip_configurations` - (Optional) A map of IP configurations for the private endpoint.
   - `name` - (Required) The name of the IP configuration.
   - `private_ip_address` - (Required) The private IP address.
+  - `member_name` - (Optional) The IP configuration member name. Defaults to `default` for the site and `sites-<slot-name>` for slots.
 
 Type:
 
@@ -1850,6 +1880,7 @@ Type:
 map(object({
     name = optional(string, null)
     role_assignments = optional(map(object({
+      name                                   = optional(string, null)
       role_definition_id_or_name             = string
       principal_id                           = string
       description                            = optional(string, null)
@@ -1860,11 +1891,13 @@ map(object({
       principal_type                         = optional(string, null)
     })), {})
     lock = optional(object({
-      kind = string
-      name = optional(string, null)
+      kind  = string
+      name  = optional(string, null)
+      notes = optional(string, null)
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
+    subresource_name                        = optional(string, null)
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
