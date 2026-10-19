@@ -4,11 +4,13 @@ module "config_authsettings" {
   source   = "./modules/config_authsettings"
   for_each = var.auth_settings != null && var.auth_settings_v2 == null ? { this = var.auth_settings } : {}
 
+  location                       = var.location
   parent_id                      = azapi_resource.this.id
   active_directory               = each.value.active_directory
   additional_login_parameters    = each.value.additional_login_parameters
   allowed_external_redirect_urls = each.value.allowed_external_redirect_urls
   default_provider               = each.value.default_provider
+  enable_telemetry               = var.enable_telemetry
   enabled                        = each.value.enabled
   facebook                       = each.value.facebook
   github                         = each.value.github
@@ -30,9 +32,11 @@ module "config_authsettingsv2" {
   source   = "./modules/config_authsettingsv2"
   for_each = var.auth_settings_v2 != null ? { this = var.auth_settings_v2 } : {}
 
+  location                               = var.location
   parent_id                              = azapi_resource.this.id
   auth_enabled                           = each.value.auth_enabled
   config_file_path                       = each.value.config_file_path
+  enable_telemetry                       = var.enable_telemetry
   excluded_paths                         = each.value.excluded_paths
   forward_proxy_convention               = each.value.forward_proxy_convention
   forward_proxy_custom_host_header_name  = each.value.forward_proxy_custom_host_header_name

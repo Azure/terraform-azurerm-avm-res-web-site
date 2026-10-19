@@ -9,8 +9,13 @@ mock_provider "azapi" {
       output = { results = [] }
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {
   mock_resource "random_uuid" {
     defaults = {
@@ -18,6 +23,7 @@ mock_provider "random" {
     }
   }
 }
+
 mock_provider "time" {}
 
 override_resource {
@@ -120,6 +126,11 @@ run "slot_endpoint_controls_reach_arm_bodies" {
     )
     error_message = "Slot endpoint assignment names must not change role, principal, condition or endpoint scope."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "slot_endpoint_defaults_remain_unchanged" {
@@ -179,6 +190,11 @@ run "slot_endpoint_defaults_remain_unchanged" {
     )
     error_message = "Slot member and assignment defaults must remain unchanged, without adding endpoint locks."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "slot_endpoint_dns_management_can_remain_external" {
@@ -200,5 +216,10 @@ run "slot_endpoint_dns_management_can_remain_external" {
   assert {
     condition     = length(azapi_resource.private_endpoint) == 1 && length(azapi_resource.private_dns_zone_group) == 0
     error_message = "External DNS management must keep the slot endpoint without a managed zone group."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

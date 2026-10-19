@@ -7,13 +7,15 @@ mock_provider "azapi" {
 
   mock_data "azapi_client_config" {
     defaults = {
-      subscription_id = "00000000-0000-0000-0000-000000000000"
-      tenant_id       = "00000000-0000-0000-0000-000000000001"
+      subscription_id          = "00000000-0000-0000-0000-000000000000"
+      tenant_id                = "00000000-0000-0000-0000-000000000001"
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
     }
   }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -30,6 +32,11 @@ run "site_defaults_to_deleting_an_empty_service_plan" {
     condition     = azapi_resource.this.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["true"])
     error_message = "By default the site should let Azure delete an empty App Service Plan, matching the REST API default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "site_can_keep_an_empty_service_plan" {
@@ -42,5 +49,10 @@ run "site_can_keep_an_empty_service_plan" {
   assert {
     condition     = azapi_resource.this.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["false"])
     error_message = "Setting `delete_empty_service_plan` to `false` should send `deleteEmptyServerFarm=false` on the site delete request."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

@@ -8,7 +8,13 @@
 // into the null-stripping plus the variable-to-body wiring, not the provider's
 // own behaviour.
 
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
 
 variables {
   hostname  = "app.contoso.com"
@@ -32,6 +38,9 @@ run "optional_properties_omitted" {
     condition     = try(nonsensitive(azapi_resource.this.body.properties.thumbprint) == null, false)
     error_message = "With `thumbprint` omitted the module must leave `thumbprint` null."
   }
+  variables {
+    location = "eastus"
+  }
 }
 
 run "optional_properties_explicit" {
@@ -40,6 +49,7 @@ run "optional_properties_explicit" {
   variables {
     ssl_state  = "SniEnabled"
     thumbprint = "ABCDEF0123456789ABCDEF0123456789ABCDEF01"
+    location   = "eastus"
   }
 
   assert {

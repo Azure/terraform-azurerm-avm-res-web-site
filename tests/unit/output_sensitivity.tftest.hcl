@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -60,6 +66,11 @@ run "site_identifiers_are_not_sensitive" {
     condition     = !issensitive(output.system_assigned_mi_principal_id_slots)
     error_message = "An ordinary downstream output must be able to consume `system_assigned_mi_principal_id_slots` without declaring `sensitive = true`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "custom_domain_verification_id_is_sensitive" {
@@ -75,5 +86,10 @@ run "custom_domain_verification_id_is_sensitive" {
   assert {
     condition     = !issensitive(nonsensitive(output.custom_domain_verification_id))
     error_message = "`nonsensitive()` must be able to unwrap `custom_domain_verification_id` for consumers that publish it in a DNS TXT record."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

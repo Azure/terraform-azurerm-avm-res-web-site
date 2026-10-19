@@ -1,5 +1,8 @@
 module "slot" {
-  source   = "./modules/slot"
+  source = "./modules/slot"
+  providers = {
+    azapi = azapi
+  }
   for_each = var.deployment_slots
 
   kind                     = local.arm_kind
@@ -25,6 +28,7 @@ module "slot" {
   dapr_config                              = each.value.dapr_config
   delete_empty_service_plan                = var.delete_empty_service_plan
   dns_configuration                        = each.value.dns_configuration
+  enable_telemetry                         = var.enable_telemetry
   enabled                                  = each.value.enabled
   end_to_end_encryption_enabled            = each.value.end_to_end_encryption_enabled
   ftp_publish_basic_authentication_enabled = each.value.ftp_publish_basic_authentication_enabled

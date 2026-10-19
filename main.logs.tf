@@ -2,11 +2,13 @@ module "config_logs" {
   source   = "./modules/config_logs"
   for_each = var.logs
 
+  location  = var.location
   parent_id = azapi_resource.this.id
   application_logs = length(each.value.application_logs) > 0 ? {
     for alk, alv in each.value.application_logs : alk => alv
   }[keys(each.value.application_logs)[0]] : null
   detailed_error_messages = each.value.detailed_error_messages
+  enable_telemetry        = var.enable_telemetry
   failed_requests_tracing = each.value.failed_requests_tracing
   http_logs = length(each.value.http_logs) > 0 ? {
     for hlk, hlv in each.value.http_logs : hlk => hlv

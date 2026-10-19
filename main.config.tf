@@ -2,7 +2,9 @@ module "config_appsettings" {
   source = "./modules/config_appsettings"
 
   app_settings        = local.merged_app_settings
+  location            = var.location
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_appsettings
   resource_types      = var.resource_types.config_appsettings
   retry               = var.retry
@@ -14,7 +16,9 @@ module "config_connectionstrings" {
   for_each = var.manage_connection_strings ? { "default" = {} } : {}
 
   connection_strings  = var.connection_strings
+  location            = var.location
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_connectionstrings
   resource_types      = var.resource_types.config_connectionstrings
   retry               = var.retry
@@ -24,8 +28,10 @@ module "config_connectionstrings" {
 module "config_azurestorageaccounts" {
   source = "./modules/config_azurestorageaccounts"
 
+  location                = var.location
   parent_id               = azapi_resource.this.id
   storage_shares_to_mount = var.storage_shares_to_mount
+  enable_telemetry        = var.enable_telemetry
   ignore_body_changes     = var.ignore_body_changes.config_azurestorageaccounts
   resource_types          = var.resource_types.config_azurestorageaccounts
   retry                   = var.retry
@@ -35,8 +41,10 @@ module "config_azurestorageaccounts" {
 module "config_metadata" {
   source = "./modules/config_metadata"
 
+  location            = var.location
   metadata            = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_metadata
   resource_types      = var.resource_types.config_metadata
   retry               = var.retry
@@ -47,9 +55,11 @@ module "config_slotconfignames" {
   source   = "./modules/config_slotconfignames"
   for_each = length(var.sticky_settings) > 0 ? { "default" = {} } : {}
 
+  location                = var.location
   parent_id               = azapi_resource.this.id
   app_setting_names       = flatten([for k, v in var.sticky_settings : coalesce(v.app_setting_names, [])])
   connection_string_names = flatten([for k, v in var.sticky_settings : coalesce(v.connection_string_names, [])])
+  enable_telemetry        = var.enable_telemetry
   ignore_body_changes     = var.ignore_body_changes.config_slotconfignames
   resource_types          = var.resource_types.config_slotconfignames
   retry                   = var.retry
@@ -60,9 +70,11 @@ module "ftp_publishing_credential_policy" {
   source   = "./modules/publishing_credential_policy"
   for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
+  location            = var.location
   name                = "ftp"
   parent_id           = azapi_resource.this.id
   allow               = false
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
   resource_types      = var.resource_types.publishing_credential_policy
   retry               = var.retry
@@ -73,9 +85,11 @@ module "scm_publishing_credential_policy" {
   source   = "./modules/publishing_credential_policy"
   for_each = !var.scm_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
+  location            = var.location
   name                = "scm"
   parent_id           = azapi_resource.this.id
   allow               = false
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
   resource_types      = var.resource_types.publishing_credential_policy
   retry               = var.retry

@@ -15,8 +15,8 @@ resource "random_integer" "region_index" {
 }
 
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.4.4"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -140,6 +140,9 @@ data "azurerm_storage_account_blob_container_sas" "zip" {
 
 module "avm_res_web_site" {
   source = "../../"
+  providers = {
+    azapi = azapi
+  }
 
   location                               = azapi_resource.resource_group.location
   name                                   = module.naming.function_app.name_unique
@@ -267,9 +270,9 @@ Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
-Source: Azure/naming/azurerm
+Source: Azure/avm-utl-naming/azure
 
-Version: 0.4.4
+Version: 0.2.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

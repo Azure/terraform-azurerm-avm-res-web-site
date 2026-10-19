@@ -19,9 +19,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/func-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -66,6 +72,11 @@ run "system_assigned_identity_emits_account_name_and_credential" {
     condition     = !contains(keys(local.merged_app_settings), "AzureWebJobsStorage")
     error_message = "`AzureWebJobsStorage` must be omitted entirely when the host storage connection is identity-based."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "user_assigned_identity_emits_client_id" {
@@ -88,6 +99,11 @@ run "user_assigned_identity_emits_client_id" {
   assert {
     condition     = local.merged_app_settings["AzureWebJobsStorage__credential"] == "managedidentity"
     error_message = "`AzureWebJobsStorage__clientId` requires `AzureWebJobsStorage__credential = managedidentity`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -125,6 +141,11 @@ run "caller_supplied_settings_win" {
     condition     = local.merged_app_settings["AzureWebJobsStorage__accountName"] == "stcallerchoice"
     error_message = "A caller-supplied `AzureWebJobsStorage__accountName` must win over the module default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "connection_string_path_is_unchanged" {
@@ -146,6 +167,11 @@ run "connection_string_path_is_unchanged" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "AzureWebJobsStorage__accountName")
     error_message = "Connection-string function apps must not receive identity-based connection settings."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -169,6 +195,11 @@ run "managed_identity_storage_requires_an_identity" {
   }
 
   expect_failures = [var.managed_identities]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "client_id_requires_an_attached_user_assigned_identity" {
@@ -180,6 +211,11 @@ run "client_id_requires_an_attached_user_assigned_identity" {
   }
 
   expect_failures = [var.managed_identities]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # An empty string is not "unset". It satisfies every `!= null` check the identity
@@ -200,6 +236,11 @@ run "empty_client_id_is_rejected" {
   }
 
   expect_failures = [var.storage_user_assigned_identity_client_id]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "whitespace_client_id_is_rejected" {
@@ -216,6 +257,11 @@ run "whitespace_client_id_is_rejected" {
   }
 
   expect_failures = [var.storage_user_assigned_identity_client_id]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "malformed_client_id_is_rejected" {
@@ -232,6 +278,11 @@ run "malformed_client_id_is_rejected" {
   }
 
   expect_failures = [var.storage_user_assigned_identity_client_id]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "padded_client_id_is_rejected" {
@@ -248,6 +299,11 @@ run "padded_client_id_is_rejected" {
   }
 
   expect_failures = [var.storage_user_assigned_identity_client_id]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # Supplying `AzureWebJobsStorage__clientId` through `app_settings` selects an
@@ -284,6 +340,11 @@ run "caller_supplied_client_id_satisfies_the_identity_requirement" {
     condition     = local.merged_app_settings["AzureWebJobsStorage__accountName"] == "stavmtest"
     error_message = "The rest of the identity trio must still be emitted when only the client ID is caller-supplied."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # Azure app setting names are case-insensitive, so the guard compares lowercased
@@ -307,6 +368,11 @@ run "caller_supplied_client_id_is_matched_case_insensitively" {
     condition     = local.merged_app_settings["azurewebjobsstorage__clientid"] == "99999999-8888-7777-6666-555555555555"
     error_message = "A lowercased caller-supplied client ID must satisfy the identity requirement and reach the app unchanged."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "caller_supplied_empty_client_id_is_rejected" {
@@ -325,6 +391,11 @@ run "caller_supplied_empty_client_id_is_rejected" {
   }
 
   expect_failures = [var.app_settings]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "caller_supplied_malformed_client_id_is_rejected" {
@@ -343,6 +414,11 @@ run "caller_supplied_malformed_client_id_is_rejected" {
   }
 
   expect_failures = [var.app_settings]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "caller_supplied_padded_client_id_is_rejected" {
@@ -361,6 +437,11 @@ run "caller_supplied_padded_client_id_is_rejected" {
   }
 
   expect_failures = [var.app_settings]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "caller_supplied_client_id_requires_an_attached_identity" {
@@ -374,6 +455,11 @@ run "caller_supplied_client_id_requires_an_attached_identity" {
   }
 
   expect_failures = [var.managed_identities]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "case_insensitive_duplicate_client_ids_are_rejected" {
@@ -393,6 +479,11 @@ run "case_insensitive_duplicate_client_ids_are_rejected" {
   }
 
   expect_failures = [var.app_settings]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # `__credential` says *how* to authenticate, not *which* identity to authenticate
@@ -409,4 +500,9 @@ run "caller_supplied_credential_does_not_satisfy_the_identity_requirement" {
   }
 
   expect_failures = [var.managed_identities]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }

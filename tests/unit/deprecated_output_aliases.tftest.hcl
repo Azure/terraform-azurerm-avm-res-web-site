@@ -9,9 +9,15 @@ mock_provider "azapi" {
       }
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -41,5 +47,10 @@ run "identity_principal_id_aliases_system_assigned_mi_principal_id" {
   assert {
     condition     = output.identity_principal_id == output.system_assigned_mi_principal_id
     error_message = "`identity_principal_id` is a deprecated alias and must keep resolving to the same value as `system_assigned_mi_principal_id`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

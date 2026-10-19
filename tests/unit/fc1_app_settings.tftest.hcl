@@ -17,9 +17,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/func-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -53,6 +59,11 @@ run "fc1_omits_the_deprecated_app_settings" {
     condition     = !contains(keys(local.merged_app_settings), "WEBSITE_CONTENTSHARE")
     error_message = "Flex Consumption has no content share, so `content_share_force_disabled` must not produce a `WEBSITE_CONTENTSHARE` key."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # The gate is only defensible if it is narrow: everything else the module sends
@@ -79,6 +90,11 @@ run "fc1_still_sends_the_settings_that_are_not_deprecated" {
     condition     = contains(keys(local.merged_app_settings), "AzureWebJobsDashboard")
     error_message = "`AzureWebJobsDashboard` is not on the Flex Consumption deprecation list and must still be sent."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "non_fc1_still_sends_the_extension_version" {
@@ -97,6 +113,11 @@ run "non_fc1_still_sends_the_extension_version" {
     condition     = local.merged_app_settings["WEBSITE_CONTENTSHARE"] == ""
     error_message = "`content_share_force_disabled` must still empty `WEBSITE_CONTENTSHARE` outside Flex Consumption."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "non_fc1_extension_version_is_configurable" {
@@ -109,6 +130,11 @@ run "non_fc1_extension_version_is_configurable" {
   assert {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == "~3"
     error_message = "Setting `functions_extension_version` should change the `FUNCTIONS_EXTENSION_VERSION` app setting."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -134,6 +160,11 @@ run "explicit_app_settings_entry_beats_the_module_default" {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == "~3"
     error_message = "An explicit `FUNCTIONS_EXTENSION_VERSION` in `var.app_settings` must win over the module's `functions_extension_version` default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # The run above leaves `functions_extension_version` at its default, so it only
@@ -153,6 +184,11 @@ run "app_settings_wins_when_both_inputs_are_set" {
   assert {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == "~3"
     error_message = "When both `functions_extension_version` and `app_settings.FUNCTIONS_EXTENSION_VERSION` are set, the `app_settings` entry must win."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -176,6 +212,11 @@ run "lowercase_app_settings_entry_beats_the_module_default" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "FUNCTIONS_EXTENSION_VERSION")
     error_message = "When the caller has already set the extension version under any casing, the module must not also send its own `FUNCTIONS_EXTENSION_VERSION` key."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -201,6 +242,11 @@ run "fc1_keeps_an_explicit_app_settings_entry" {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == "~4"
     error_message = "Gating the module default must not strip a `FUNCTIONS_EXTENSION_VERSION` the caller set explicitly through `var.app_settings`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # A caller who writes the key with an explicit `null` has still *set* it, so the
@@ -222,6 +268,11 @@ run "an_explicit_null_app_settings_entry_still_suppresses_the_default" {
     condition     = local.merged_app_settings["FUNCTIONS_EXTENSION_VERSION"] == null
     error_message = "An explicit `null` is a caller-set key, so the module must not overwrite it with `functions_extension_version`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "non_function_app_kinds_do_not_get_an_extension_version" {
@@ -234,5 +285,10 @@ run "non_function_app_kinds_do_not_get_an_extension_version" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "FUNCTIONS_EXTENSION_VERSION")
     error_message = "Only Function Apps should get a module-supplied `FUNCTIONS_EXTENSION_VERSION`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

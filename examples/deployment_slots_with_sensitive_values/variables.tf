@@ -1,6 +1,7 @@
 # Sensitive variables for demonstration purposes
 # In production, these should come from Azure Key Vault, environment variables, or secure CI/CD secrets
 
+
 variable "enable_telemetry" {
   type        = bool
   default     = true

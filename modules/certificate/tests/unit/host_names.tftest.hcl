@@ -13,7 +13,13 @@
 // the attribute that opts us into that behaviour must stay set, and the
 // variable must reach the body unchanged whether or not the caller supplies it.
 
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
 
 variables {
   location       = "eastus"

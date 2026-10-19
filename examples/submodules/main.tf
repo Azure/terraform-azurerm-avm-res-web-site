@@ -4,8 +4,8 @@ resource "random_integer" "region_index" {
 }
 
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.4.3"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -90,6 +90,9 @@ resource "azapi_resource" "application_insights" {
 # Create the site with minimal configuration using the root module
 module "avm_res_web_site" {
   source = "../../"
+  providers = {
+    azapi = azapi
+  }
 
   location                               = azapi_resource.resource_group.location
   name                                   = "${module.naming.function_app.name_unique}-submodules"
@@ -126,7 +129,9 @@ module "appsettings" {
     "MY_CUSTOM_SETTING" = "my-custom-value"
     "ENVIRONMENT"       = "production"
   }
-  parent_id = module.avm_res_web_site.resource_id
+  location         = var.location
+  parent_id        = module.avm_res_web_site.resource_id
+  enable_telemetry = var.enable_telemetry
 }
 
 # Use the config_connectionstrings submodule independently
@@ -140,31 +145,38 @@ module "connectionstrings" {
       value = "Server=tcp:myserver.database.windows.net;Database=mydb;"
     }
   }
-  parent_id = module.avm_res_web_site.resource_id
+  location         = var.location
+  parent_id        = module.avm_res_web_site.resource_id
+  enable_telemetry = var.enable_telemetry
 }
 
 # Use the publishing_credential_policy submodule to disable FTP basic auth
 module "ftp_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  name      = "ftp"
-  parent_id = module.avm_res_web_site.resource_id
-  allow     = false
+  location         = var.location
+  name             = "ftp"
+  parent_id        = module.avm_res_web_site.resource_id
+  allow            = false
+  enable_telemetry = var.enable_telemetry
 }
 
 # Use the publishing_credential_policy submodule to disable SCM basic auth
 module "scm_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  name      = "scm"
-  parent_id = module.avm_res_web_site.resource_id
-  allow     = false
+  location         = var.location
+  name             = "scm"
+  parent_id        = module.avm_res_web_site.resource_id
+  allow            = false
+  enable_telemetry = var.enable_telemetry
 }
 
 # Use the config_logs submodule independently
 module "logs" {
   source = "../../modules/config_logs"
 
+  location  = var.location
   parent_id = module.avm_res_web_site.resource_id
   application_logs = {
     file_system = {
@@ -172,6 +184,7 @@ module "logs" {
     }
   }
   detailed_error_messages = true
+  enable_telemetry        = var.enable_telemetry
   failed_requests_tracing = true
   http_logs = {
     file_system = {

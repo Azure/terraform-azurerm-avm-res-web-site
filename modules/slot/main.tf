@@ -187,7 +187,9 @@ module "config_appsettings" {
   source = "../config_appsettings"
 
   app_settings        = local.merged_app_settings
+  location            = var.location
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_appsettings
   is_slot             = true
   resource_types      = var.resource_types.config_appsettings
@@ -201,7 +203,9 @@ module "config_connectionstrings" {
   for_each = var.manage_connection_strings ? { "default" = {} } : {}
 
   connection_strings  = var.connection_strings
+  location            = var.location
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_connectionstrings
   is_slot             = true
   resource_types      = var.resource_types.config_connectionstrings
@@ -213,10 +217,12 @@ module "config_connectionstrings" {
 module "config_azurestorageaccounts" {
   source = "../config_azurestorageaccounts"
 
+  location  = var.location
   parent_id = azapi_resource.this.id
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
     access_key = var.storage_shares_access_keys[k]
   }) }
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_azurestorageaccounts
   is_slot             = true
   resource_types      = var.resource_types.config_azurestorageaccounts
@@ -229,9 +235,11 @@ module "ftp_publishing_credential_policy" {
   source   = "../publishing_credential_policy"
   for_each = !var.ftp_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
+  location            = var.location
   name                = "ftp"
   parent_id           = azapi_resource.this.id
   allow               = false
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
   is_slot             = true
   resource_types      = var.resource_types.publishing_credential_policy
@@ -243,8 +251,10 @@ module "ftp_publishing_credential_policy" {
 module "config_metadata" {
   source = "../config_metadata"
 
+  location            = var.location
   metadata            = { for m in coalesce(module.site_config_helpers.site_config_metadata, []) : m.name => m.value }
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_metadata
   is_slot             = true
   resource_types      = var.resource_types.config_metadata
@@ -257,9 +267,11 @@ module "scm_publishing_credential_policy" {
   source   = "../publishing_credential_policy"
   for_each = !var.webdeploy_publish_basic_authentication_enabled ? { "default" = {} } : {}
 
+  location            = var.location
   name                = "scm"
   parent_id           = azapi_resource.this.id
   allow               = false
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.publishing_credential_policy
   is_slot             = true
   resource_types      = var.resource_types.publishing_credential_policy
@@ -287,8 +299,10 @@ module "extensions_zipdeploy" {
   source   = "../extensions_zipdeploy"
   for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
 
+  location            = var.location
   parent_id           = azapi_resource.this.id
   zip_deploy_file     = var.zip_deploy_file
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.extensions_zipdeploy
   is_slot             = true
   resource_types      = var.resource_types.extensions_zipdeploy

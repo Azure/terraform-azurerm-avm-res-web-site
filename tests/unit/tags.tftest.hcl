@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -30,6 +36,11 @@ run "create_with_initial_tags" {
     condition     = azapi_resource.this.tags["environment"] == "initial"
     error_message = "The site should be created with the configured tags."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "tag_changes_are_planned" {
@@ -44,5 +55,10 @@ run "tag_changes_are_planned" {
   assert {
     condition     = azapi_resource.this.tags["environment"] == "updated"
     error_message = "Changing tags must produce a planned update instead of retaining the prior state."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

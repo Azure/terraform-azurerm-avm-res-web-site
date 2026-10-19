@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/func-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -34,6 +40,11 @@ run "isolated_linux_function_app_uses_isolated_stack" {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "DOTNET-ISOLATED|10.0"
     error_message = "Isolated Linux Function Apps must send DOTNET-ISOLATED|10.0."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "isolated_dotnet_8_also_uses_isolated_stack" {
@@ -53,6 +64,11 @@ run "isolated_dotnet_8_also_uses_isolated_stack" {
   assert {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "DOTNET-ISOLATED|8.0"
     error_message = "The isolated worker stack must not depend on the .NET version."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -74,6 +90,11 @@ run "nonisolated_linux_function_app_keeps_dotnetcore" {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "DOTNETCORE|10.0"
     error_message = "Non-isolated Linux Function Apps must keep their DOTNETCORE stack."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "linux_web_app_keeps_dotnetcore" {
@@ -86,6 +107,11 @@ run "linux_web_app_keeps_dotnetcore" {
   assert {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "DOTNETCORE|10.0"
     error_message = "The isolated worker setting must not change a Linux web app's stack."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -103,6 +129,11 @@ run "windows_function_app_omits_linux_stack" {
   assert {
     condition     = azapi_resource.this.body.properties.siteConfig.netFrameworkVersion == "10.0"
     error_message = "Windows Function Apps must continue to use netFrameworkVersion."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -128,6 +159,11 @@ run "flex_consumption_omits_linux_stack" {
     condition     = azapi_resource.this.body.properties.functionAppConfig.runtime.name == "dotnet-isolated"
     error_message = "Flex Consumption must use functionAppConfig.runtime instead."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "explicit_linux_stack_wins" {
@@ -148,5 +184,10 @@ run "explicit_linux_stack_wins" {
   assert {
     condition     = azapi_resource.this.body.properties.siteConfig.linuxFxVersion == "CUSTOM|10.0"
     error_message = "An explicit linux_fx_version must take precedence over the derived isolated stack."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

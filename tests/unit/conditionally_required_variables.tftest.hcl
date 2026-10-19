@@ -17,9 +17,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.Web/sites/app-unit-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -43,6 +49,11 @@ run "flex_consumption_requires_runtime_name" {
   }
 
   expect_failures = [var.fc1_runtime_name]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "flex_consumption_requires_runtime_version" {
@@ -58,6 +69,11 @@ run "flex_consumption_requires_runtime_version" {
   }
 
   expect_failures = [var.fc1_runtime_version]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "flex_consumption_requires_storage_authentication_type" {
@@ -73,6 +89,11 @@ run "flex_consumption_requires_storage_authentication_type" {
   }
 
   expect_failures = [var.storage_authentication_type]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "flex_consumption_requires_storage_container_endpoint" {
@@ -88,6 +109,11 @@ run "flex_consumption_requires_storage_container_endpoint" {
   }
 
   expect_failures = [var.storage_container_endpoint]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "user_assigned_identity_authentication_requires_identity_id" {
@@ -104,6 +130,11 @@ run "user_assigned_identity_authentication_requires_identity_id" {
   }
 
   expect_failures = [var.storage_user_assigned_identity_id]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "logic_app_requires_storage_account_name" {
@@ -116,6 +147,11 @@ run "logic_app_requires_storage_account_name" {
   }
 
   expect_failures = [var.storage_account_name]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "logic_app_requires_storage_account_access_key" {
@@ -128,6 +164,11 @@ run "logic_app_requires_storage_account_access_key" {
   }
 
   expect_failures = [var.storage_account_access_key]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "managed_identity_storage_requires_storage_account_name" {
@@ -145,6 +186,11 @@ run "managed_identity_storage_requires_storage_account_name" {
   }
 
   expect_failures = [var.storage_account_name]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "unsupported_storage_container_type_is_rejected" {
@@ -158,6 +204,11 @@ run "unsupported_storage_container_type_is_rejected" {
   }
 
   expect_failures = [var.storage_container_type]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "flex_consumption_defaults_storage_container_type" {
@@ -178,6 +229,11 @@ run "flex_consumption_defaults_storage_container_type" {
     condition     = local.body.properties.functionAppConfig.deployment.storage.type == "blobcontainer"
     error_message = "storage_container_type should default to blobContainer for Flex Consumption Function Apps."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "web_app_ignores_flex_consumption_variables" {
@@ -186,5 +242,10 @@ run "web_app_ignores_flex_consumption_variables" {
   assert {
     condition     = local.body.properties.functionAppConfig == null
     error_message = "functionAppConfig should stay null when function_app_uses_fc1 is false."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

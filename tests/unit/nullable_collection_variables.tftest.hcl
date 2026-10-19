@@ -29,9 +29,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.Web/sites/app-unit-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -67,6 +73,11 @@ run "null_always_ready_uses_default" {
     condition     = local.body.properties.functionAppConfig.scaleAndConcurrency.alwaysReady == null
     error_message = "An empty always_ready should omit alwaysReady from the Flex Consumption body."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "null_backup_uses_default" {
@@ -79,6 +90,11 @@ run "null_backup_uses_default" {
   assert {
     condition     = var.backup != null && length(var.backup) == 0
     error_message = "An explicit null for backup should resolve to the empty default."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -93,6 +109,11 @@ run "null_connection_strings_uses_default" {
     condition     = var.connection_strings != null && length(var.connection_strings) == 0
     error_message = "An explicit null for connection_strings should resolve to the empty default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "null_site_config_uses_default" {
@@ -105,6 +126,11 @@ run "null_site_config_uses_default" {
   assert {
     condition     = var.site_config != null && var.site_config.always_on == true
     error_message = "An explicit null for site_config should resolve to the default object."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -122,6 +148,11 @@ run "null_slots_storage_shares_sensitive_values_uses_default" {
     condition     = nonsensitive(var.slots_storage_shares_to_mount_sensitive_values) != null && length(nonsensitive(var.slots_storage_shares_to_mount_sensitive_values)) == 0
     error_message = "An explicit null for slots_storage_shares_to_mount_sensitive_values should resolve to the empty default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "null_sticky_settings_uses_default" {
@@ -135,6 +166,11 @@ run "null_sticky_settings_uses_default" {
     condition     = var.sticky_settings != null && length(var.sticky_settings) == 0
     error_message = "An explicit null for sticky_settings should resolve to the empty default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "null_storage_shares_to_mount_uses_default" {
@@ -147,6 +183,11 @@ run "null_storage_shares_to_mount_uses_default" {
   assert {
     condition     = var.storage_shares_to_mount != null && length(var.storage_shares_to_mount) == 0
     error_message = "An explicit null for storage_shares_to_mount should resolve to the empty default."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -164,6 +205,11 @@ run "null_retry_is_preserved" {
     condition     = var.retry == null
     error_message = "An explicit null for retry should be preserved, so that retries stay disabled."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "unset_retry_uses_default" {
@@ -172,5 +218,10 @@ run "unset_retry_uses_default" {
   assert {
     condition     = var.retry != null && var.retry.interval_seconds == 10
     error_message = "An unset retry should resolve to the default retry-on-conflict configuration."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

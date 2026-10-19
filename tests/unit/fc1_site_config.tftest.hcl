@@ -6,9 +6,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/func-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 # Flex Consumption (FC1) enforcement of the ARM 51021 rejection list is
@@ -130,6 +136,11 @@ run "fc1_omits_rejected_site_config_properties" {
     condition     = try(azapi_resource.this.body.properties.functionAppConfig.runtime.version, null) == "20"
     error_message = "Flex Consumption apps express their runtime through functionAppConfig.runtime.version."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "non_fc1_still_sends_the_application_stack" {
@@ -159,5 +170,10 @@ run "non_fc1_still_sends_the_application_stack" {
   assert {
     condition     = try(azapi_resource.this.body.properties.siteConfig.functionsRuntimeScaleMonitoringEnabled, null) == true
     error_message = "Non-FC1 function apps must still send siteConfig.functionsRuntimeScaleMonitoringEnabled."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
