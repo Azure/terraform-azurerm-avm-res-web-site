@@ -12,7 +12,13 @@
 // (#378). Whether the transmitted null clears the stored schedule is unverified;
 // `enabled = false` is what carries the caller's intent either way.
 
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
 
 variables {
   parent_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
@@ -25,6 +31,7 @@ run "disabled_backup_clears_the_schedule" {
     backup_name         = "unit-test-backup"
     enabled             = false
     storage_account_url = "https://unittest.blob.core.windows.net/backups?sv=stub"
+    location            = "eastus"
   }
 
   assert {
@@ -64,6 +71,7 @@ run "scheduled_backup_sends_the_schedule" {
       retention_period_days    = 30
       start_time               = "2026-01-01T00:00:00Z"
     }
+    location = "eastus"
   }
 
   assert {
@@ -101,6 +109,7 @@ run "enabled_without_a_schedule_remains_accepted" {
     backup_name         = "unit-test-backup"
     enabled             = true
     storage_account_url = "https://unittest.blob.core.windows.net/backups?sv=stub"
+    location            = "eastus"
   }
 
   assert {

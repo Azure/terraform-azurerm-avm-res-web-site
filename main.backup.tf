@@ -2,8 +2,10 @@ module "config_backup" {
   source   = "./modules/config_backup"
   for_each = var.backup
 
+  location            = var.location
   parent_id           = azapi_resource.this.id
   backup_name         = coalesce(each.value.name, "backup-${var.name}")
+  enable_telemetry    = var.enable_telemetry
   enabled             = each.value.enabled
   ignore_body_changes = var.ignore_body_changes.config_backup
   resource_types      = var.resource_types.config_backup

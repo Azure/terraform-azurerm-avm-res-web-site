@@ -30,7 +30,13 @@
 // the provider against a live GET, so mocked assertions on the rendered body
 // never reach it — which is how #377 shipped green with this defect in it.
 
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
 
 variables {
   parent_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
@@ -62,6 +68,7 @@ run "the_two_drifting_objects_carry_azures_cleared_shape" {
         }
       }
     }
+    location = "eastus"
   }
 
   assert {
@@ -139,6 +146,7 @@ run "supplied_nested_objects_reach_the_body" {
         }
       }
     }
+    location = "eastus"
   }
 
   assert {
@@ -186,6 +194,7 @@ run "unsupplied_nested_objects_are_explicit_nulls" {
         contoso = { enabled = true }
       }
     }
+    location = "eastus"
   }
 
   assert {
@@ -260,6 +269,7 @@ run "custom_oidc_registration_children_are_explicit_nulls" {
         }
       }
     }
+    location = "eastus"
   }
 
   assert {
@@ -300,5 +310,8 @@ run "identity_providers_is_an_explicit_null_when_unconfigured" {
   assert {
     condition     = try(nonsensitive(azapi_update_resource.this.body.properties.platform.enabled) == false, false)
     error_message = "Nulling `identityProviders` must not disturb the rest of the body."
+  }
+  variables {
+    location = "eastus"
   }
 }

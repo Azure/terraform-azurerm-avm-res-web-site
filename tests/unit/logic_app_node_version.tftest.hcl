@@ -11,9 +11,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/logic-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -35,6 +41,11 @@ run "logic_app_defaults_to_the_documented_node_version" {
     condition     = local.merged_app_settings["WEBSITE_NODE_DEFAULT_VERSION"] == "~22"
     error_message = "A Logic App should default to `~22`, matching the documented default for `logic_app_node_version`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "logic_app_node_version_is_configurable" {
@@ -48,6 +59,11 @@ run "logic_app_node_version_is_configurable" {
     condition     = local.merged_app_settings["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "Setting `logic_app_node_version` should change the `WEBSITE_NODE_DEFAULT_VERSION` app setting."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "null_logic_app_node_version_omits_the_setting" {
@@ -60,6 +76,11 @@ run "null_logic_app_node_version_omits_the_setting" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "WEBSITE_NODE_DEFAULT_VERSION")
     error_message = "Setting `logic_app_node_version` to `null` should drop `WEBSITE_NODE_DEFAULT_VERSION` from the app settings entirely."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -86,6 +107,11 @@ run "explicit_app_settings_entry_beats_the_module_default" {
     condition     = local.merged_app_settings["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "An explicit `WEBSITE_NODE_DEFAULT_VERSION` in `var.app_settings` must win over the module's `logic_app_node_version` default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # The run above leaves `logic_app_node_version` at its default, so it only
@@ -105,6 +131,11 @@ run "app_settings_wins_when_both_inputs_are_set" {
   assert {
     condition     = local.merged_app_settings["WEBSITE_NODE_DEFAULT_VERSION"] == "~20"
     error_message = "When both `logic_app_node_version` and `app_settings.WEBSITE_NODE_DEFAULT_VERSION` are set, the `app_settings` entry must win."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -131,6 +162,11 @@ run "lowercase_app_settings_entry_beats_the_module_default" {
     condition     = !contains(keys(local.merged_app_settings), "WEBSITE_NODE_DEFAULT_VERSION")
     error_message = "When the caller has already set the Node version under any casing, the module must not also send its own `WEBSITE_NODE_DEFAULT_VERSION` key."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # `var.app_settings` is nullable, so `null` has always been a legal value:
@@ -149,6 +185,11 @@ run "null_app_settings_still_plans_and_keeps_the_default" {
     condition     = local.merged_app_settings["WEBSITE_NODE_DEFAULT_VERSION"] == "~22"
     error_message = "`app_settings = null` must still plan, and with no caller-supplied key the module default of `~22` still applies."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "non_logic_app_kinds_do_not_get_a_node_version" {
@@ -161,5 +202,10 @@ run "non_logic_app_kinds_do_not_get_a_node_version" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "WEBSITE_NODE_DEFAULT_VERSION")
     error_message = "Only Logic Apps should get a module-supplied `WEBSITE_NODE_DEFAULT_VERSION`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

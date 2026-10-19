@@ -14,9 +14,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -42,6 +48,11 @@ run "private_endpoint_defaults_to_the_app_resource_group" {
     condition     = azapi_resource.private_endpoint["default_rg"].parent_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg"
     error_message = "A private endpoint with no `resource_group_name` should land in the app's own resource group, taken straight from `var.parent_id`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "private_endpoint_accepts_a_bare_resource_group_name" {
@@ -59,6 +70,11 @@ run "private_endpoint_accepts_a_bare_resource_group_name" {
   assert {
     condition     = azapi_resource.private_endpoint["bare_name"].parent_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-network-rg"
     error_message = "A bare `resource_group_name` should be rebuilt into a resource group ID using the subscription from `var.parent_id`. This is the shape reported in #286."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -85,6 +101,11 @@ run "private_endpoint_accepts_a_resource_group_id" {
   assert {
     condition     = azapi_resource.private_endpoint["resource_id"].parent_id != "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups//subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
     error_message = "A `resource_group_name` given as a resource group ID must not be rebuilt as if it were a bare name, which would nest one scope inside another."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -123,6 +144,11 @@ run "private_endpoint_resource_groups_resolve_per_key" {
     condition     = azapi_resource.private_endpoint["resource_id"].parent_id == "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/unit-test-network-rg"
     error_message = "An endpoint given a full resource group ID must keep it, including the other subscription, even when its siblings resolve differently."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
@@ -142,6 +168,11 @@ run "private_endpoint_rejects_a_resource_id_that_is_not_a_resource_group" {
   }
 
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "private_endpoint_rejects_an_empty_resource_group_name" {
@@ -161,4 +192,9 @@ run "private_endpoint_rejects_an_empty_resource_group_name" {
   }
 
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }

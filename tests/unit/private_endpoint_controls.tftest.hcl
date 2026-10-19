@@ -9,8 +9,13 @@ mock_provider "azapi" {
       output = { results = [] }
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {
   mock_resource "random_uuid" {
     defaults = {
@@ -18,6 +23,7 @@ mock_provider "random" {
     }
   }
 }
+
 mock_provider "time" {}
 
 override_resource {
@@ -114,6 +120,11 @@ run "site_endpoint_controls_reach_arm_bodies" {
     )
     error_message = "Assignment UUIDs must survive without changing scope, principal, role or permission conditions."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "site_endpoint_defaults_remain_unchanged" {
@@ -162,6 +173,11 @@ run "site_endpoint_defaults_remain_unchanged" {
     )
     error_message = "Null assignment names must use the existing UUID generator and null notes must remain optional."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "site_endpoint_dns_management_can_remain_external" {
@@ -179,6 +195,11 @@ run "site_endpoint_dns_management_can_remain_external" {
   assert {
     condition     = length(azapi_resource.private_endpoint) == 1 && length(azapi_resource.private_dns_zone_group) == 0
     error_message = "Disabling DNS management must keep one endpoint and create no managed zone group."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -231,5 +252,10 @@ run "deployment_slot_endpoint_schema_preserves_controls" {
       var.deployment_slots["staging"].private_endpoints["configured"].ip_configurations["custom"].member_name == "custom-member"
     )
     error_message = "The deployment_slots input must not discard endpoint controls before calling the slot."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

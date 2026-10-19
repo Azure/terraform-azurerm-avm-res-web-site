@@ -18,9 +18,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -38,6 +44,11 @@ run "site_normalizes_capital_f_server_farms" {
     condition     = azapi_resource.this.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
     error_message = "An `azurerm_service_plan`-style ID containing `/serverFarms/` should be normalized to lowercase `/serverfarms/`, got `${azapi_resource.this.body.properties.serverFarmId}`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "site_leaves_lowercase_server_farms_unchanged" {
@@ -51,6 +62,11 @@ run "site_leaves_lowercase_server_farms_unchanged" {
     condition     = azapi_resource.this.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
     error_message = "An ID that already matches the ARM casing should pass through untouched, got `${azapi_resource.this.body.properties.serverFarmId}`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "site_preserves_a_resource_group_named_server_farms" {
@@ -63,6 +79,11 @@ run "site_preserves_a_resource_group_named_server_farms" {
   assert {
     condition     = azapi_resource.this.body.properties.serverFarmId == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/serverFarms/providers/Microsoft.Web/serverfarms/serverFarms"
     error_message = "Only the provider type segment may be rewritten. A resource group or plan named `serverFarms` must keep its casing, got `${azapi_resource.this.body.properties.serverFarmId}`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -86,6 +107,11 @@ run "slot_normalizes_the_inherited_service_plan_resource_id" {
   assert {
     condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/unit-test-plan"
     error_message = "A slot inheriting the site's plan ID should get the same normalization, got `${module.slot["staging"].server_farm_resource_id}`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -111,6 +137,11 @@ run "slot_normalizes_its_own_server_farm_id_override" {
   assert {
     condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
     error_message = "A slot's `server_farm_id` override should be normalized too, not just the inherited ID, got `${module.slot["staging"].server_farm_resource_id}`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -139,6 +170,11 @@ run "slot_normalizes_a_lowercase_provider_namespace" {
     condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/serverfarms/slot-plan"
     error_message = "A hand-written `microsoft.web` namespace should be normalized back to `Microsoft.Web`, got `${module.slot["staging"].server_farm_resource_id}`."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "slot_preserves_a_resource_group_named_server_farms" {
@@ -163,5 +199,10 @@ run "slot_preserves_a_resource_group_named_server_farms" {
   assert {
     condition     = module.slot["staging"].server_farm_resource_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/serverFarms/providers/Microsoft.Web/serverfarms/serverFarms"
     error_message = "The slot normalization must also leave a resource group or plan named `serverFarms` alone, got `${module.slot["staging"].server_farm_resource_id}`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

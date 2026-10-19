@@ -17,10 +17,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
 
-mock_provider "modtm" {}
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -51,6 +56,11 @@ run "slot_defaults_to_deleting_an_empty_service_plan" {
     condition     = azapi_resource.this.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["true"])
     error_message = "By default a deployment slot should let Azure delete an empty App Service Plan, matching the REST API default."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "slot_can_keep_an_empty_service_plan" {
@@ -67,5 +77,10 @@ run "slot_can_keep_an_empty_service_plan" {
   assert {
     condition     = azapi_resource.this.delete_query_parameters["deleteEmptyServerFarm"] == tolist(["false"])
     error_message = "Setting `delete_empty_service_plan` to `false` should send `deleteEmptyServerFarm=false` on the slot delete request."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

@@ -11,9 +11,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-avm-test/providers/Microsoft.Web/sites/logic-avm-test"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -38,6 +44,11 @@ run "logic_app_defaults_to_the_documented_worker_runtime" {
     condition     = local.merged_app_settings["FUNCTIONS_WORKER_RUNTIME"] == "dotnet"
     error_message = "A Logic App must default to the documented `dotnet` worker runtime."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # `FUNCTIONS_WORKER_RUNTIME` is a required setting, so unlike the Node version
@@ -55,6 +66,11 @@ run "the_worker_runtime_is_always_present_on_a_logic_app" {
   assert {
     condition     = contains(keys(local.merged_app_settings), "FUNCTIONS_WORKER_RUNTIME")
     error_message = "Azure requires `FUNCTIONS_WORKER_RUNTIME` on a Standard Logic App, so no combination of inputs may drop it."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -74,6 +90,11 @@ run "explicit_app_settings_entry_beats_the_module_default" {
   assert {
     condition     = local.merged_app_settings["FUNCTIONS_WORKER_RUNTIME"] == "node"
     error_message = "An explicit `FUNCTIONS_WORKER_RUNTIME` in `var.app_settings` must win over the module default."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -99,6 +120,11 @@ run "lowercase_app_settings_entry_beats_the_module_default" {
     condition     = !contains(keys(local.merged_app_settings), "FUNCTIONS_WORKER_RUNTIME")
     error_message = "When the caller has already set the worker runtime under any casing, the module must not also send its own `FUNCTIONS_WORKER_RUNTIME` key."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # `var.app_settings` is nullable, and reading the caller's keys is what makes
@@ -115,6 +141,11 @@ run "null_app_settings_still_plans_and_keeps_the_default" {
     condition     = local.merged_app_settings["FUNCTIONS_WORKER_RUNTIME"] == "dotnet"
     error_message = "`app_settings = null` must still plan, and with no caller-supplied key the module default of `dotnet` still applies."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "web_apps_do_not_get_a_worker_runtime" {
@@ -127,6 +158,11 @@ run "web_apps_do_not_get_a_worker_runtime" {
   assert {
     condition     = !contains(keys(local.merged_app_settings), "FUNCTIONS_WORKER_RUNTIME")
     error_message = "Only Logic Apps should get a module-supplied `FUNCTIONS_WORKER_RUNTIME`."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }
 
@@ -147,6 +183,11 @@ run "function_apps_do_not_get_a_worker_runtime" {
     condition     = !contains(keys(local.merged_app_settings), "FUNCTIONS_WORKER_RUNTIME")
     error_message = "The module must not invent a `FUNCTIONS_WORKER_RUNTIME` for Function Apps; the value depends on the consumer's language stack."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 # A Function App caller who does set the runtime themselves must still see it,
@@ -165,5 +206,10 @@ run "function_app_app_settings_entry_survives" {
   assert {
     condition     = local.merged_app_settings["FUNCTIONS_WORKER_RUNTIME"] == "python"
     error_message = "A Function App caller's own `FUNCTIONS_WORKER_RUNTIME` must pass through untouched."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

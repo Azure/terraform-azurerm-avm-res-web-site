@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 variables {
@@ -44,5 +50,10 @@ run "preserves_acmebot_output_contract" {
       }
     }
     error_message = "The private endpoint output must retain the name and ID projection consumed by polymind-inc/terraform-azurerm-acmebot."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

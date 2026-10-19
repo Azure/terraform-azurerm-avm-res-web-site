@@ -4,8 +4,8 @@ resource "random_integer" "region_index" {
 }
 
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.4.3"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 }
 
 resource "azapi_resource" "resource_group" {
@@ -184,6 +184,9 @@ resource "azapi_resource" "kv_role_assignment" {
 
 module "avm_res_web_site" {
   source = "../../"
+  providers = {
+    azapi = azapi
+  }
 
   location                               = azapi_resource.resource_group.location
   name                                   = "${module.naming.function_app.name_unique}-default"

@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site/slots/staging"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
+
 mock_provider "time" {}
-mock_provider "modtm" {}
+
 mock_provider "random" {}
 
 variables {
@@ -37,6 +43,11 @@ run "slot_default_manages_empty_connection_strings" {
     condition     = length(module.config_connectionstrings) == 1
     error_message = "A slot must manage its connection strings endpoint by default, including an empty map."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
+  }
 }
 
 run "slot_opt_out_skips_connection_strings_endpoint" {
@@ -53,5 +64,10 @@ run "slot_opt_out_skips_connection_strings_endpoint" {
   assert {
     condition     = length(module.config_connectionstrings) == 0
     error_message = "Opting out on a slot must omit its connection strings config update."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

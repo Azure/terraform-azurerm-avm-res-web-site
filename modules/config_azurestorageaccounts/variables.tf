@@ -1,3 +1,9 @@
+variable "location" {
+  type        = string
+  description = "The Azure region for this module's resources or telemetry deployment."
+  nullable    = false
+}
+
 variable "parent_id" {
   type        = string
   description = "The resource ID of the App Service site or slot."
@@ -30,6 +36,17 @@ A map of Storage Account file shares to mount to the App Service.
 - `name` - (Required) The name of the storage mount.
 - `share_name` - (Required) The name of the file share.
 - `type` - (Optional) The type of storage. Defaults to `AzureFiles`.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "enable_telemetry" {
+  type        = bool
+  default     = true
+  description = <<DESCRIPTION
+This variable controls whether or not telemetry is enabled for the module.
+For more information see <https://aka.ms/avm/telemetryinfo>.
+If it is set to false, then no telemetry will be collected.
 DESCRIPTION
   nullable    = false
 }

@@ -4,9 +4,15 @@ mock_provider "azapi" {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-mock_provider "modtm" {}
+
 mock_provider "random" {}
+
 mock_provider "time" {}
 
 run "existing_unkeyed_connection_strings" {
@@ -15,6 +21,9 @@ run "existing_unkeyed_connection_strings" {
 
   module {
     source = "./tests/unit/fixtures/legacy_connectionstrings"
+  }
+  variables {
+    location = "eastus"
   }
 }
 
@@ -33,5 +42,10 @@ run "move_existing_connection_strings_without_replacement" {
   assert {
     condition     = module.config_connectionstrings["default"].resource_id == run.existing_unkeyed_connection_strings.connection_strings_id
     error_message = "An existing connection strings update must retain its resource ID when its module address gains the default key."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+    time   = time
   }
 }

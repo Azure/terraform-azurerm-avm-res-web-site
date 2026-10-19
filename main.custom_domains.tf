@@ -6,6 +6,7 @@ module "certificate" {
   name                  = coalesce(each.value.name, each.key)
   parent_id             = var.parent_id
   server_farm_id        = var.service_plan_resource_id
+  enable_telemetry      = var.enable_telemetry
   host_names            = each.value.host_names
   ignore_body_changes   = var.ignore_body_changes.certificate
   key_vault_id          = each.value.key_vault_id
@@ -23,7 +24,9 @@ module "hostname_binding" {
   for_each = var.custom_domains
 
   hostname            = each.value.hostname
+  location            = var.location
   parent_id           = azapi_resource.this.id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.hostname_binding
   resource_types      = var.resource_types.hostname_binding
   retry               = var.retry
@@ -52,7 +55,9 @@ module "slot_hostname_binding" {
   for_each = local.slot_custom_domains
 
   hostname            = each.value.hostname
+  location            = var.location
   parent_id           = module.slot[each.value.slot_key].resource_id
+  enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.hostname_binding
   resource_types      = var.resource_types.hostname_binding
   retry               = var.retry
