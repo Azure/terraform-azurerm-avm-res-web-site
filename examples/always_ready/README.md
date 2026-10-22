@@ -118,9 +118,6 @@ resource "azapi_resource" "application_insights" {
 
 module "avm_res_web_site" {
   source = "../../"
-  providers = {
-    azapi = azapi
-  }
 
   location                 = azapi_resource.resource_group.location
   name                     = "${module.naming.function_app.name_unique}-always-ready"

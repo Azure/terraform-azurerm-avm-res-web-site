@@ -151,9 +151,6 @@ resource "azapi_resource" "storage_share_dev_content" {
 
 module "avm_res_web_site" {
   source = "../../"
-  providers = {
-    azapi = azapi
-  }
 
   location                               = azapi_resource.resource_group.location
   name                                   = module.naming.app_service.name_unique
