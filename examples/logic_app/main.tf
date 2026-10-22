@@ -142,9 +142,6 @@ resource "azapi_resource" "private_dns_zone_virtual_network_link" {
 
 module "avm_res_web_site" {
   source = "../../"
-  providers = {
-    azapi = azapi
-  }
 
   location                 = azapi_resource.resource_group.location
   name                     = module.naming.logic_app_workflow.name_unique

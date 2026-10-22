@@ -1,8 +1,5 @@
 module "slot" {
-  source = "./modules/slot"
-  providers = {
-    azapi = azapi
-  }
+  source   = "./modules/slot"
   for_each = var.deployment_slots
 
   kind                     = local.arm_kind

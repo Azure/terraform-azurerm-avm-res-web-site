@@ -140,9 +140,6 @@ data "azurerm_storage_account_blob_container_sas" "zip" {
 
 module "avm_res_web_site" {
   source = "../../"
-  providers = {
-    azapi = azapi
-  }
 
   location                               = azapi_resource.resource_group.location
   name                                   = module.naming.function_app.name_unique
