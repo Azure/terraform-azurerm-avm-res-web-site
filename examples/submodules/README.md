@@ -133,9 +133,9 @@ module "appsettings" {
     "MY_CUSTOM_SETTING" = "my-custom-value"
     "ENVIRONMENT"       = "production"
   }
-  location         = var.location
   parent_id        = module.avm_res_web_site.resource_id
   enable_telemetry = var.enable_telemetry
+  location         = var.location
 }
 
 # Use the config_connectionstrings submodule independently
@@ -149,38 +149,37 @@ module "connectionstrings" {
       value = "Server=tcp:myserver.database.windows.net;Database=mydb;"
     }
   }
-  location         = var.location
   parent_id        = module.avm_res_web_site.resource_id
   enable_telemetry = var.enable_telemetry
+  location         = var.location
 }
 
 # Use the publishing_credential_policy submodule to disable FTP basic auth
 module "ftp_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  location         = var.location
   name             = "ftp"
   parent_id        = module.avm_res_web_site.resource_id
   allow            = false
   enable_telemetry = var.enable_telemetry
+  location         = var.location
 }
 
 # Use the publishing_credential_policy submodule to disable SCM basic auth
 module "scm_publishing_credential_policy" {
   source = "../../modules/publishing_credential_policy"
 
-  location         = var.location
   name             = "scm"
   parent_id        = module.avm_res_web_site.resource_id
   allow            = false
   enable_telemetry = var.enable_telemetry
+  location         = var.location
 }
 
 # Use the config_logs submodule independently
 module "logs" {
   source = "../../modules/config_logs"
 
-  location  = var.location
   parent_id = module.avm_res_web_site.resource_id
   application_logs = {
     file_system = {
@@ -196,6 +195,7 @@ module "logs" {
       retention_in_mb   = 35
     }
   }
+  location = var.location
 }
 ```
 

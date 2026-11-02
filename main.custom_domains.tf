@@ -24,10 +24,10 @@ module "hostname_binding" {
   for_each = var.custom_domains
 
   hostname            = each.value.hostname
-  location            = var.location
   parent_id           = azapi_resource.this.id
   enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.hostname_binding
+  location            = var.location
   resource_types      = var.resource_types.hostname_binding
   retry               = var.retry
   ssl_state           = each.value.ssl_state
@@ -55,10 +55,10 @@ module "slot_hostname_binding" {
   for_each = local.slot_custom_domains
 
   hostname            = each.value.hostname
-  location            = var.location
   parent_id           = module.slot[each.value.slot_key].resource_id
   enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.hostname_binding
+  location            = var.location
   resource_types      = var.resource_types.hostname_binding
   retry               = var.retry
   ssl_state           = each.value.ssl_state
