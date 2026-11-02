@@ -1,9 +1,3 @@
-variable "location" {
-  type        = string
-  description = "The Azure region for this module's resources or telemetry deployment."
-  nullable    = false
-}
-
 variable "metadata" {
   type        = map(string)
   description = "A map of key-value pairs for site metadata (e.g. CURRENT_STACK)."
@@ -55,6 +49,17 @@ variable "is_slot" {
   type        = bool
   default     = false
   description = "Whether the parent resource is a deployment slot. Defaults to `false`."
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "The Azure region for this module's resources or telemetry deployment."
+
+  validation {
+    condition     = !var.enable_telemetry || var.location != null
+    error_message = "The location must not be null when telemetry is enabled."
+  }
 }
 
 variable "resource_types" {

@@ -4,12 +4,6 @@ variable "hostname" {
   nullable    = false
 }
 
-variable "location" {
-  type        = string
-  description = "The Azure region for this module's resources or telemetry deployment."
-  nullable    = false
-}
-
 variable "parent_id" {
   type        = string
   description = "The resource ID of the App Service site or slot."
@@ -48,6 +42,17 @@ Body-relative paths whose changes are ignored, keyed by AzAPI resource type. Pat
 - `web_sites_slots_host_name_bindings` - Paths ignored on the hostname binding on a slot.
 DESCRIPTION
   nullable    = false
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "The Azure region for this module's resources or telemetry deployment."
+
+  validation {
+    condition     = !var.enable_telemetry || var.location != null
+    error_message = "The location must not be null when telemetry is enabled."
+  }
 }
 
 variable "resource_types" {

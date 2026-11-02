@@ -4,12 +4,6 @@ variable "app_settings" {
   nullable    = false
 }
 
-variable "location" {
-  type        = string
-  description = "The Azure region for this module's resources or telemetry deployment."
-  nullable    = false
-}
-
 variable "parent_id" {
   type        = string
   description = "The resource ID of the App Service site or slot."
@@ -55,6 +49,17 @@ variable "is_slot" {
   type        = bool
   default     = false
   description = "Whether the parent resource is a deployment slot. Defaults to `false`."
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "The Azure region for this module's resources or telemetry deployment."
+
+  validation {
+    condition     = !var.enable_telemetry || var.location != null
+    error_message = "The location must not be null when telemetry is enabled."
+  }
 }
 
 variable "resource_types" {
