@@ -2,10 +2,8 @@ mock_provider "azapi" {
   mock_resource "azapi_resource" {
     defaults = {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-test-rg/providers/Microsoft.Web/sites/unit-test-site"
-      output = {
-        identity = {
-          principalId = "11111111-2222-3333-4444-555555555555"
-        }
+      identity = {
+        principal_id = "11111111-2222-3333-4444-555555555555"
       }
     }
   }
