@@ -13,8 +13,8 @@ variables {
   # Baseline: input removal is expected to leave the app attached. Flip this
   # after recording the unfixed result; the fixed expectation must fail there.
   expect_configuration_removal_to_clear = false
-  # Portal behavior is not yet established. Observe the repair result first.
-  enforce_external_repair = false
+  # Out-of-band removal must be repaired when the subnet remains configured.
+  enforce_external_repair = true
 }
 
 run "deploy_attached_fc1" {
