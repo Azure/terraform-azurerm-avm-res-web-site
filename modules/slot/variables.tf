@@ -799,31 +799,31 @@ variable "virtual_network_subnet_id" {
 variable "vnet_application_traffic_enabled" {
   type        = bool
   default     = false
-  description = "Should application traffic use VNet routing? Defaults to `false`."
+  description = "Should application traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_backup_restore_enabled" {
   type        = bool
   default     = false
-  description = "Should backup/restore traffic use VNet routing? Defaults to `false`."
+  description = "Should backup/restore traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_content_share_enabled" {
   type        = bool
   default     = false
-  description = "Should content share traffic use VNet routing? Defaults to `false`."
+  description = "Should content share traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
-  description = "Should image pull traffic use VNet routing? Defaults to `false`."
+  description = "Should image pull traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_route_all_traffic" {
   type        = bool
   default     = false
-  description = "Should all outbound traffic use VNet routing? Defaults to `false`."
+  description = "Should all outbound traffic use VNet routing? When `true`, Azure also enables every per-traffic-type routing option, so the application, backup/restore, content share and image pull flags are sent as `true` regardless of their own inputs. Defaults to `false`."
 }
 
 variable "webdeploy_publish_basic_authentication_enabled" {
