@@ -126,7 +126,7 @@ locals {
     javaContainer                          = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container
     javaContainerVersion                   = var.function_app_uses_fc1 ? null : module.site_config_helpers.java_container_version
     powerShellVersion                      = var.function_app_uses_fc1 ? null : module.site_config_helpers.powershell_version
-    functionsRuntimeScaleMonitoringEnabled = local.is_function_app && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
+    functionsRuntimeScaleMonitoringEnabled = (local.is_function_app || local.is_logic_app) && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
     minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
     scmType                                = local.is_logic_app ? var.site_config.scm_type : null
     acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity

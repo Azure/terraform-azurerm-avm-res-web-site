@@ -381,6 +381,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_is_logic_app"></a> [is\_logic\_app](#input\_is\_logic\_app)
+
+Description: Whether the parent app is a Standard Logic App.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_key_vault_reference_identity"></a> [key\_vault\_reference\_identity](#input\_key\_vault\_reference\_identity)
 
 Description: The identity to use for Key Vault references.
