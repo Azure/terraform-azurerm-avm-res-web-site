@@ -44,7 +44,7 @@ configurations should use that name. This alias is retained for existing
 consumers; removing it would be a breaking change and would be announced as
 one.
 DESCRIPTION
-  value       = try(azapi_resource.this.output.identity.principalId, null)
+  value       = try(azapi_resource.this.identity[0].principal_id, null)
 }
 
 output "kind" {
@@ -100,7 +100,7 @@ This is the output name AVM prescribes
 ([RMFR7](https://azure.github.io/Azure-Verified-Modules/spec/RMFR7)). Prefer it
 over the deprecated `identity_principal_id` alias.
 DESCRIPTION
-  value       = try(azapi_resource.this.output.identity.principalId, null)
+  value       = try(azapi_resource.this.identity[0].principal_id, null)
 }
 
 output "system_assigned_mi_principal_id_slots" {
