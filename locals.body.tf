@@ -30,10 +30,10 @@ locals {
       siteConfig                        = local.site_config_body
       outboundVnetRouting = {
         allTraffic           = var.vnet_route_all_traffic
-        applicationTraffic   = var.vnet_application_traffic_enabled
-        backupRestoreTraffic = var.virtual_network_backup_restore_enabled
-        contentShareTraffic  = var.vnet_content_share_enabled
-        imagePullTraffic     = var.vnet_image_pull_enabled
+        applicationTraffic   = var.vnet_route_all_traffic || var.vnet_application_traffic_enabled
+        backupRestoreTraffic = var.vnet_route_all_traffic || var.virtual_network_backup_restore_enabled
+        contentShareTraffic  = var.vnet_route_all_traffic || var.vnet_content_share_enabled
+        imagePullTraffic     = var.vnet_route_all_traffic || var.vnet_image_pull_enabled
       }
       daprConfig = var.dapr_config != null ? {
         appId              = var.dapr_config.app_id

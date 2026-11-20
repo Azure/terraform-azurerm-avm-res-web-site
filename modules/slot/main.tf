@@ -32,10 +32,10 @@ resource "azapi_resource" "this" {
       workloadProfileName               = var.workload_profile_name
       outboundVnetRouting = {
         allTraffic           = var.vnet_route_all_traffic
-        applicationTraffic   = var.vnet_application_traffic_enabled
-        backupRestoreTraffic = var.vnet_backup_restore_enabled
-        contentShareTraffic  = var.vnet_content_share_enabled
-        imagePullTraffic     = var.vnet_image_pull_enabled
+        applicationTraffic   = var.vnet_route_all_traffic || var.vnet_application_traffic_enabled
+        backupRestoreTraffic = var.vnet_route_all_traffic || var.vnet_backup_restore_enabled
+        contentShareTraffic  = var.vnet_route_all_traffic || var.vnet_content_share_enabled
+        imagePullTraffic     = var.vnet_route_all_traffic || var.vnet_image_pull_enabled
       }
       # Flex Consumption (FC1) sites reject a subset of siteConfig properties
       # with ARM error 51021. The runtime stack is expressed through

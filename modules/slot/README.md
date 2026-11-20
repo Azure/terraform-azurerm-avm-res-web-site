@@ -943,7 +943,7 @@ Default: `null`
 
 ### <a name="input_vnet_application_traffic_enabled"></a> [vnet\_application\_traffic\_enabled](#input\_vnet\_application\_traffic\_enabled)
 
-Description: Should application traffic use VNet routing? Defaults to `false`.
+Description: Should application traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
 
 Type: `bool`
 
@@ -951,7 +951,7 @@ Default: `false`
 
 ### <a name="input_vnet_backup_restore_enabled"></a> [vnet\_backup\_restore\_enabled](#input\_vnet\_backup\_restore\_enabled)
 
-Description: Should backup/restore traffic use VNet routing? Defaults to `false`.
+Description: Should backup/restore traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
 
 Type: `bool`
 
@@ -959,7 +959,7 @@ Default: `false`
 
 ### <a name="input_vnet_content_share_enabled"></a> [vnet\_content\_share\_enabled](#input\_vnet\_content\_share\_enabled)
 
-Description: Should content share traffic use VNet routing? Defaults to `false`.
+Description: Should content share traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
 
 Type: `bool`
 
@@ -967,7 +967,7 @@ Default: `false`
 
 ### <a name="input_vnet_image_pull_enabled"></a> [vnet\_image\_pull\_enabled](#input\_vnet\_image\_pull\_enabled)
 
-Description: Should image pull traffic use VNet routing? Defaults to `false`.
+Description: Should image pull traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
 
 Type: `bool`
 
@@ -975,7 +975,7 @@ Default: `false`
 
 ### <a name="input_vnet_route_all_traffic"></a> [vnet\_route\_all\_traffic](#input\_vnet\_route\_all\_traffic)
 
-Description: Should all outbound traffic use VNet routing? Defaults to `false`.
+Description: Should all outbound traffic use VNet routing? When `true`, Azure also enables every per-traffic-type routing option, so the application, backup/restore, content share and image pull flags are sent as `true` regardless of their own inputs. Defaults to `false`.
 
 Type: `bool`
 
