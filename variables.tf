@@ -1043,7 +1043,7 @@ A map of deployment slots to create for the App Service.
   - `remote_debugging_version` - (Optional) The Remote Debugging Version.
   - `request_tracing_enabled` - (Optional) Should request tracing be enabled?
   - `request_tracing_expiration_time` - (Optional) The expiration time for request tracing.
-  - `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled?
+  - `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled? Applies to Function Apps and Logic Apps.
   - `scm_ip_restriction_default_action` - (Optional) Default action for SCM IP restrictions. Defaults to `Allow`.
   - `scm_minimum_tls_version` - (Optional) SCM minimum TLS version. Defaults to `1.2`.
   - `scm_use_main_ip_restriction` - (Optional) Should SCM use the main IP restriction? Defaults to `false`.
@@ -1617,7 +1617,7 @@ DESCRIPTION
   # supplies it has told us no more than `storage_uses_managed_identity` already
   # did. `__clientId` is the only key that names an identity.
   validation {
-    condition     = !var.storage_uses_managed_identity || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || length(local.storage_user_assigned_identity_client_ids) == 1
+    condition     = !var.storage_uses_managed_identity || var.kind == "logicapp" || var.managed_identities.system_assigned || var.storage_user_assigned_identity_client_id != null || length(local.storage_user_assigned_identity_client_ids) == 1
     error_message = "`storage_uses_managed_identity` is `true` but the app has no identity to authenticate as. Set `managed_identities.system_assigned = true`, select a user-assigned identity with `storage_user_assigned_identity_client_id`, or supply `AzureWebJobsStorage__clientId` yourself through `app_settings`. With none of those, the Functions host is told to use a managed identity that does not exist and fails to start."
   }
   # `AzureWebJobsStorage__clientId` selects among the identities assigned to the
@@ -1627,6 +1627,15 @@ DESCRIPTION
   validation {
     condition     = (var.storage_user_assigned_identity_client_id == null && length(local.storage_user_assigned_identity_client_ids) == 0) || length(var.managed_identities.user_assigned_resource_ids) > 0
     error_message = "`storage_user_assigned_identity_client_id` and `app_settings.AzureWebJobsStorage__clientId` select a user-assigned identity, so at least one must be attached to the app in `managed_identities.user_assigned_resource_ids`. The module cannot compare a client ID with those ARM resource IDs; ensure the selected client ID belongs to an attached identity."
+  }
+  # Standard Logic Apps support only a user-assigned identity for host storage.
+  validation {
+    condition     = var.kind != "logicapp" || !var.storage_uses_managed_identity || var.storage_user_assigned_identity_id != null || length(var.managed_identities.user_assigned_resource_ids) == 1 || contains(local.app_settings_keys, "azurewebjobsstorage__managedidentityresourceid")
+    error_message = "A Logic App with `storage_uses_managed_identity = true` needs a user-assigned identity for its host storage connection. Attach exactly one identity in `managed_identities.user_assigned_resource_ids`, select one with `storage_user_assigned_identity_id`, or supply `AzureWebJobsStorage__managedIdentityResourceId` through `app_settings`."
+  }
+  validation {
+    condition     = var.kind != "logicapp" || !var.storage_uses_managed_identity || var.storage_user_assigned_identity_id == null || contains([for id in var.managed_identities.user_assigned_resource_ids : lower(id)], lower(coalesce(var.storage_user_assigned_identity_id, "-")))
+    error_message = "`storage_user_assigned_identity_id` must be one of the identities in `managed_identities.user_assigned_resource_ids`. A Logic App can authenticate to host storage only as an identity that is attached to it."
   }
 }
 
@@ -2258,7 +2267,7 @@ An object that configures the App Service's site configuration. These map to the
 - `remote_debugging_version` - (Optional) The Remote Debugging Version.
 - `request_tracing_enabled` - (Optional) Should request tracing be enabled?
 - `request_tracing_expiration_time` - (Optional) The expiration time for request tracing.
-- `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled?
+- `runtime_scale_monitoring_enabled` - (Optional) Should runtime scale monitoring be enabled? Applies to Function Apps and Logic Apps.
 - `scm_ip_restriction_default_action` - (Optional) Default action for SCM IP restrictions. Defaults to `Allow`.
 - `scm_minimum_tls_version` - (Optional) SCM minimum TLS version. Defaults to `1.2`.
 - `scm_type` - (Optional) The SCM type. Defaults to `None`.
@@ -2377,12 +2386,12 @@ DESCRIPTION
 variable "storage_account_access_key" {
   type        = string
   default     = null
-  description = "The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`."
+  description = "The access key of the Storage Account for the Function App. Required when `kind` is `logicapp`, unless `storage_uses_managed_identity` is `true` and `storage_account_share_name` is not set."
   sensitive   = true
 
   validation {
-    condition     = var.kind != "logicapp" || var.storage_account_access_key != null
-    error_message = "`storage_account_access_key` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+    condition     = var.kind != "logicapp" || var.storage_account_access_key != null || (var.storage_uses_managed_identity && var.storage_account_share_name == null)
+    error_message = "`storage_account_access_key` is required when `kind` is `logicapp`. The Logic App uses it for the `AzureWebJobsStorage` connection string, unless `storage_uses_managed_identity` is `true`, and for the content share connection string when `storage_account_share_name` is set."
   }
 }
 
@@ -2393,7 +2402,7 @@ variable "storage_account_name" {
 
   validation {
     condition     = var.kind != "logicapp" || var.storage_account_name != null
-    error_message = "`storage_account_name` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string."
+    error_message = "`storage_account_name` is required when `kind` is `logicapp`, because the Logic App runtime uses it for its host storage connection."
   }
   validation {
     condition     = var.storage_uses_managed_identity != true || var.storage_account_name != null
@@ -2488,6 +2497,8 @@ Set this alongside `storage_uses_managed_identity`. Leave it `null` to use the a
 
 This is a *client* ID, not a resource ID. `storage_user_assigned_identity_id` holds the resource ID Flex Consumption uses for `storage_authentication_type`; the two are not interchangeable.
 
+Logic Apps do not use this value. They select the identity by resource ID through `storage_user_assigned_identity_id`.
+
 The module verifies that at least one user-assigned identity is attached when this value is set, but it cannot compare the client ID with the attached ARM resource IDs. Ensure this client ID belongs to one of those identities.
 DESCRIPTION
 
@@ -2513,7 +2524,11 @@ DESCRIPTION
 variable "storage_user_assigned_identity_id" {
   type        = string
   default     = null
-  description = "The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`."
+  description = <<DESCRIPTION
+The ID of the User Assigned Managed Identity for storage. Required when `function_app_uses_fc1` is `true` and `storage_authentication_type` is `UserAssignedIdentity`.
+
+When `kind` is `logicapp` and `storage_uses_managed_identity` is `true`, this selects the identity for the `AzureWebJobsStorage__managedIdentityResourceId` app setting. It must be one of `managed_identities.user_assigned_resource_ids`. Leave it `null` to use the only attached user-assigned identity.
+DESCRIPTION
 
   validation {
     condition     = var.function_app_uses_fc1 != true || lower(coalesce(var.storage_authentication_type, "systemassignedidentity")) != "userassignedidentity" || var.storage_user_assigned_identity_id != null
@@ -2525,7 +2540,7 @@ variable "storage_uses_managed_identity" {
   type        = bool
   default     = false
   description = <<DESCRIPTION
-Should the Function App's `AzureWebJobsStorage` app setting use a Managed Identity instead of a connection string? Defaults to `false`.
+Should the Function App's or Logic App's `AzureWebJobsStorage` connection use a Managed Identity instead of a connection string? Defaults to `false`.
 
 When `true`, the module emits the identity-based connection settings `AzureWebJobsStorage__accountName` and `AzureWebJobsStorage__credential`, plus `AzureWebJobsStorage__clientId` when `storage_user_assigned_identity_client_id` is set, and omits `AzureWebJobsStorage` entirely. Requires `storage_account_name`, and an identity to authenticate as: either `managed_identities.system_assigned`, a user-assigned identity selected with `storage_user_assigned_identity_client_id`, or `AzureWebJobsStorage__clientId` supplied through `app_settings`.
 
@@ -2534,6 +2549,16 @@ Omitting `AzureWebJobsStorage` does not delete it from an app that already has o
 Flex Consumption apps may need this *and* `storage_authentication_type`, because they are two different storage connections. This one configures `AzureWebJobsStorage`, the host's own connection for function keys, timer-trigger singletons and trigger metadata, which every plan requires and without which the app cannot start. `storage_authentication_type` configures `functionAppConfig.deployment.storage.authentication`, which is only how the platform reads the deployment package out of its blob container. Configuring the deployment connection does not configure the host connection.
 
 The identity needs `Storage Blob Data Owner` on the host storage account, and `Storage Table Data Contributor` as well if you want the host to be able to write diagnostic events.
+
+When `kind` is `logicapp`, the module follows the Standard Logic App procedure and uses a user-assigned identity. It omits `AzureWebJobsStorage` and emits:
+
+- `AzureWebJobsStorage__managedIdentityResourceId` - the identity from `storage_user_assigned_identity_id`, or the only identity in `managed_identities.user_assigned_resource_ids`.
+- `AzureWebJobsStorage__blobServiceUri`, `AzureWebJobsStorage__queueServiceUri` and `AzureWebJobsStorage__tableServiceUri` - derived from `storage_account_name` for the Azure public cloud. Set them in `app_settings` for other clouds or custom endpoints.
+- `AzureWebJobsStorage__credential` - `managedIdentity`.
+
+A value you set in `app_settings` for one of these keys replaces the module value. `storage_account_access_key` is then required only when `storage_account_share_name` is set, because the content share still uses a connection string. On the Workflow Service Plan you cannot disable shared key access on the storage account, and you must set `site_config.runtime_scale_monitoring_enabled = true`. The identity needs `Storage Account Contributor`, `Storage Blob Data Owner`, `Storage Queue Data Contributor` and `Storage Table Data Contributor` on the storage account. The module does not create these role assignments. See [Set up managed identity access to your storage account](https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-azure-portal#set-up-managed-identity-access-to-your-storage-account).
+
+The note above about existing apps applies to Logic Apps too. Delete `AzureWebJobsStorage` out of band before you switch an existing Logic App to identity-based host storage.
 DESCRIPTION
   nullable    = false
 }

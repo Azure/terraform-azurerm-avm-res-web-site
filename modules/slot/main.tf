@@ -111,7 +111,7 @@ resource "azapi_resource" "this" {
         webSocketsEnabled                      = var.site_config.websockets_enabled
         websiteTimeZone                        = var.site_config.website_time_zone
         minimumElasticInstanceCount            = var.site_config.elastic_instance_minimum
-        functionsRuntimeScaleMonitoringEnabled = var.is_function_app && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
+        functionsRuntimeScaleMonitoringEnabled = (var.is_function_app || var.is_logic_app) && !var.function_app_uses_fc1 ? var.site_config.runtime_scale_monitoring_enabled : null
         autoSwapSlotName                       = var.site_config.auto_swap_slot_name
         acrUserManagedIdentityID               = var.site_config.container_registry_managed_identity_client_id
         acrUseManagedIdentityCreds             = var.site_config.container_registry_use_managed_identity

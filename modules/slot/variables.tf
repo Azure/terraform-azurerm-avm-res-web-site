@@ -285,6 +285,13 @@ variable "is_function_app" {
   description = "Whether the parent app is a function app."
 }
 
+variable "is_logic_app" {
+  type        = bool
+  default     = false
+  description = "Whether the parent app is a Standard Logic App."
+  nullable    = false
+}
+
 variable "key_vault_reference_identity" {
   type        = string
   default     = null
