@@ -30,15 +30,22 @@ Keep RFC 2119 severity exact. Do not turn a SHOULD into a MUST or cite a rule fr
 
 ## Toolchain
 
-Use PowerShell 7.4 or later and the `Avm.Authoring` PowerShell module on every supported operating system:
+Use PowerShell 7.4 or later and the `Avm.Authoring` PowerShell module from Microsoft Artifact Registry (MAR) on every supported operating system. Follow the [PSResourceGet 1.2.0 prerequisite](https://github.com/Azure/azure-verified-modules-tools#install), then register MAR once; it is not registered by default:
 
 ```pwsh
-Install-PSResource -Name Avm.Authoring -Repository PSGallery -TrustRepository
+Import-Module Microsoft.PowerShell.PSResourceGet -MinimumVersion 1.2.0
+Register-PSResourceRepository -Name MAR `
+    -Uri 'https://mcr.microsoft.com' `
+    -ApiVersion ContainerRegistry `
+    -Trusted
+Install-PSResource -Name avm.authoring `
+    -Repository MAR `
+    -Scope CurrentUser
 Import-Module Avm.Authoring
 avm version
 ```
 
-If the module's version gate reports that the installation is stale, run `avm update`, re-import the module, and retry. Do not use `./avm`, `avm.ps1`, Make, Porch, Docker, Podman, or individually installed copies of the pinned tools.
+To update from MAR, repeat `Install-PSResource` with `-Reinstall`, then start a new PowerShell session and import the module. The built-in `avm update` still uses PowerShell Gallery. Do not use `./avm`, `avm.ps1`, Make, Porch, Docker, Podman, or individually installed copies of the pinned tools.
 
 | Command | Purpose |
 | --- | --- |
@@ -48,11 +55,28 @@ If the module's version gate reports that the installation is stale, run `avm up
 | `avm test integration` | Run real-Azure tests under `tests/integration`. |
 | `avm test e2e` | Deploy, idempotency-check, and destroy runnable examples. |
 | `avm test e2e --list` | Return runnable example names, excluding `.e2eignore` directories. |
-| `avm test e2e --example <name>` | Run one example. |
+| `avm test e2e --example defaults` | Run the canonical defaults example. |
+| `avm test e2e --example <name>` | Run another example, including a migration-compatible `default` or optional scenario. |
 | `avm format`, `avm docs`, `avm lint` | Run an individual authoring operation. |
 | `avm check convention`, `avm check policy` | Run an individual gate. |
 
 Use `-Path` to target another module directory and `-Ecosystem terraform` when explicit ecosystem selection is needed. Use `--passthru` only when a script needs the structured result object. A failed result is promoted to a command failure; do not infer success from output text.
+
+### Required example coverage
+
+Apply the pending public-spec addition [TFNFR42](https://github.com/Azure/Azure-Verified-Modules/pull/3155) before implementing or reviewing examples:
+
+| Module class | Required | WAF-aligned |
+| --- | --- | --- |
+| Resource | `examples/defaults/` and `examples/waf-aligned/` | Required |
+| Pattern | `examples/defaults/` | Optional |
+| Utility | `examples/defaults/` | Optional |
+
+Use `defaults` for new modules; `default` is migration compatibility only, not a new canonical name. Required examples must execute and destroy, use required and applicable conditional module inputs, and rely on module defaults for unrelated optional inputs. Keep Azure setup/resources, subscription/location/telemetry controls, and test prerequisites separate from optional module feature overrides. Do not add `.e2eignore` to satisfy required coverage or copy placeholder content merely to clear a warning.
+
+A Terraform submodule has no separate required example tree. Each parent example must exercise submodule behavior that belongs to that scenario. Example names do not prove semantic WAF compliance; validate `waf-aligned` intent against [SFR2](https://github.com/Azure/Azure-Verified-Modules/pull/3155). When backfilling an existing module, rename only a suitable existing example; send missing or ambiguous canonical examples to the owner rather than fabricating copies or deployment rewrites.
+
+The pending Tools/Avm.Authoring change should make required-label selection class-aware and add a warning-only missing-canonical-example composition check. It is not published yet. Until released, describe it explicitly as pending and do not present it as an existing merge or release gate.
 
 ## Blocking Terraform requirements
 
