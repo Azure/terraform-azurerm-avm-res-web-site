@@ -217,7 +217,6 @@ module "config_connectionstrings" {
 module "config_azurestorageaccounts" {
   source = "../config_azurestorageaccounts"
 
-  location  = var.location
   parent_id = azapi_resource.this.id
   storage_shares_to_mount = { for k, v in var.storage_shares_to_mount : k => merge(v, {
     access_key = var.storage_shares_access_keys[k]
@@ -225,6 +224,7 @@ module "config_azurestorageaccounts" {
   enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.config_azurestorageaccounts
   is_slot             = true
+  location            = var.location
   resource_types      = var.resource_types.config_azurestorageaccounts
   retry               = var.retry
   timeouts            = var.timeouts
@@ -299,12 +299,12 @@ module "extensions_zipdeploy" {
   source   = "../extensions_zipdeploy"
   for_each = var.zip_deploy_file != null ? { "default" = {} } : {}
 
-  location            = var.location
   parent_id           = azapi_resource.this.id
   zip_deploy_file     = var.zip_deploy_file
   enable_telemetry    = var.enable_telemetry
   ignore_body_changes = var.ignore_body_changes.extensions_zipdeploy
   is_slot             = true
+  location            = var.location
   resource_types      = var.resource_types.extensions_zipdeploy
   retry               = var.retry
   timeouts            = var.timeouts
