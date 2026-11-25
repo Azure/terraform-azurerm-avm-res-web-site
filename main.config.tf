@@ -28,11 +28,11 @@ module "config_connectionstrings" {
 module "config_azurestorageaccounts" {
   source = "./modules/config_azurestorageaccounts"
 
-  location                = var.location
   parent_id               = azapi_resource.this.id
   storage_shares_to_mount = var.storage_shares_to_mount
   enable_telemetry        = var.enable_telemetry
   ignore_body_changes     = var.ignore_body_changes.config_azurestorageaccounts
+  location                = var.location
   resource_types          = var.resource_types.config_azurestorageaccounts
   retry                   = var.retry
   timeouts                = var.timeouts
