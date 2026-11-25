@@ -8,6 +8,10 @@ locals {
   # one who writes `WEBSITE_NODE_DEFAULT_VERSION` and must suppress the module
   # default just the same.
   app_settings_keys = [for key in keys(local.app_settings) : lower(key)]
+  logic_app_storage_identity_resource_id = (
+    var.storage_user_assigned_identity_id != null ? var.storage_user_assigned_identity_id :
+    length(var.managed_identities.user_assigned_resource_ids) == 1 ? one(var.managed_identities.user_assigned_resource_ids) : null
+  )
   storage_user_assigned_identity_client_ids = [
     for key, value in local.app_settings : value
     if lower(key) == "azurewebjobsstorage__clientid"
@@ -120,10 +124,27 @@ locals {
       WEBSITE_CONTENTSHARE = ""
     } : {},
   ) : {}
+  # Standard Logic Apps document only the user-assigned identity for host storage,
+  # and select it by resource ID rather than by client ID.
+  logic_app_identity_storage_settings = local.is_logic_app && var.storage_uses_managed_identity ? {
+    AzureWebJobsStorage__managedIdentityResourceId = local.logic_app_storage_identity_resource_id
+    AzureWebJobsStorage__blobServiceUri            = "https://${var.storage_account_name}.blob.core.windows.net"
+    AzureWebJobsStorage__queueServiceUri           = "https://${var.storage_account_name}.queue.core.windows.net"
+    AzureWebJobsStorage__tableServiceUri           = "https://${var.storage_account_name}.table.core.windows.net"
+    AzureWebJobsStorage__credential                = "managedIdentity"
+  } : {}
   logic_app_settings = local.is_logic_app ? merge(
     {
       FUNCTIONS_EXTENSION_VERSION = var.logic_app_runtime_version
-      AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
+    },
+    !var.storage_uses_managed_identity ? {
+      AzureWebJobsStorage = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
+    } : {},
+    # The service URIs assume the public cloud. Callers on other clouds set them
+    # through `app_settings`, which suppresses the module value.
+    {
+      for key, value in local.logic_app_identity_storage_settings : key => value
+      if !contains(local.app_settings_keys, lower(key))
     },
     # The Standard Logic App app settings reference documents `dotnet` as the
     # required value: "This setting's value was previously set to `node`, but now

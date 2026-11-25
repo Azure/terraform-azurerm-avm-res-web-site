@@ -37,6 +37,7 @@ module "slot" {
   ignore_body_changes                      = var.ignore_body_changes.slot
   ip_mode                                  = each.value.ip_mode
   is_function_app                          = local.is_function_app
+  is_logic_app                             = local.is_logic_app
   key_vault_reference_identity             = each.value.key_vault_reference_identity
   # AVM interfaces
   lock = each.value.lock != null ? each.value.lock : (
