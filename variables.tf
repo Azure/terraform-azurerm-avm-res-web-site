@@ -995,11 +995,11 @@ A map of deployment slots to create for the App Service.
 - `storage_account_required` - (Optional) Should a storage account be required?
 - `tags` - (Optional) Tags to apply to the slot.
 - `virtual_network_subnet_id` - (Optional) The subnet ID for VNet integration.
-- `vnet_route_all_traffic` - (Optional) Should all outbound traffic use VNet routing? Defaults to `false`.
-- `vnet_application_traffic_enabled` - (Optional) Should application traffic use VNet routing? Defaults to `false`.
-- `vnet_backup_restore_enabled` - (Optional) Should backup/restore traffic use VNet routing? Defaults to `false`.
-- `vnet_content_share_enabled` - (Optional) Should content share traffic use VNet routing? Defaults to `false`.
-- `vnet_image_pull_enabled` - (Optional) Should image pull traffic use VNet routing? Defaults to `false`.
+- `vnet_route_all_traffic` - (Optional) Should all outbound traffic use VNet routing? When `true`, the four per-traffic-type options below are also sent as `true`. Defaults to `false`.
+- `vnet_application_traffic_enabled` - (Optional) Should application traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
+- `vnet_backup_restore_enabled` - (Optional) Should backup/restore traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
+- `vnet_content_share_enabled` - (Optional) Should content share traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
+- `vnet_image_pull_enabled` - (Optional) Should image pull traffic use VNet routing? Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`.
 - `webdeploy_publish_basic_authentication_enabled` - (Optional) Should WebDeploy basic authentication be enabled? Defaults to `false`.
 - `workload_profile_name` - (Optional) The workload profile name.
 - `app_settings` - (Optional) App settings for the slot.
@@ -2569,7 +2569,7 @@ variable "use_extension_bundle" {
 variable "virtual_network_backup_restore_enabled" {
   type        = bool
   default     = false
-  description = "Should backup and restore operations over the linked virtual network be enabled? Defaults to `false`."
+  description = "Should backup and restore operations over the linked virtual network be enabled? Maps to `outboundVnetRouting.backupRestoreTraffic`. Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "virtual_network_subnet_id" {
@@ -2581,25 +2581,25 @@ variable "virtual_network_subnet_id" {
 variable "vnet_application_traffic_enabled" {
   type        = bool
   default     = false
-  description = "Should application traffic be routed over virtual network? Maps to `outboundVnetRouting.applicationTraffic`. Defaults to `false`."
+  description = "Should application traffic be routed over virtual network? Maps to `outboundVnetRouting.applicationTraffic`. Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_content_share_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for the content share be routed over virtual network? Defaults to `false`."
+  description = "Should the traffic for the content share be routed over virtual network? Maps to `outboundVnetRouting.contentShareTraffic`. Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_image_pull_enabled" {
   type        = bool
   default     = false
-  description = "Should the traffic for image pull be routed over virtual network? Defaults to `false`."
+  description = "Should the traffic for image pull be routed over virtual network? Maps to `outboundVnetRouting.imagePullTraffic`. Always `true` when `vnet_route_all_traffic` is `true`. Defaults to `false`."
 }
 
 variable "vnet_route_all_traffic" {
   type        = bool
   default     = false
-  description = "Should all outbound traffic be routed over virtual network? Maps to `outboundVnetRouting.allTraffic`. Defaults to `false`."
+  description = "Should all outbound traffic be routed over virtual network? Maps to `outboundVnetRouting.allTraffic`. When `true`, Azure also enables every per-traffic-type routing option, so the module sends `applicationTraffic`, `backupRestoreTraffic`, `contentShareTraffic` and `imagePullTraffic` as `true` regardless of their own inputs. Defaults to `false`."
 }
 
 variable "workload_profile_name" {
