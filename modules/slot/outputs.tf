@@ -1,6 +1,6 @@
 output "identity_principal_id" {
   description = "The principal ID of the system-assigned managed identity (if enabled)."
-  value       = try(azapi_resource.this.output.identity.principalId, null)
+  value       = try(azapi_resource.this.identity[0].principal_id, null)
 }
 
 output "name" {
